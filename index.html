@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f4e78">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CCS Scan">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>CCS Scan Helper - PLTCU-1</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1c2733;--muted:#66758a;--line:#d8dee8;--blue:#1f4e78;--blue2:#2e75b6;
+--out:#b3261e;--outbg:#fdecea;--in:#1e7a3c;--inbg:#e7f5ec;--warn:#8a5a00;--warnbg:#fff4d6;--hi:#fff9c4}
+@media (prefers-color-scheme:dark){:root{--bg:#161b22;--card:#1f2630;--ink:#e6edf3;--muted:#9aa7b5;--line:#344050;
+--blue:#5aa3e0;--blue2:#5aa3e0;--out:#ff8a80;--outbg:#3a1f1f;--in:#66d18a;--inbg:#17301f;--warn:#ffd27a;--warnbg:#3a2f12;--hi:#3a3a14}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 "Segoe UI",system-ui,-apple-system,Arial,sans-serif}
+header{background:var(--blue);color:#fff;padding:12px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;font-weight:600}
+header .sub{opacity:.85;font-size:13px}
+header .who{margin-left:auto;display:flex;gap:8px;align-items:center;font-size:13px}
+header input{padding:5px 8px;border-radius:6px;border:0;width:150px}
+main{max-width:1100px;margin:16px auto;padding:0 14px 60px}
+.tabs{display:flex;gap:10px;margin-bottom:12px}
+.tab{flex:1;padding:14px;border:2px solid var(--line);background:var(--card);border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;color:var(--ink)}
+.tab small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.tab.on.out{border-color:var(--out);background:var(--outbg);color:var(--out)}
+.tab.on.in{border-color:var(--in);background:var(--inbg);color:var(--in)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.scanrow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.scanrow .grow{flex:1;min-width:240px}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+input[type=text],input[type=number]{width:100%;padding:11px 12px;font-size:17px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+input:focus{outline:none;border-color:var(--blue2)}
+#scan{font-size:20px;font-weight:600}
+button{font:inherit;cursor:pointer}
+.btn{padding:11px 18px;border-radius:8px;border:0;background:var(--blue);color:#fff;font-weight:600}
+.btn.alt{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.danger{background:transparent;border:1px solid var(--out);color:var(--out)}
+.btn.in{background:var(--in)}
+.msg{padding:10px 12px;border-radius:8px;margin-top:10px;font-weight:600;display:none}
+.msg.ok{display:block;background:var(--inbg);color:var(--in)}
+.msg.err{display:block;background:var(--outbg);color:var(--out)}
+.msg.warn{display:block;background:var(--warnbg);color:var(--warn)}
+#sugg{margin-top:8px;display:none;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+#sugg div{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+#sugg div:last-child{border-bottom:0}
+#sugg div:hover{background:var(--hi)}
+#sugg b{font-variant-numeric:tabular-nums;margin-right:8px}
+#recv{display:none;border:2px solid var(--in);background:var(--inbg)}
+#recv.out{border-color:var(--out);background:var(--outbg)}
+#chips button{margin:4px 6px 0 0;padding:5px 10px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:13px}
+#recv .name{font-weight:700;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:90px 1.6fr auto;gap:10px;align-items:end}
+@media(max-width:700px){.grid{grid-template-columns:1fr 1fr}}
+.chk{display:flex;gap:6px;align-items:center;font-size:13px;margin-top:6px;color:var(--ink)}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:2px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr.new td{background:var(--hi)}
+td.num{font-variant-numeric:tabular-nums}
+.q{display:flex;align-items:center;gap:4px}
+.q button{width:30px;height:30px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px}
+.q input{width:64px;padding:5px;text-align:center;font-size:16px}
+.x{border:0;background:transparent;color:var(--out);font-size:18px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar .tot{margin-left:auto;color:var(--muted);font-size:13px}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+details summary{cursor:pointer;font-weight:600}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+#listWrap{overflow-x:auto}
+#listWrap input.exp{width:122px;padding:6px 8px;font-size:15px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-variant-numeric:tabular-nums}
+#listWrap input.exp:focus{border-color:var(--blue2);outline:none}
+#cam{position:fixed;inset:0;background:#000;z-index:50;display:none}
+#camVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#camGuide{position:absolute;left:8%;right:8%;top:32%;height:30%;border:3px solid rgba(255,255,255,.85);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.35);pointer-events:none}
+#camTop{position:absolute;top:0;left:0;right:0;display:flex;gap:10px;align-items:center;padding:12px;color:#fff;background:linear-gradient(#000a,#0000)}
+#camTop span{flex:1;font-weight:600}
+#camTop button{padding:10px 14px;border-radius:8px;border:0;background:#fff;color:#111;font-weight:600}
+#camMsg{position:absolute;left:12px;right:12px;bottom:18px;padding:12px;border-radius:10px;background:#000b;color:#fff;text-align:center;font-weight:600}
+select{padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.folder{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.folder .st{flex:1;min-width:220px;font-size:13px}
+.folder .st b{font-weight:700}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:var(--muted)}
+.dot.on{background:var(--in)}.dot.off{background:var(--out)}
+.conf{margin-bottom:12px}
+.conf .msg{display:block;margin-top:8px}
+.conf button{margin:6px 8px 0 0;padding:7px 12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>CCS Scan Helper</h1><span class="sub">scan &rarr; Excel file in the CCS template format &middot; nothing to install</span><span class="sub" id="ver" style="opacity:.6"></span>
+  <div class="who"><span>Prepared by</span><input id="who" type="text" placeholder="name"></div>
+</header>
+<div id="cam">
+  <video id="camVideo" playsinline muted autoplay></video><div id="camGuide"></div>
+  <div id="camTop"><span id="camTitle">Point the camera at the barcode</span><button id="camTorch" type="button" style="display:none">🔦 Light</button><button id="camClose" type="button">✕ Close</button></div>
+  <div id="camMsg">Starting the camera…</div>
+</div>
+<main>
+  <div class="card" id="installCard" style="display:none"><span id="installTxt"></span> <button class="btn" id="installBtn" type="button" style="display:none;padding:8px 14px;margin-left:8px">Install app</button></div>
+  <div class="card" id="embedWarn" style="display:none;border:2px solid var(--out);background:var(--outbg)">
+    <b style="color:var(--out)">⚠ This page is open inside another page (the SharePoint / OneDrive preview).</b>
+    <div style="margin-top:6px">Here the phone <b>blocks saving files</b> and the camera. Do this once:
+      <ol style="margin:6px 0 0 18px;padding:0">
+        <li>In OneDrive/SharePoint tap <b>⋮ → Download</b> to save <i>ccs_scan_helper.html</i> on the phone.</li>
+        <li>Open the <b>Files</b> app → Downloads → tap the file → <b>Open with Chrome</b>.</li>
+      </ol>
+      <div class="note">Until then use “Copy for Excel” (paste into an Excel or Teams chat) or the “Phone: share sheet” option.</div></div>
+  </div>
+  <div class="card folder" id="folderCard">
+    <div class="st" id="folderStatus"></div>
+    <button class="btn alt" id="fChoose" type="button">Choose shared folder</button>
+    <button class="btn" id="fAllow" type="button" style="display:none">Allow access again</button>
+    <button class="btn alt" id="fRefresh" type="button" style="display:none">Refresh</button>
+    <button class="btn alt" id="fTest" type="button" style="display:none">Test folder</button>
+    <button class="btn alt" id="fForget" type="button" style="display:none">Disconnect</button>
+  </div>
+  <div class="conf" id="conf"></div>
+  <div class="tabs">
+    <button class="tab out" id="tabOUT" type="button">STOCK OUT <small id="cOUT">0 lines</small></button>
+    <button class="tab in" id="tabIN" type="button">STOCK IN <small id="cIN">0 lines</small></button>
+  </div>
+
+  <div class="card">
+    <div class="scanrow">
+      <div class="grow"><label for="scan" id="scanLabel">Scan barcode (or type part of the item name)</label>
+        <input id="scan" type="text" autocomplete="off" autofocus></div>
+      <div style="width:90px" id="qtyBox"><label for="qty">Qty / scan</label><input id="qty" type="number" min="1" value="1"></div>
+      <button class="btn" id="addBtn" type="button">Add</button>
+      <button class="btn alt" id="camBtn" type="button">📷 Camera</button>
+      <button class="btn alt" id="photoBtn" type="button">📸 Photo</button>
+      <button class="btn alt" id="videoBtn" type="button" title="Record a short video while you point at the barcodes one after another">🎥 Video</button>
+      <input id="videoIn" type="file" accept="video/*" capture="environment" style="display:none">
+      <input id="photoIn" type="file" accept="image/*" capture="environment" style="display:none">
+    </div>
+    <div id="sugg"></div>
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <div class="card" id="recv">
+    <div class="name" id="recvName"></div>
+    <div class="grid">
+      <div><label for="rQty" id="rQtyLbl">Qty received</label><input id="rQty" type="number" min="1" value="1"></div>
+      <div><label for="rExp">Expiry (31/12/2030 or 12/2030)</label><input id="rExp" type="text" placeholder="DD/MM/YYYY" autocomplete="off">
+        <label class="chk"><input type="checkbox" id="rNoExp"> No expiry date on this item</label><div id="chips"></div></div>
+      <div style="display:flex;gap:6px"><button class="btn in" id="rSave" type="button">Save</button><button class="btn alt" id="rCancel" type="button">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bar" style="margin-bottom:10px">
+      <span class="note" style="margin:0">Excel file is saved to:</span>
+      <select id="saveMode">
+        <option value="downloads">Browser Downloads folder</option>
+        <option value="ask">Ask me each time (Save as…)</option>
+        <option value="folder">A fixed folder I choose</option>
+        <option value="share">Phone: share sheet (OneDrive, Teams, email…)</option>
+      </select>
+      <button class="btn alt" id="expChoose" type="button" style="display:none;padding:8px 14px">Choose folder</button>
+      <span class="note" id="expName" style="margin:0"></span>
+      <label class="chk" id="copyRow" style="margin:0 0 0 6px;display:none"><input type="checkbox" id="copySh" checked> also copy to the shared folder</label>
+    </div>
+    <div class="bar" style="margin-bottom:10px">
+      <span class="note" style="margin:0">Shared folder link (OneDrive / SharePoint / Forms):</span>
+      <input id="shareLink" type="text" placeholder="https://…" autocomplete="off" style="flex:1;min-width:220px;max-width:460px;font-size:15px;padding:8px 10px">
+      <button class="btn alt" id="openShared" type="button" style="display:none;padding:8px 14px">📂 Open shared folder</button>
+      <label class="chk" id="autoRow" style="margin:0 0 0 6px;display:none"><input type="checkbox" id="autoOpen" checked> open it after saving</label>
+    </div>
+    <div class="bar" style="margin-bottom:8px">
+      <button class="btn" id="xlsx" type="button">&#11015; Save Excel (.xlsx)</button>
+      <button class="btn alt" id="copy" type="button">Copy for Excel</button>
+      <button class="btn alt" id="undo" type="button">&#8630; Undo</button>
+      <button class="btn danger" id="clear" type="button">Clear list</button>
+      <label class="chk" style="margin:0 0 0 6px"><input type="checkbox" id="snd" checked> sound</label>
+      <label class="chk" style="margin:0 0 0 6px" title="Each STOCK OUT scan asks for the expiry date, like the paper list"><input type="checkbox" id="askExp" checked> ask expiry on STOCK OUT</label>
+      <label class="chk" style="margin:0 0 0 6px" title="Whole item list like the CCS template, Qty filled only for scanned items"><input type="checkbox" id="allItems"> export all items</label>
+      <label class="chk" style="margin:0 0 0 6px" title="Adds a second sheet “Info” (Prepared by, date, counts). The file author is always set to your name. Turn off if CCS refuses the file."><input type="checkbox" id="infoSheet" checked> name sheet in file</label>
+      <span class="tot" id="tot"></span>
+    </div>
+    <textarea id="copyBox" readonly style="display:none;width:100%;height:140px;font:13px monospace;margin-bottom:8px;border:2px solid var(--blue2);border-radius:8px;background:var(--card);color:var(--ink);padding:8px"></textarea>
+    <div id="listWrap"></div>
+    <div class="note">The list is kept on this computer even if you close the page. Save the Excel file (same columns as the CCS template), then use
+      <b>Import Stock Out from Excel</b> / <b>Import Stock In from Excel</b> in CCS.</div>
+  </div>
+
+  <div class="card" id="catalogCard">
+    <div class="bar">
+      <b>Item list:</b> <span id="catInfo" style="flex:1;min-width:200px"></span>
+      <button class="btn alt" id="catImport" type="button" style="padding:8px 14px">Import item list…</button>
+      <button class="btn alt" id="catReset" type="button" style="display:none;padding:8px 14px">Use built-in list</button>
+      <input id="catFile" type="file" accept=".xlsx,.json,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none">
+    </div>
+    <div class="note">Import the CCS inventory Excel (columns ir_number, item name, Expiry, Location, max_stock, min_stock, Unit Price, Qty_type) or a setup file (.json) from your team. It is kept on this phone.</div>
+  </div>
+
+  <div class="card">
+    <details><summary>Item not in the list? Add it</summary>
+      <div class="grid" style="margin-top:10px;grid-template-columns:150px 1fr 100px auto">
+        <div><label for="nIr">IR number</label><input id="nIr" type="text" autocomplete="off"></div>
+        <div><label for="nName">Item name</label><input id="nName" type="text" autocomplete="off"></div>
+        <div><label for="nUnit">Unit</label><input id="nUnit" type="text" placeholder="EAC" autocomplete="off"></div>
+        <button class="btn" id="nAdd" type="button">Save item</button>
+      </div>
+      <div class="note">Saved on this computer only. <span id="extraInfo"></span></div>
+    </details>
+  </div>
+</main>
+
+<script>
+// ============ SETTINGS you may change =====================================
+// The Excel file has exactly the columns of the CCS template (sheet "inventory list").
+// [heading, key, type ('s' text | 'n' number | 'd' date), column width]
+const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['Expiry','expiry','d',13],['Location','loc','s',42],
+  ['max_stock','max','n',10],['min_stock','min','n',10],['Unit Price','price','n',11],['Qty_type','unit','s',10],['Qty','qty','n',8]];
+// DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
+// the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
+const UPLOAD_LINK = '';
+const VERSION = '2026-11-06.5';          // shown in the page header, so you can see which copy of the file you are running
+const EXPORT = {
+  OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
+  IN:  { sheet: 'inventory list', file: 'CCS_StockIn',  cols: TEMPLATE_COLS }
+};
+// ============ ITEM LIST (from items_master.xlsx) ============================
+const ITEMS = /*ITEMS*/[];
+const PWA = true;               // true in the installable phone app (hosted on https)
+// ==CORE START==
+function pad2(n){return (n<10?'0':'')+n;}
+function validYMD(y,m,d){const t=new Date(Date.UTC(y,m-1,d));return y>=2000&&y<=2100&&t.getUTCFullYear()===y&&t.getUTCMonth()===m-1&&t.getUTCDate()===d;}
+function lastDay(y,m){return new Date(Date.UTC(y,m,0)).getUTCDate();}
+// -> 'YYYY-MM-DD' | null
+function parseExpiry(s){
+  s=(s||'').trim(); let m;
+  if((m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/))){const d=+m[1],mo=+m[2],y=+m[3];return validYMD(y,mo,d)?y+'-'+pad2(mo)+'-'+pad2(d):null;}
+  if((m=s.match(/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})$/))){const y=+m[1],mo=+m[2],d=+m[3];return validYMD(y,mo,d)?y+'-'+pad2(mo)+'-'+pad2(d):null;}
+  if((m=s.match(/^(\d{1,2})[\/.\-](\d{4})$/))){const mo=+m[1],y=+m[2];return(mo>=1&&mo<=12&&y>=2000&&y<=2100)?y+'-'+pad2(mo)+'-'+pad2(lastDay(y,mo)):null;}
+  if((m=s.match(/^(\d{4})[\/.\-](\d{1,2})$/))){const y=+m[1],mo=+m[2];return(mo>=1&&mo<=12&&y>=2000&&y<=2100)?y+'-'+pad2(mo)+'-'+pad2(lastDay(y,mo)):null;}
+  if((m=s.match(/^(\d{2})(\d{2})(\d{4})$/))){const d=+m[1],mo=+m[2],y=+m[3];return validYMD(y,mo,d)?y+'-'+pad2(mo)+'-'+pad2(d):null;}
+  if((m=s.match(/^(\d{1,2})[\- ]([A-Za-z]{3,9})[\- ,]*(\d{4})$/))){const mi=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(m[2].slice(0,3).toLowerCase());if(mi<0)return null;const d=+m[1],y=+m[3];return validYMD(y,mi+1,d)?y+'-'+pad2(mi+1)+'-'+pad2(d):null;}
+  return null;
+}
+function excelSerial(iso){const p=iso.split('-').map(Number);return Math.round((Date.UTC(p[0],p[1]-1,p[2])-Date.UTC(1899,11,30))/86400000);}
+function xmlEsc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');}
+function colLetter(i){let s='';i++;while(i>0){const r=(i-1)%26;s=String.fromCharCode(65+r)+s;i=Math.floor((i-1)/26);}return s;}
+let CRC_T=null;
+function crc32(b){if(!CRC_T){CRC_T=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;CRC_T[n]=c>>>0;}}
+  let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC_T[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+function zipStore(files){ // files: [{name, data:Uint8Array}]  (no compression)
+  const enc=new TextEncoder(),parts=[],central=[];let off=0;
+  for(const f of files){
+    const nm=enc.encode(f.name),crc=crc32(f.data),sz=f.data.length;
+    const h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);
+    h.setUint16(10,0,true);h.setUint16(12,0x21,true);h.setUint32(14,crc,true);h.setUint32(18,sz,true);h.setUint32(22,sz,true);
+    h.setUint16(26,nm.length,true);h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),nm,f.data);
+    const c=new DataView(new ArrayBuffer(46));
+    c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);
+    c.setUint16(12,0,true);c.setUint16(14,0x21,true);c.setUint32(16,crc,true);c.setUint32(20,sz,true);c.setUint32(24,sz,true);
+    c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+    central.push(new Uint8Array(c.buffer),nm);
+    off+=30+nm.length+sz;
+  }
+  let csz=0;for(const p of central)csz+=p.length;
+  const e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,csz,true);e.setUint32(16,off,true);
+  const all=[...parts,...central,new Uint8Array(e.buffer)];let tot=0;for(const p of all)tot+=p.length;
+  const out=new Uint8Array(tot);let o=0;for(const p of all){out.set(p,o);o+=p.length;}return out;
+}
+// cols: [[heading,key,type('s'|'n'|'d'),width]], rows: array of objects
+function buildXlsx(sheetName,cols,rows,meta){
+  const enc=new TextEncoder();
+  let sd='<row r="1">'+cols.map((c,i)=>'<c r="'+colLetter(i)+'1" t="inlineStr" s="2"><is><t>'+xmlEsc(c[0])+'</t></is></c>').join('')+'</row>';
+  rows.forEach((r,ri)=>{
+    const rn=ri+2;
+    sd+='<row r="'+rn+'">'+cols.map((c,i)=>{
+      const ref=colLetter(i)+rn,v=r[c[1]];
+      if(v===undefined||v===null||v==='')return '';
+      if(c[2]==='n')return '<c r="'+ref+'"><v>'+Number(v)+'</v></c>';
+      if(c[2]==='d')return '<c r="'+ref+'" s="1"><v>'+excelSerial(v)+'</v></c>';
+      return '<c r="'+ref+'" t="inlineStr" s="3"><is><t>'+xmlEsc(v)+'</t></is></c>';
+    }).join('')+'</row>';
+  });
+  const ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main',rel='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  const X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  const parts=[
+    ['[Content_Types].xml',X+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+    ['_rels/.rels',X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+rel+'/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ['xl/workbook.xml',X+'<workbook xmlns="'+ns+'" xmlns:r="'+rel+'"><sheets><sheet name="'+xmlEsc(sheetName)+'" sheetId="1" r:id="rId1"/></sheets></workbook>'],
+    ['xl/_rels/workbook.xml.rels',X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+rel+'/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="'+rel+'/styles" Target="styles.xml"/></Relationships>'],
+    ['xl/styles.xml',X+'<styleSheet xmlns="'+ns+'"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd\\-mmm\\-yyyy"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'],
+    ['xl/worksheets/sheet1.xml',X+'<worksheet xmlns="'+ns+'"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>'+cols.map((c,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+c[3]+'" customWidth="1"/>').join('')+'</cols><sheetData>'+sd+'</sheetData></worksheet>']
+  ];
+  if(meta){                                                  // who saved it: file author + optional "Info" sheet (second sheet)
+    const P=n=>parts.find(p=>p[0]===n);
+    if(meta.info&&meta.info.length){
+      P('[Content_Types].xml')[1]=P('[Content_Types].xml')[1].replace('</Types>','<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
+      P('xl/workbook.xml')[1]=P('xl/workbook.xml')[1].replace('</sheets>','<sheet name="'+xmlEsc(meta.infoName||'Info')+'" sheetId="2" r:id="rId3"/></sheets>');
+      P('xl/_rels/workbook.xml.rels')[1]=P('xl/_rels/workbook.xml.rels')[1].replace('</Relationships>','<Relationship Id="rId3" Type="'+rel+'/worksheet" Target="worksheets/sheet2.xml"/></Relationships>');
+      const r2=meta.info.map((kv,i)=>'<row r="'+(i+1)+'"><c r="A'+(i+1)+'" t="inlineStr" s="2"><is><t>'+xmlEsc(kv[0])+'</t></is></c><c r="B'+(i+1)+'" t="inlineStr"><is><t xml:space="preserve">'+xmlEsc(kv[1])+'</t></is></c></row>').join('');
+      parts.push(['xl/worksheets/sheet2.xml',X+'<worksheet xmlns="'+ns+'"><cols><col min="1" max="1" width="22" customWidth="1"/><col min="2" max="2" width="60" customWidth="1"/></cols><sheetData>'+r2+'</sheetData></worksheet>']);
+    }
+    const iso=(meta.created||new Date()).toISOString().replace(/\.\d+Z$/,'Z'),who=xmlEsc(meta.who||'CCS Scan Helper');
+    P('[Content_Types].xml')[1]=P('[Content_Types].xml')[1].replace('</Types>','<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>');
+    P('_rels/.rels')[1]=P('_rels/.rels')[1].replace('</Relationships>','<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>');
+    parts.push(['docProps/core.xml',X+'<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>'+xmlEsc(meta.title||sheetName)+'</dc:title><dc:creator>'+who+'</dc:creator><cp:lastModifiedBy>'+who+'</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">'+iso+'</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">'+iso+'</dcterms:modified></cp:coreProperties>']);
+  }
+  return zipStore(parts.map(f=>({name:f[0],data:enc.encode(f[1])})));
+}
+// -> {ir,name,unit,loc} | null     (items: array of [ir,name,unit,loc])
+function lookupItem(map,code){const c=(code||'').trim();return map.get(c)||null;}
+function searchItems(items,text,limit){
+  const w=(text||'').toLowerCase().split(/\s+/).filter(Boolean);if(!w.length)return[];
+  const out=[];for(const it of items){const n=it.name.toLowerCase();if(w.every(x=>n.includes(x)||it.ir.startsWith(x))){out.push(it);if(out.length>=limit)break;}}return out;
+}
+// add to a list (array of {ir,name,expiry,qty}); merge identical lines. returns the touched line
+function addLine(list,mode,item,qty,expiry){
+  let l=list.find(x=>x.ir===item.ir&&(x.expiry||'')===(expiry||''));
+  if(l){l.qty+=qty;}else{l={ir:item.ir,name:item.name,qty:qty,expiry:expiry||''};list.push(l);}
+  return l;
+}
+function dmy(iso){return iso&&/^\d{4}-\d{2}-\d{2}$/.test(iso)?iso.slice(8)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4):(iso||'');}
+// rows for the Excel file. includeAll=false: only scanned lines. true: the whole item list (template style),
+// Qty filled only where something was scanned.
+function buildRows(list,items,includeAll){
+  const info=new Map(items.map(i=>[i.ir,i]));
+  const mk=(it,l)=>({ir:it.ir,name:it.name,expiry:(l&&l.expiry)||'',loc:it.loc||'',max:it.max,min:it.min,price:it.price,unit:it.unit||'',qty:l?l.qty:''});
+  if(!includeAll)return list.map(l=>mk(info.get(l.ir)||{ir:l.ir,name:l.name},l));
+  const by=new Map();list.forEach(l=>{if(!by.has(l.ir))by.set(l.ir,[]);by.get(l.ir).push(l);});
+  const out=[];items.forEach(it=>{const ls=by.get(it.ir);if(ls)ls.forEach(l=>out.push(mk(it,l)));else out.push(mk(it,null));});
+  return out;
+}
+// Video: one "presentation" = the same code seen in consecutive frames. Same code shown again later = another unit.
+function groupDetections(dets,gap){
+  gap=gap||1.5;const groups=[];let cur=null;
+  for(const d of dets){
+    if(cur&&cur.code===d.code&&d.t-cur.last<=gap){cur.last=d.t;cur.n++;cur.strong=cur.strong||d.c>=2;}
+    else{cur={code:d.code,first:d.t,last:d.t,n:1,strong:d.c>=2};groups.push(cur);}
+  }
+  const cnt=new Map(),order=[];
+  for(const g of groups){if(g.n<2&&!g.strong)continue;if(!cnt.has(g.code)){cnt.set(g.code,0);order.push(g.code);}cnt.set(g.code,cnt.get(g.code)+1);}
+  return order.map(c=>({code:c,qty:cnt.get(c)}));
+}
+
+// ---- item list import: the CCS inventory Excel (.xlsx) or a setup file (.json) -> [[ir,name,unit,loc,price,max,min,[expiries]]]
+function serialToIso(n){const d=new Date(Date.UTC(1899,11,30)+Math.round(n)*86400000);return d.getUTCFullYear()+'-'+pad2(d.getUTCMonth()+1)+'-'+pad2(d.getUTCDate());}
+function unxml(t){return String(t).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(+n)).replace(/&#x([0-9a-fA-F]+);/g,(_,h)=>String.fromCharCode(parseInt(h,16))).replace(/&amp;/g,'&');}
+function colIndex(ref){const m=/^([A-Z]+)/.exec(ref);let n=0;for(const ch of m[1])n=n*26+ch.charCodeAt(0)-64;return n-1;}
+async function inflateRaw(u8){const ds=new DecompressionStream('deflate-raw'),w=ds.writable.getWriter();w.write(u8);w.close();return new Uint8Array(await new Response(ds.readable).arrayBuffer());}
+function zipEntries(u8){
+  const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength);let e=u8.length-22;
+  while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw new Error('this is not an .xlsx file');
+  const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const out={};
+  for(let i=0;i<n;i++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    const method=dv.getUint16(p+10,true),csz=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lho=dv.getUint32(p+42,true);
+    out[new TextDecoder().decode(u8.subarray(p+46,p+46+nl))]={method,csz,lho};p+=46+nl+el+cl;
+  }
+  return out;
+}
+async function zipText(u8,ents,name){
+  const ent=ents[name];if(!ent)return null;
+  const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength),start=ent.lho+30+dv.getUint16(ent.lho+26,true)+dv.getUint16(ent.lho+28,true);
+  const data=u8.subarray(start,start+ent.csz);
+  return new TextDecoder().decode(ent.method===0?data:await inflateRaw(data));
+}
+function sheetRows(xml,shared){
+  const rows=[],rowRe=/<row\b[^>]*?(?:\/>|>([\s\S]*?)<\/row>)/g;let rm;
+  while((rm=rowRe.exec(xml))){
+    const row=[],body=rm[1]||'',cRe=/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;let cm;
+    while((cm=cRe.exec(body))){
+      const at=cm[1],inner=cm[2]||'',r=/\br="([A-Z]+\d+)"/.exec(at),t=/\bt="(\w+)"/.exec(at);if(!r)continue;
+      const vm=/<v>([\s\S]*?)<\/v>/.exec(inner);let v;
+      if(t&&t[1]==='s'&&vm)v=shared[+vm[1]];
+      else if(t&&t[1]==='inlineStr')v=[...inner.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map(x=>unxml(x[1])).join('');
+      else if(vm)v=(t&&t[1]==='str')?unxml(vm[1]):Number(vm[1]);
+      row[colIndex(r[1])]=v;
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+function catalogFromRows(rows){
+  let hi=-1;const cols={};
+  for(let i=0;i<rows.length&&i<30;i++){const r=rows[i]||[];if(r.some(v=>typeof v==='string'&&v.trim().toLowerCase()==='ir_number')){hi=i;r.forEach((v,j)=>{if(typeof v==='string')cols[v.trim().toLowerCase()]=j;});break;}}
+  if(hi<0)return null;
+  const g=(r,k)=>cols[k]===undefined?undefined:r[cols[k]],num=v=>(v===undefined||v===null||v==='')?null:(isFinite(+v)?+v:null);
+  const by=new Map(),order=[];
+  for(let i=hi+1;i<rows.length;i++){
+    const r=rows[i];if(!r)continue;let ir=g(r,'ir_number');if(typeof ir==='number')ir=String(Math.round(ir));ir=String(ir==null?'':ir).trim();
+    if(!/^\d{10}$/.test(ir))continue;
+    let it=by.get(ir);if(!it){it={ir,name:'',unit:'',loc:'',price:null,max:null,min:null,exps:new Set()};by.set(ir,it);order.push(ir);}
+    const nm=String(g(r,'item name')||'').trim(),un=g(r,'qty_type'),lc=g(r,'location');
+    if(!it.name&&nm)it.name=nm;if(!it.unit&&un)it.unit=String(un).trim().toUpperCase();if(!it.loc&&lc)it.loc=String(lc).trim();
+    if(it.price==null)it.price=num(g(r,'unit price'));if(it.max==null)it.max=num(g(r,'max_stock'));if(it.min==null)it.min=num(g(r,'min_stock'));
+    const ex=g(r,'expiry');let iso='';
+    if(typeof ex==='number'&&ex>20000&&ex<80000)iso=serialToIso(ex);else if(typeof ex==='string')iso=parseExpiry(ex)||'';
+    if(/^\d{4}-\d{2}-\d{2}$/.test(iso))it.exps.add(iso);
+  }
+  return order.map(ir=>{const it=by.get(ir);return[ir,it.name||ir,it.unit,it.loc,it.price,it.max,it.min,[...it.exps].sort()];});
+}
+async function parseXlsxCatalog(arrayBuffer){
+  const u8=new Uint8Array(arrayBuffer),ents=zipEntries(u8);
+  const wb=await zipText(u8,ents,'xl/workbook.xml'),rels=await zipText(u8,ents,'xl/_rels/workbook.xml.rels');
+  if(!wb||!rels)throw new Error('this is not an Excel workbook');
+  const ss=await zipText(u8,ents,'xl/sharedStrings.xml');
+  const shared=ss?[...ss.matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>/g)].map(m=>[...m[1].matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map(x=>unxml(x[1])).join('')):[];
+  const sheets=[...wb.matchAll(/<sheet\b[^>]*>/g)].map(m=>({name:unxml((/\bname="([^"]*)"/.exec(m[0])||[])[1]||''),rid:(/\br:id="([^"]*)"/.exec(m[0])||[])[1]}));
+  sheets.sort((a,b)=>(b.name.toLowerCase()==='inventory list')-(a.name.toLowerCase()==='inventory list'));
+  for(const sh of sheets){
+    const rm=new RegExp('<Relationship\\b[^>]*\\bId="'+sh.rid+'"[^>]*>').exec(rels);if(!rm)continue;
+    const tg=/\bTarget="([^"]*)"/.exec(rm[0]);if(!tg)continue;
+    const xml=await zipText(u8,ents,tg[1].startsWith('/')?tg[1].slice(1):'xl/'+tg[1]);if(!xml)continue;
+    const items=catalogFromRows(sheetRows(xml,shared));if(items&&items.length)return{items,sheet:sh.name};
+  }
+  throw new Error('no sheet with the columns ir_number / item name was found');
+}
+function parseSetupJson(text){
+  const o=JSON.parse(text),arr=Array.isArray(o)?o:(o&&o.items);if(!Array.isArray(arr))throw new Error('this is not a setup file');
+  const items=[];
+  for(const a of arr){if(!Array.isArray(a))continue;const ir=String(a[0]||'').trim();if(!/^\d{10}$/.test(ir)||!a[1])continue;
+    items.push([ir,String(a[1]),a[2]||'',a[3]||'',a[4]==null?null:a[4],a[5]==null?null:a[5],a[6]==null?null:a[6],Array.isArray(a[7])?a[7].filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)):[]]);}
+  return{items,uploadLink:(o&&typeof o.uploadLink==='string'&&/^https:\/\//i.test(o.uploadLink))?o.uploadLink:''};
+}
+// ---- Code 128 decoder (camera frames) -------------------------------------
+const C128 = "212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112".split(' ').map(s => s.split('').map(Number));
+const C128_STOP = C128[106];
+function c128Sum(L, i, n) { let s = 0; for (let k = 0; k < n; k++) s += L[i + k]; return s; }
+function c128Match(L, i, cands) {
+  const S = c128Sum(L, i, 6), m = S / 11; if (m < 0.9) return null;
+  let best = -1, be = 1e9;
+  for (const v of cands) { const w = C128[v]; let e = 0; for (let k = 0; k < 6; k++) e += Math.abs(L[i + k] / m - w[k]); if (e < be) { be = e; best = v; } }
+  return be <= 2.3 ? best : null;
+}
+const C128_DATA = Array.from({ length: 103 }, (_, i) => i), C128_START = [103, 104, 105];
+function c128Text(vals) {
+  let set = { 103: 'A', 104: 'B', 105: 'C' }[vals[0]], out = '', shift = false;
+  for (let k = 1; k < vals.length - 1; k++) {
+    const v = vals[k];
+    if (set === 'C') { if (v <= 99) { out += (v < 10 ? '0' : '') + v; continue; } if (v === 100) { set = 'B'; continue; } if (v === 101) { set = 'A'; continue; } if (v === 102) continue; return null; }
+    let cur = set; if (shift) { cur = set === 'A' ? 'B' : 'A'; shift = false; }
+    if (v <= 95) { out += cur === 'A' ? (v < 64 ? String.fromCharCode(v + 32) : String.fromCharCode(v - 64)) : String.fromCharCode(v + 32); continue; }
+    if (v === 98) { shift = true; continue; } if (v === 99) { set = 'C'; continue; }
+    if (v === 100) { if (set === 'A') set = 'B'; continue; } if (v === 101) { if (set === 'B') set = 'A'; continue; }
+    if (v === 96 || v === 97 || v === 102) continue; return null;
+  }
+  return out;
+}
+function c128Read(L, i, startVal) {
+  const vals = [startVal]; let p = i + 6;
+  for (;;) {
+    if (p + 7 <= L.length) {
+      const m = c128Sum(L, p, 7) / 13;
+      if (m >= 0.9) { let e = 0; for (let k = 0; k < 7; k++) e += Math.abs(L[p + k] / m - C128_STOP[k]);
+        const quiet = p + 7 >= L.length || L[p + 7] >= m * 4.5;   // a real stop bar is followed by empty space
+        if (e <= 2.8 && quiet && vals.length >= 5) break; }
+    }
+    if (p + 6 > L.length || vals.length > 70) return null;
+    const v = c128Match(L, p, C128_DATA); if (v === null) return null;
+    vals.push(v); p += 6;
+  }
+  let chk = vals[0]; for (let k = 1; k < vals.length - 1; k++) chk += k * vals[k];
+  if (chk % 103 !== vals[vals.length - 1]) return null;
+  const t = c128Text(vals); return t ? t : null;
+}
+function c128Runs(line) {
+  const n = line.length, win = Math.max(16, Math.round(n / 12)), pre = new Float64Array(n + 1);
+  for (let i = 0; i < n; i++) pre[i + 1] = pre[i] + line[i];
+  const L = []; let cur = -1, len = 0, firstBlack = false;
+  for (let i = 0; i < n; i++) {
+    const a = Math.max(0, i - win), b = Math.min(n, i + win + 1), mean = (pre[b] - pre[a]) / (b - a);
+    const black = line[i] < mean * 0.88 ? 1 : 0;
+    if (cur === -1) { cur = black; len = 1; firstBlack = black === 1; }
+    else if (black === cur) len++; else { L.push(len); cur = black; len = 1; }
+  }
+  L.push(len); return { L, firstBlack };
+}
+function c128Line(line) {
+  const { L, firstBlack } = c128Runs(line);
+  for (let i = firstBlack ? 0 : 1; i + 6 <= L.length; i += 2) {
+    const m = c128Sum(L, i, 6) / 11; if (m < 0.9) continue;
+    if (i > 0 && L[i - 1] < m * 3) continue;               // quiet zone before the start symbol
+    const sv = c128Match(L, i, C128_START); if (sv === null) continue;
+    const r = c128Read(L, i, sv); if (r) return r;
+  }
+  return null;
+}
+function c128Both(line) { return c128Line(line) || c128Line(Array.prototype.slice.call(line).reverse()); }
+// gray: Uint8Array w*h (row-major). Returns Map(value -> number of scan lines that read it).
+// Every line is the average of 3 neighbouring lines (removes camera noise); if that fails, a lightly smoothed copy is tried.
+function c128Try(line) { let r = c128Both(line); if (r) return r;
+  const n = line.length, sm = new Float32Array(n); for (let i = 0; i < n; i++) sm[i] = (line[Math.max(0, i - 1)] + line[i] + line[Math.min(n - 1, i + 1)]) / 3;
+  return c128Both(sm); }
+function c128Scan(gray, w, h, K) {
+  K = K || 36; const hits = new Map(), add = v => hits.set(v, (hits.get(v) || 0) + 1), top = () => { let b = 0; for (const c of hits.values()) if (c > b) b = c; return b; };
+  const line = new Float32Array(w);
+  for (let k = 0; k < K; k++) {                                   // horizontal lines
+    const y = Math.round(h * (0.05 + 0.9 * (k + 0.5) / K)), y0 = Math.max(0, y - 1), y1 = Math.min(h - 1, y + 1);
+    for (let x = 0; x < w; x++) line[x] = (gray[y0 * w + x] + gray[y * w + x] + gray[y1 * w + x]) / 3;
+    const r = c128Try(line); if (r) { add(r); if (top() >= 2) return hits; }
+  }
+  const col = new Float32Array(h);
+  for (let k = 0; k < K; k++) {                                   // vertical lines (phone held sideways)
+    const x = Math.round(w * (0.05 + 0.9 * (k + 0.5) / K)), x0 = Math.max(0, x - 1), x1 = Math.min(w - 1, x + 1);
+    for (let y = 0; y < h; y++) col[y] = (gray[y * w + x0] + gray[y * w + x] + gray[y * w + x1]) / 3;
+    const r = c128Try(col); if (r) { add(r); if (top() >= 2) return hits; }
+  }
+  return hits;
+}
+
+// ==CORE END==
+
+// ============ app ===========================================================
+(function(){
+  if(typeof document==='undefined')return;
+  const $=id=>document.getElementById(id);
+  let deferredInstall=null;                       // the browser's "install app" offer (Android)
+  const IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const STANDALONE=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  const PROFILE=new URLSearchParams(location.search).get('profile')||'';   // lets two copies run side by side for testing
+  const LS='ccsScanHelper.v2'+PROFILE;
+  let st={mode:'OUT',askExp:true,saveMode:'downloads',copyShared:true,shareLink:'',infoSheet:true,autoOpen:true,lists:{OUT:[],IN:[]},who:'',extra:[],hist:[],sync:{OUT:'',IN:''},dirty:{OUT:false,IN:false},conflicts:{OUT:null,IN:null}};
+  let hadSaved=false;
+  try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){hadSaved=true;st.lists=Object.assign({OUT:[],IN:[]},s.lists||{});st.who=s.who||'';st.extra=s.extra||[];st.mode=s.mode==='IN'?'IN':'OUT';st.askExp=s.askExp!==false;st.saveMode=['downloads','ask','folder'].includes(s.saveMode)?s.saveMode:'downloads';st.copyShared=s.copyShared!==false;st.shareLink=s.shareLink||'';st.infoSheet=s.infoSheet!==false;st.autoOpen=s.autoOpen!==false;
+    st.sync=Object.assign({OUT:'',IN:''},s.sync||{});st.dirty=Object.assign({OUT:false,IN:false},s.dirty||{});}}catch(e){}
+  if(!hadSaved&&IS_IOS&&typeof navigator.share==='function')st.saveMode='share';   // iPhone apps cannot download files nicely: use the share sheet (Save to Files, OneDrive, Teams)
+  function save(){try{localStorage.setItem(LS,JSON.stringify({lists:st.lists,who:st.who,extra:st.extra,mode:st.mode,askExp:st.askExp,saveMode:st.saveMode,copyShared:st.copyShared,shareLink:st.shareLink,infoSheet:st.infoSheet,autoOpen:st.autoOpen,sync:st.sync,dirty:st.dirty}));}catch(e){}}
+  const CAT_KEY='ccsScanHelper.catalog.v1'+PROFILE;
+  function loadCatalog(){try{const c=JSON.parse(localStorage.getItem(CAT_KEY)||'null');if(c&&Array.isArray(c.items)&&c.items.length)return c;}catch(e){}return null;}
+  let catalog=loadCatalog();
+  const defaultLink=()=>(catalog&&catalog.uploadLink)||UPLOAD_LINK;
+  let items=[],map=new Map();
+  function rebuild(){const base=(catalog&&catalog.items.length)?catalog.items:ITEMS;items=base.map(a=>({ir:a[0],name:a[1],unit:a[2]||'',loc:a[3]||'',price:a[4],max:a[5],min:a[6],exps:a[7]||[]}))
+      .concat(st.extra.map(a=>({ir:a[0],name:a[1],unit:a[2]||'',loc:'',price:null,max:null,min:null,exps:[],extra:true})));
+    map=new Map();items.forEach(i=>map.set(i.ir,i));$('extraInfo').textContent=st.extra.length?st.extra.length+' extra item(s) saved.':'';}
+  rebuild();
+  let pendingItem=null,lastTouched=null,audio=null;
+  function beep(ok){if(!$('snd').checked)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);o.frequency.value=ok?880:220;g.gain.value=.08;o.start();o.stop(audio.currentTime+(ok?.07:.3));}catch(e){}}
+  function msg(kind,text){const m=$('msg');m.className='msg '+kind;m.textContent=text;}
+  function snapshot(){st.hist.push(JSON.stringify(st.lists));if(st.hist.length>30)st.hist.shift();}
+  const list=()=>st.lists[st.mode];
+  // The files and the CCS list are English: keep names English-only (strict = letters, digits, space . _ -)
+  function englishOnly(t,strict){const re=strict?/[^A-Za-z0-9 ._-]/g:/[^\x20-\x7E]/g;const out=String(t||'').replace(re,'');return{text:out,removed:out!==String(t||'')};}
+  const EMBEDDED=(()=>{try{return window.top!==window.self;}catch(e){return true;}})();
+  const TOUCH=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+  function focusScan(){if(!TOUCH)$('scan').focus();}
+  const shortLoc=l=>(l||'').split(';')[0].trim();
+
+  // ---------------------------------------------------------------- shared folder
+  const FSA=typeof window.showDirectoryPicker==='function';
+  let dir=null,perm='none',folderErr='',lastSave=null;
+  const DBN='ccsScanHelperDB'+PROFILE;
+  function idb(){return new Promise((res,rej)=>{const q=indexedDB.open(DBN,1);q.onupgradeneeded=()=>q.result.createObjectStore('k');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+  async function idbGet(k){const db=await idb();return new Promise((res,rej)=>{const q=db.transaction('k').objectStore('k').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+  async function idbSet(k,v){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('k','readwrite');if(v===undefined)tx.objectStore('k').delete(k);else tx.objectStore('k').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
+  const ready=()=>!!dir&&perm==='granted';
+  async function readJson(sub,name){try{const d=await dir.getDirectoryHandle(sub);const fh=await d.getFileHandle(name);return JSON.parse(await (await fh.getFile()).text());}catch(e){if(e&&e.name==='NotFoundError')return null;if(e instanceof SyntaxError)return null;throw e;}}
+  async function writeFile(sub,name,data){const d=await dir.getDirectoryHandle(sub,{create:true});const fh=await d.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(data);await w.close();}
+  function fmtT(iso){try{const d=new Date(iso);return d.toLocaleDateString()+' '+d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}catch(e){return iso;}}
+
+  function renderFolder(){
+    const s=$('folderStatus');let h;
+    $('fChoose').style.display=$('fAllow').style.display=$('fRefresh').style.display=$('fTest').style.display=$('fForget').style.display='none';$('fChoose').textContent='Choose shared folder';
+    if(!FSA){h='<span class="dot"></span><b>Shared folder not available in this browser.</b> Use Microsoft Edge or Chrome. Data stays on this computer.';}
+    else if(!dir){h='<span class="dot"></span><b>Not connected.</b> Lists and Excel files are kept on this computer only. Choose a shared folder (network drive or OneDrive folder) to use them from other computers.';$('fChoose').style.display='';}
+    else if(perm!=='granted'){h='<span class="dot off"></span><b>Shared folder “'+xmlEsc(dir.name)+'”</b> — click <b>Allow access again</b> (the browser asks once per session).';$('fAllow').style.display='';$('fForget').style.display='';}
+    else{h='<span class="dot on"></span><b>Shared folder “'+xmlEsc(dir.name)+'”</b> connected — lists are saved there automatically, Excel files go to the Exports folder.<br><span style="color:var(--muted)">'+(lastSave?'Last saved in the folder: '+lastSave.t.toLocaleTimeString()+' — '+xmlEsc(lastSave.what):'Nothing saved in the folder yet (it is saved after each scan).')+'</span>'+(folderErr?'<br><span style="color:var(--out)">'+xmlEsc(folderErr)+'</span>':'');$('fRefresh').style.display='';$('fTest').style.display='';$('fForget').style.display='';$('fChoose').style.display='';$('fChoose').textContent='Change folder';
+      if(/^OneDrive\b/i.test(dir.name))h+='<br><span style="color:var(--warn);font-weight:700">⚠ This looks like your PERSONAL OneDrive. Other people cannot see it. Click “Change folder” and choose the shared folder.</span>';}
+    s.innerHTML=h;renderSave();
+  }
+  function renderConflicts(){
+    const c=$('conf');c.innerHTML='';
+    ['OUT','IN'].forEach(m=>{const r=st.conflicts[m];if(!r)return;
+      const d=document.createElement('div');d.className='msg warn';
+      d.innerHTML='<b>STOCK '+m+':</b> the shared folder has a different list saved by <b>'+xmlEsc(r.updatedBy||'someone')+'</b> ('+fmtT(r.updatedAt)+', '+(r.list||[]).length+' lines). Yours has '+st.lists[m].length+' lines.<br>'+
+        '<button class="btn" data-c="use" data-m="'+m+'">Use the shared list</button><button class="btn alt" data-c="keep" data-m="'+m+'">Keep mine (replace the shared one)</button>';
+      c.appendChild(d);});
+  }
+  $('conf').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const m=b.dataset.m,r=st.conflicts[m];if(!r)return;
+    if(b.dataset.c==='use')adopt(m,r);else{st.sync[m]=r.updatedAt;st.conflicts[m]=null;renderConflicts();await pushPending(m);render();}});
+  function adopt(m,r){st.lists[m]=r.list||[];st.sync[m]=r.updatedAt;st.dirty[m]=false;st.conflicts[m]=null;lastTouched=null;save();renderConflicts();render();
+    msg('warn','STOCK '+m+' list loaded from the shared folder (saved by '+(r.updatedBy||'someone')+', '+fmtT(r.updatedAt)+').');}
+
+  let pushTimer=null;const pend=new Set();
+  function schedulePush(modes){if(!ready())return;modes.forEach(m=>pend.add(m));clearTimeout(pushTimer);pushTimer=setTimeout(flushPush,500);}
+  async function flushPush(){if(!ready())return;const ms=[...pend];pend.clear();for(const m of ms)await pushPending(m);renderFolder();}
+  async function pushPending(m){
+    if(!ready())return;
+    try{
+      const remote=await readJson('Pending','pending_'+m+'.json');
+      if(remote&&remote.updatedAt&&remote.updatedAt>(st.sync[m]||'')){st.conflicts[m]=remote;renderConflicts();return;}
+      const rec={mode:m,updatedAt:new Date().toISOString(),updatedBy:st.who||'',list:st.lists[m]};
+      await writeFile('Pending','pending_'+m+'.json',JSON.stringify(rec));
+      st.sync[m]=rec.updatedAt;st.dirty[m]=false;st.conflicts[m]=null;folderErr='';lastSave={t:new Date(),what:'Pending/pending_'+m+'.json ('+st.lists[m].length+' lines)'};save();renderConflicts();
+    }catch(e){folderErr='Could not save to the folder: '+(e.message||e.name);}
+  }
+  async function checkRemote(m){
+    const remote=await readJson('Pending','pending_'+m+'.json');
+    if(!remote){if(st.lists[m].length)await pushPending(m);return;}
+    if(remote.updatedAt===st.sync[m]||remote.updatedAt<(st.sync[m]||''))return;
+    if(JSON.stringify(remote.list)===JSON.stringify(st.lists[m])){st.sync[m]=remote.updatedAt;st.dirty[m]=false;save();return;}
+    if(!st.dirty[m]||!st.lists[m].length)adopt(m,remote);else{st.conflicts[m]=remote;renderConflicts();}
+  }
+  async function syncExtra(){
+    const remote=await readJson('Shared','extra_items.json');const rem=(remote&&remote.items)||[];
+    const by=new Map();rem.forEach(a=>by.set(a[0],a));st.extra.forEach(a=>{if(!by.has(a[0]))by.set(a[0],a);});
+    const merged=[...by.values()];
+    if(merged.length!==st.extra.length){st.extra=merged;save();rebuild();}
+    if(merged.length!==rem.length)await writeFile('Shared','extra_items.json',JSON.stringify({updatedAt:new Date().toISOString(),items:merged}));
+  }
+  let syncing=false;
+  async function refreshFromFolder(){
+    if(!ready()||syncing)return;syncing=true;
+    try{for(const m of ['OUT','IN'])await checkRemote(m);await syncExtra();folderErr='';}
+    catch(e){folderErr='Could not read the folder: '+(e.message||e.name);}
+    syncing=false;renderFolder();render();
+  }
+  async function initFolder(){
+    renderFolder();if(!FSA)return;
+    try{const h=await idbGet('dir');if(h){dir=h;perm=await h.queryPermission({mode:'readwrite'});}}catch(e){}
+    renderFolder();if(ready())await refreshFromFolder();
+  }
+  $('fChoose').onclick=async()=>{try{const h=await window.showDirectoryPicker({mode:'readwrite',id:'ccsshared'});dir=h;perm='granted';await idbSet('dir',h);
+      st.sync={OUT:'',IN:''};st.conflicts={OUT:null,IN:null};['OUT','IN'].forEach(m=>{st.dirty[m]=st.lists[m].length>0;});save();renderConflicts();lastSave=null;folderErr='';
+      renderFolder();await refreshFromFolder();
+      msg('ok','Connected to the shared folder “'+h.name+'”.');}catch(e){if(e.name!=='AbortError'){folderErr=e.message||e.name;renderFolder();}}};
+  $('fAllow').onclick=async()=>{try{perm=await dir.requestPermission({mode:'readwrite'});}catch(e){perm='prompt';}renderFolder();if(ready())await refreshFromFolder();};
+  async function testFolder(){
+    try{
+      const stamp=new Date().toISOString(),txt='CCS Scan Helper connection test\n'+stamp+'\n'+(st.who||'');
+      const fh=await dir.getFileHandle('CCS_connection_test.txt',{create:true});const w=await fh.createWritable();await w.write(txt);await w.close();
+      const back=await (await fh.getFile()).text();if(back!==txt)throw new Error('the file was written but reads back different');
+      const names=[];for await(const [n,h] of dir.entries()){names.push(n+(h.kind==='directory'?'/':''));}
+      const cnt=async sub=>{try{const d=await dir.getDirectoryHandle(sub);let c=0;for await(const x of d.entries())c++;return c;}catch(e){return 0;}};
+      lastSave={t:new Date(),what:'CCS_connection_test.txt'};renderFolder();
+      msg('ok','Folder test OK — wrote CCS_connection_test.txt in the folder “'+dir.name+'” ('+txt.length+' bytes) and read it back. In this folder: '+names.slice(0,25).join(', ')+(names.length>25?' …':'')+'. Pending: '+(await cnt('Pending'))+' file(s), Exports: '+(await cnt('Exports'))+' file(s).');
+    }catch(e){folderErr='Folder test FAILED: '+(e.name||'')+' '+(e.message||'');renderFolder();msg('err',folderErr);}
+  }
+  $('fTest').onclick=testFolder;
+  $('fRefresh').onclick=async()=>{await refreshFromFolder();msg('ok','Checked the shared folder.');};
+  $('fForget').onclick=async()=>{dir=null;perm='none';lastSave=null;try{await idbSet('dir',undefined);}catch(e){}st.conflicts={OUT:null,IN:null};renderConflicts();renderFolder();};
+  window.addEventListener('focus',()=>{refreshFromFolder();});
+  setInterval(()=>{if(document.visibilityState==='visible')refreshFromFolder();},30000);
+
+  function touched(modes){modes.forEach(m=>{st.dirty[m]=true;});save();schedulePush(modes);}
+
+  // ---------------------------------------------------------------- list
+  function render(){
+    $('tabOUT').classList.toggle('on',st.mode==='OUT');$('tabIN').classList.toggle('on',st.mode==='IN');
+    ['OUT','IN'].forEach(m=>{const l=st.lists[m];$('c'+m).textContent=l.length+' line'+(l.length===1?'':'s')+' · '+l.reduce((a,x)=>a+x.qty,0)+' units';});
+    $('askExp').checked=st.askExp;$('qtyBox').style.display=(st.mode==='OUT'&&!st.askExp)?'':'none';
+    $('scanLabel').textContent=st.mode==='OUT'?'Scan barcode of the item you TAKE (or type the last 4 digits / part of the name)':'Scan barcode of the item you RECEIVE (or type the last 4 digits / part of the name)';
+    const l=list();
+    if(!l.length){$('listWrap').innerHTML='<div class="empty">Nothing scanned yet.</div>';$('tot').textContent='';return;}
+    const IN=st.mode==='IN';
+    const showExp=true;                                   // the expiry date is always shown and can be edited
+    let h='<table><thead><tr><th>#</th><th>IR number</th><th>Item</th>'+(showExp?'<th>Expiry</th>':'')+'<th>Qty</th><th></th></tr></thead><tbody>';
+    l.slice().reverse().forEach((x,ri)=>{const i=l.length-1-ri;
+      h+='<tr class="'+(x===lastTouched?'new':'')+'"><td class="num">'+(i+1)+'</td><td class="num">'+x.ir+'</td><td>'+xmlEsc(x.name)+'</td>'+
+        (showExp?'<td><input class="exp" type="text" inputmode="text" autocomplete="off" placeholder="no expiry" title="Edit the expiry date: 31/12/2030 or 12/2030. Empty = no expiry" value="'+(x.expiry?dmy(x.expiry):'')+'" data-a="e" data-i="'+i+'"></td>':'')+
+        '<td><div class="q"><button data-a="m" data-i="'+i+'">−</button><input type="number" min="1" value="'+x.qty+'" data-a="q" data-i="'+i+'"><button data-a="p" data-i="'+i+'">+</button></div></td>'+
+        '<td><button class="x" title="Remove" data-a="d" data-i="'+i+'">✕</button></td></tr>';});
+    $('listWrap').innerHTML=h+'</tbody></table>';
+    $('tot').textContent=l.length+' lines · '+l.reduce((a,x)=>a+x.qty,0)+' units';
+  }
+  $('listWrap').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i,l=list();snapshot();
+    if(b.dataset.a==='p')l[i].qty++;else if(b.dataset.a==='m')l[i].qty=Math.max(1,l[i].qty-1);else if(b.dataset.a==='d')l.splice(i,1);
+    lastTouched=null;touched([st.mode]);render();});
+  function editExpiry(i,raw){
+    const l=list(),x=l[i];if(!x)return;raw=(raw||'').trim();let exp='';
+    const today=new Date().toISOString().slice(0,10);
+    if(raw){exp=parseExpiry(raw);
+      if(!exp){msg('err','Expiry date not understood. Use 31/12/2030 or 12/2030 (or clear it for “no expiry”).');beep(false);render();return;}
+      if(st.mode==='IN'&&exp<today){msg('err','That expiry date is already in the past - check it.');beep(false);render();return;}}
+    if(exp===(x.expiry||'')){render();return;}                      // nothing changed
+    snapshot();
+    const other=l.find((y,j)=>j!==i&&y.ir===x.ir&&(y.expiry||'')===exp);   // another line already has this expiry -> merge
+    let note='';
+    if(other){other.qty+=x.qty;l.splice(i,1);lastTouched=other;note='  (added to the line that already has this expiry)';}
+    else{x.expiry=exp;lastTouched=x;}
+    touched([st.mode]);render();
+    const expired=st.mode==='OUT'&&exp&&exp<today;
+    msg(expired?'warn':'ok','Expiry changed: '+x.name+' → '+(exp?dmy(exp):'no expiry')+note+(expired?'  ⚠ EXPIRED item':''));
+  }
+  $('listWrap').addEventListener('change',e=>{const t=e.target;if(t.dataset.a==='e'){editExpiry(+t.dataset.i,t.value);return;}if(t.dataset.a!=='q')return;const v=Math.floor(+t.value);snapshot();list()[+t.dataset.i].qty=v>=1?v:1;touched([st.mode]);render();});
+
+  let queue=[],qTotal=0,qNote='';
+  function pick(item,qtyHint,tag){
+    $('sugg').style.display='none';
+    if(st.mode==='OUT'&&!st.askExp){
+      const q=qtyHint||Math.max(1,Math.floor(+$('qty').value)||1);snapshot();
+      lastTouched=addLine(list(),'OUT',item,q,'');touched(['OUT']);render();
+      msg('ok','OUT  '+item.name+'  ×'+q+'  → total '+lastTouched.qty+(item.loc?'   ('+shortLoc(item.loc)+')':''));beep(true);
+      $('qty').value=1;$('scan').value='';focusScan();return;
+    }
+    const out=st.mode==='OUT';
+    pendingItem=item;$('recv').className=out?'out':'';$('recv').style.display='block';
+    $('recvName').textContent=(tag||'')+(out?'OUT: ':'IN: ')+item.name+'  ('+item.ir+')'+(item.loc?'  ·  '+shortLoc(item.loc):'');
+    $('rQtyLbl').textContent=out?'Qty taken':'Qty received';$('rSave').className='btn'+(out?'':' in');
+    const prev=list().filter(x=>x.ir===item.ir).pop();
+    let pre=prev&&prev.expiry?prev.expiry:(out&&item.exps&&item.exps.length?item.exps[0]:'');
+    $('rQty').value=qtyHint||1;$('rExp').value=dmy(pre);$('rNoExp').checked=false;$('rExp').disabled=false;
+    const ch=$('chips');ch.innerHTML='';
+    if(out&&item.exps&&item.exps.length>1){ch.appendChild(document.createTextNode('Batches in store: '));
+      item.exps.forEach(e=>{const b=document.createElement('button');b.type='button';b.textContent=dmy(e);b.onclick=()=>{$('rExp').value=dmy(e);$('rNoExp').checked=false;$('rExp').disabled=false;$('rQty').focus();$('rQty').select();};ch.appendChild(b);});}
+    $('scan').value='';
+    msg('warn',out?'Check the quantity and expiry date, then press Save (Enter).':'Enter the quantity and expiry date, then press Save.');beep(true);$('rQty').focus();$('rQty').select();
+  }
+  function saveRecv(){
+    if(!pendingItem)return;const mode=st.mode;
+    const q=Math.floor(+$('rQty').value);if(!(q>=1)){msg('err','Quantity must be 1 or more.');return;}
+    let exp='',note='';const today=new Date().toISOString().slice(0,10);
+    if(!$('rNoExp').checked){const raw=$('rExp').value.trim();
+      if(raw){exp=parseExpiry(raw);
+        if(!exp){msg('err','Expiry date not understood. Use 31/12/2030 or 12/2030.');beep(false);$('rExp').focus();return;}
+        if(mode==='IN'&&exp<today){msg('err','That expiry date is already in the past - check the box.');beep(false);$('rExp').focus();return;}
+        if(mode==='OUT'&&exp<today)note='  ⚠ EXPIRED item';}
+      else if(mode==='IN'){msg('err','Enter the expiry date, or tick “No expiry date”.');beep(false);$('rExp').focus();return;}
+      else note='  (no expiry date saved)';}
+    snapshot();lastTouched=addLine(list(),mode,pendingItem,q,exp);touched([mode]);
+    msg(note?'warn':'ok',mode+'  '+pendingItem.name+'  ×'+q+(exp?'  exp '+dmy(exp):'')+note);beep(!note);
+    pendingItem=null;$('recv').style.display='none';render();focusScan();nextFromQueue();
+  }
+  function cancelRecv(skip){pendingItem=null;$('recv').style.display='none';$('msg').className='msg';focusScan();if(skip===true)nextFromQueue();else{queue=[];qTotal=0;}}
+  function nextFromQueue(){
+    while(queue.length){const x=queue.shift();pick(x.item,x.qty,'['+(qTotal-queue.length)+'/'+qTotal+']  ');if(pendingItem)return;}
+    if(qTotal>0){msg('ok','Video scan finished: '+qTotal+' item(s) handled.'+qNote);qTotal=0;qNote='';}
+  }
+
+  function showSugg(text){
+    const r=searchItems(items,text,8),s=$('sugg');
+    if(!r.length||/^\d+$/.test(text)){s.style.display='none';return r;}
+    s.innerHTML=r.map(it=>'<div data-ir="'+it.ir+'"><b>'+it.ir+'</b>'+xmlEsc(it.name)+'</div>').join('');s.style.display='block';return r;
+  }
+  function endsWithItems(t){return items.filter(i=>i.ir.endsWith(t));}
+  function showList(r){const s=$('sugg');if(!r.length){s.style.display='none';return;}
+    s.innerHTML=r.slice(0,8).map(it=>'<div data-ir="'+it.ir+'"><b>'+it.ir.slice(0,-4)+'<span style="font-size:1.25em">'+it.ir.slice(-4)+'</span></b>'+xmlEsc(it.name)+'</div>').join('');s.style.display='block';}
+  function submitScan(){
+    const t=$('scan').value.trim();if(!t)return;
+    const it=lookupItem(map,t);
+    if(it){pick(it);return;}
+    if(/^\d{3,5}$/.test(t)){                                   // short code = last digits of the IR number
+      const r=endsWithItems(t);
+      if(r.length===1){pick(r[0]);return;}
+      if(r.length>1){showList(r);msg('warn',r.length+' items end with '+t+' - click the right one.');beep(false);return;}
+      msg('err','No item ends with '+t+'.');beep(false);$('scan').select();return;}
+    if(/^\d{6,}$/.test(t)){msg('err','Code '+t+' is not in the item list. Use “Add it” at the bottom if it is a new item.');beep(false);$('nIr').value=t;document.querySelector('details').open=true;$('scan').select();return;}
+    const r=searchItems(items,t,8);
+    if(r.length===1){pick(r[0]);return;}
+    if(!r.length){msg('err','No item matches “'+t+'”.');beep(false);}else msg('warn','Several items match - click the right one in the list.');
+  }
+  $('scan').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitScan();}});
+  $('scan').addEventListener('input',()=>{const t=$('scan').value.trim();
+    if(/^\d{3,5}$/.test(t))showList(endsWithItems(t));
+    else if(t.length>=3&&!/^\d+$/.test(t))showSugg(t);else $('sugg').style.display='none';});
+  $('sugg').addEventListener('click',e=>{const d=e.target.closest('div[data-ir]');if(d){const it=map.get(d.dataset.ir);if(it)pick(it);}});
+  $('addBtn').addEventListener('click',submitScan);
+  $('rSave').addEventListener('click',saveRecv);$('rCancel').addEventListener('click',()=>cancelRecv(true));
+  ['rQty','rExp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();saveRecv();}if(e.key==='Escape')cancelRecv(true);}));
+  $('rNoExp').addEventListener('change',()=>{$('rExp').disabled=$('rNoExp').checked;});
+  $('askExp').addEventListener('change',()=>{st.askExp=$('askExp').checked;save();render();focusScan();});
+  function setMode(m){st.mode=m;cancelRecv();$('sugg').style.display='none';save();render();focusScan();}
+  $('tabOUT').onclick=()=>setMode('OUT');$('tabIN').onclick=()=>setMode('IN');
+  st.who=englishOnly(st.who,true).text;$('who').value=st.who;
+  $('who').addEventListener('input',()=>{const r=englishOnly($('who').value,true);if(r.removed){$('who').value=r.text;msg('warn','“Prepared by”: English letters only (A-Z, 0-9). Please type your name in English.');}st.who=$('who').value;save();});
+
+  function stamp(){const d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'_'+pad2(d.getHours())+pad2(d.getMinutes());}
+  // ---------------------------------------------------------------- where the Excel file goes
+  const FSAfile=typeof window.showSaveFilePicker==='function';
+  let expDir=null;
+  async function loadExpDir(){try{const h=await idbGet('exportDir');if(h)expDir=h;}catch(e){}renderSave();}
+  function renderSave(){
+    const sm=$('saveMode');sm.value=st.saveMode;
+    [...sm.options].forEach(o=>{if(o.value==='share')o.disabled=typeof navigator.share!=='function';else if(o.value!=='downloads')o.disabled=!(FSA||FSAfile);});
+    $('infoSheet').checked=st.infoSheet;
+    $('expChoose').style.display=st.saveMode==='folder'?'':'none';
+    $('expName').textContent=st.saveMode==='folder'?(expDir?'→ '+expDir.name:'no folder chosen yet'):'';
+    $('copyRow').style.display=ready()?'':'none';$('copySh').checked=st.copyShared;
+  }
+  $('saveMode').onchange=()=>{st.saveMode=$('saveMode').value;save();renderSave();};
+  $('copySh').onchange=()=>{st.copyShared=$('copySh').checked;save();};
+  $('expChoose').onclick=async()=>{try{const h=await window.showDirectoryPicker({mode:'readwrite',id:'ccsexport'});expDir=h;await idbSet('exportDir',h);renderSave();msg('ok','Excel files will be saved in the folder “'+h.name+'”.');}
+    catch(e){if(e.name!=='AbortError')msg('err','Could not use that folder: '+(e.message||e.name));}};
+  function browserDownload(name,bytes){const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+  async function saveExport(name,bytes){
+    let why='';
+    try{
+      if(EMBEDDED&&st.saveMode==='downloads'&&typeof navigator.share==='function'){      // in a preview frame only the share sheet might be allowed
+        try{const f0=new File([bytes],name,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+          if(!navigator.canShare||navigator.canShare({files:[f0]})){await navigator.share({files:[f0],title:name});return{name,where:'the share sheet'};}}
+        catch(e0){if(e0&&e0.name==='AbortError')return{cancelled:true};}
+      }
+      if(st.saveMode==='share'){
+        if(typeof navigator.share!=='function')throw new Error('the share sheet is not available on this page');
+        const file=new File([bytes],name,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        if(navigator.canShare&&!navigator.canShare({files:[file]}))throw new Error('this browser cannot share files');
+        await navigator.share({files:[file],title:name,text:'CCS file '+name});
+        return{name,where:'the share sheet'};
+      }
+      if(st.saveMode==='ask'&&FSAfile){
+        const fh=await window.showSaveFilePicker({suggestedName:name,id:'ccsexportfile',types:[{description:'Excel workbook',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}}]});
+        const w=await fh.createWritable();await w.write(bytes);await w.close();return{name:fh.name,where:'the place you chose'};
+      }
+      if(st.saveMode==='folder'){
+        if(!expDir)throw new Error('no export folder chosen yet');
+        let p=await expDir.queryPermission({mode:'readwrite'});if(p!=='granted')p=await expDir.requestPermission({mode:'readwrite'});
+        if(p!=='granted')throw new Error('permission for the folder was not given');
+        const fh=await expDir.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(bytes);await w.close();return{name,where:'the folder “'+expDir.name+'”'};
+      }
+    }catch(e){if(e&&e.name==='AbortError')return{cancelled:true};why=' ('+(e.message||e.name)+' — so it went to Downloads instead)';}
+    browserDownload(name,bytes);return{name,where:'the browser Downloads folder'+why,blocked:EMBEDDED};
+  }
+  $('xlsx').onclick=async()=>{
+    if(!list().length){msg('err','The list is empty.');return;}
+    const cfg=EXPORT[st.mode],who0=(st.who||'').trim(),typeName=st.mode==='OUT'?'STOCK OUT':'STOCK IN',nowD=new Date();
+    const meta={who:who0,created:nowD,title:typeName,infoName:'Info',info:st.infoSheet?[
+      ['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],
+      ['Type',typeName],['Lines',list().length],['Total units',list().reduce((a,x)=>a+x.qty,0)],['Tool','CCS Scan Helper'],
+      ['Note','Information only. The data to import is on the first sheet (inventory list).']]:null};
+    const bytes=buildXlsx(cfg.sheet,cfg.cols,buildRows(list(),items,$('allItems').checked),meta);
+    const who=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),name=cfg.file+'_'+stamp()+(who?'_'+who:'')+'.xlsx';
+    const r=await saveExport(name,bytes);
+    if(r.cancelled){msg('warn','Save cancelled - nothing was saved.');return;}
+    let opened=null;
+    if(!r.blocked&&r.where!=='the share sheet'&&st.autoOpen&&shareUrl()){try{opened=window.open(shareUrl(),'_blank');if(opened){try{opened.opener=null;}catch(e2){}}}catch(e){opened=null;}}
+    let extra='';
+    if(ready()&&st.copyShared){try{await writeFile('Exports',name,bytes);extra=' A copy was saved in the shared folder (Exports).';lastSave={t:new Date(),what:'Exports/'+name};renderFolder();}catch(e){extra=' Could not save the copy in the shared folder: '+(e.message||e.name);}}
+    const needUpload=shareUrl()&&r.where!=='the share sheet'?(opened?' The shared folder was opened in a new tab: add “'+r.name+'” there (it is in your Downloads).':' Now upload it to the shared folder: tap “📂 Open shared folder”.'):'';
+    const noName=who0?'':'  ⚠ “Prepared by” is empty, so the file does not say who saved it.';
+    if(r.blocked){msg('err','The file was probably NOT saved: this page is open inside the SharePoint/OneDrive preview and the phone blocks downloads there. Open the page directly (see the red note at the top), or tap “Copy for Excel”.');beep(false);return;}
+    msg(r.where.includes('instead')||!who0?'warn':'ok','Saved '+r.name+' in '+r.where+'.'+extra+needUpload+' Import it in CCS, then press “Clear list”.'+noName);
+  };
+  $('infoSheet').onchange=()=>{st.infoSheet=$('infoSheet').checked;save();};
+  // ---------------------------------------------------------------- shared folder link (open it to upload the file)
+  function shareUrl(){return (st.shareLink||defaultLink()||'').trim();}
+  function renderLink(){$('shareLink').value=st.shareLink||defaultLink();$('shareLink').title=st.shareLink?'Your own link (clear the box to go back to the default)':'Default link from this file';$('openShared').style.display=shareUrl()?'':'none';$('autoRow').style.display=shareUrl()?'':'none';$('autoOpen').checked=st.autoOpen;}
+  $('shareLink').addEventListener('change',()=>{const v=$('shareLink').value.trim();
+    if(v&&!/^https:\/\//i.test(v)){msg('err','Paste the full link, starting with https://');renderLink();return;}
+    st.shareLink=(v===defaultLink())?'':v;save();renderLink();msg('ok',!v?(defaultLink()?'Back to the default link.':'Link removed.'):'Link saved on this device.');});
+  $('openShared').onclick=()=>{const u=shareUrl();if(u)window.open(u,'_blank','noopener');};
+  $('autoOpen').onchange=()=>{st.autoOpen=$('autoOpen').checked;save();};
+  renderLink();$('ver').textContent='build '+VERSION+(PWA?' (app)':'');renderCat();renderInstall();if(!items.length)msg('warn','No item list yet. Tap “Import item list…” and choose the Excel list or the setup file from your team.');if(EMBEDDED)$('embedWarn').style.display='block';
+  $('copy').onclick=()=>{
+    const cfg=EXPORT[st.mode],rows=buildRows(list(),items,$('allItems').checked);if(!list().length){msg('err','The list is empty.');return;}
+    const tsv=[cfg.cols.map(c=>c[0]).join('\t')].concat(rows.map(r=>cfg.cols.map(c=>c[2]==='d'&&r[c[1]]?r[c[1]].split('-').reverse().join('/'):(r[c[1]]==null?'':r[c[1]])).join('\t'))).join('\n');
+    const done=()=>{$('copyBox').style.display='none';msg('ok','Copied - paste into Excel (Ctrl+V).');};
+    const manual=why=>{const b=$('copyBox');b.value=tsv;b.style.display='block';b.focus();b.select();msg('warn',why+' The text is shown below: touch and hold it → Select all → Copy, then paste it into Excel.');};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tsv).then(done,()=>manual('The browser blocked automatic copying.'));
+    else manual('Automatic copying is not available here.');
+  };
+  $('undo').onclick=()=>{const s=st.hist.pop();if(!s){msg('warn','Nothing to undo.');return;}const before=JSON.stringify(st.lists);st.lists=JSON.parse(s);lastTouched=null;
+    const ch=['OUT','IN'].filter(m=>JSON.stringify(JSON.parse(before)[m])!==JSON.stringify(st.lists[m]));touched(ch.length?ch:[st.mode]);render();msg('warn','Last change undone.');focusScan();};
+  $('clear').onclick=()=>{if(!list().length)return;if(confirm('Clear the whole '+(st.mode==='OUT'?'STOCK OUT':'STOCK IN')+' list? Make sure you downloaded it first.')){snapshot();st.lists[st.mode]=[];lastTouched=null;touched([st.mode]);render();msg('warn','List cleared (Undo brings it back).');focusScan();}};
+  $('nAdd').onclick=async()=>{const ir=$('nIr').value.trim(),nm=$('nName').value.trim(),un=$('nUnit').value.trim();
+    if(!/^\d{6,12}$/.test(ir)||!nm){msg('err','Enter the IR number (digits) and the item name.');return;}
+    if(englishOnly(nm,false).removed||englishOnly(un,false).removed){msg('err','Item name and unit must be in English letters only (the CCS list is English).');return;}
+    if(map.has(ir)){msg('err','That IR number is already in the list.');return;}
+    st.extra.push([ir,nm,un]);save();rebuild();if(ready()){try{await syncExtra();}catch(e){}}
+    $('nIr').value=$('nName').value=$('nUnit').value='';msg('ok','Item saved: '+nm+'. You can scan it now.');focusScan();};
+  window.addEventListener('load',()=>focusScan());
+
+  // ---------------------------------------------------------------- item list: import / reset
+  function renderCat(){
+    const el=$('catInfo');
+    if(catalog){el.textContent=catalog.items.length+' items — imported from '+catalog.source+' ('+new Date(catalog.at).toLocaleDateString()+')';el.style.color='';}
+    else if(ITEMS.length){el.textContent=ITEMS.length+' items (built into this file)';el.style.color='';}
+    else{el.textContent='none yet — import the Excel list or the setup file';el.style.color='var(--out)';}
+    $('catReset').style.display=(catalog&&ITEMS.length)?'':'none';
+  }
+  $('catImport').onclick=()=>{$('catFile').value='';$('catFile').click();};
+  $('catFile').onchange=async()=>{
+    const f=$('catFile').files&&$('catFile').files[0];if(!f)return;msg('warn','Reading '+f.name+'…');
+    try{
+      let res;
+      if(/\.json$/i.test(f.name)||f.type==='application/json')res=parseSetupJson(await f.text());
+      else{if(typeof DecompressionStream!=='function')throw new Error('this browser is too old to read Excel files - use the setup file (.json)');const r=await parseXlsxCatalog(await f.arrayBuffer());res={items:r.items,uploadLink:''};}
+      if(!res.items.length)throw new Error('no items with a 10-digit ir_number were found');
+      const c={items:res.items,source:f.name,at:Date.now(),uploadLink:res.uploadLink||(catalog&&catalog.uploadLink)||''};
+      try{localStorage.setItem(CAT_KEY,JSON.stringify(c));}catch(e){throw new Error('could not store the list on this phone (storage full?)');}
+      catalog=c;rebuild();renderCat();renderLink();
+      msg('ok','Item list loaded: '+c.items.length+' items.'+(res.uploadLink?' Shared folder link set.':''));beep(true);
+    }catch(e){msg('err','Could not read that file: '+(e.message||e.name));beep(false);}
+  };
+  $('catReset').onclick=()=>{try{localStorage.removeItem(CAT_KEY);}catch(e){}catalog=null;rebuild();renderCat();renderLink();msg('ok','Using the list built into this file.');};
+
+  // ---------------------------------------------------------------- install as an app (PWA)
+  function renderInstall(){
+    const c=$('installCard');if(!PWA||STANDALONE){c.style.display='none';return;}
+    if(deferredInstall){$('installTxt').textContent='Install this as an app on your phone:';$('installBtn').style.display='';c.style.display='block';}
+    else if(IS_IOS){$('installTxt').textContent='To install on iPhone: tap the Share button in Safari, then “Add to Home Screen”.';$('installBtn').style.display='none';c.style.display='block';}
+    else c.style.display='none';
+  }
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;renderInstall();});
+  window.addEventListener('appinstalled',()=>{deferredInstall=null;renderInstall();});
+  $('installBtn').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice;}catch(e){}deferredInstall=null;renderInstall();};
+  if(PWA&&'serviceWorker' in navigator&&/^https?:$/.test(location.protocol))window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});});
+
+  // ---------------------------------------------------------------- phone / laptop camera
+  let camStream=null,camTimer=null,camBusy=false,camHits=new Map(),camLast={v:'',seen:0},camCanvas=null,camCtx=null,camDetector=null,camTorchOn=false,camMsgTimer=null;
+  function camSay(t){$('camMsg').textContent=t;}
+  async function camOpen(){
+    if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){
+      msg('warn','Live camera is not possible in this page (it needs https). Opening the phone camera instead: take a clear photo of the barcode.');
+      $('photoBtn').click();return;}
+    msg('warn','Asking the browser for the camera… tap Allow if a question appears.');
+    let timedOut=false,gum;
+    try{
+      gum=navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+      camStream=await Promise.race([gum,new Promise((_,rej)=>setTimeout(()=>{timedOut=true;rej(Object.assign(new Error('no answer'),{name:'Timeout'}));},8000))]);
+    }catch(e){
+      if(gum)gum.then(st2=>{if(timedOut)st2.getTracks().forEach(t=>t.stop());}).catch(()=>{});
+      msg('err',e.name==='Timeout'?'The browser gave no answer. If this page is open inside another app (Outlook, WhatsApp, Gmail, Files preview…) open it in Chrome itself. Or tap “📸 Photo”.'
+        :(e.name==='NotAllowedError'&&!(location.protocol==='https:'||location.hostname==='localhost'))?'The browser does not allow the live camera for a page opened from a file or from another app, and it cannot even ask you for permission here. Tap “📸 Photo” instead (it opens the phone camera and works), or open the page from an https:// address.'
+        :'Could not start the camera: '+(e.name==='NotAllowedError'?'camera permission was refused (allow it in the browser address bar, or in Android Settings > Apps > Chrome > Permissions > Camera).':e.name==='NotFoundError'?'no camera found.':(e.message||e.name))+' You can still tap “📸 Photo”.');
+      return;}
+    $('cam').style.display='block';camSay('Hold the barcode inside the frame');camHits=new Map();camLast={v:'',seen:0};camTorchOn=false;
+    const v=$('camVideo');v.srcObject=camStream;try{await v.play();}catch(e){}
+    try{const tr=camStream.getVideoTracks()[0],caps=tr.getCapabilities?tr.getCapabilities():{};$('camTorch').style.display=caps.torch?'':'none';}catch(e){}
+    camDetector=null;try{if('BarcodeDetector' in window){const f=await BarcodeDetector.getSupportedFormats();if(f.includes('code_128'))camDetector=new BarcodeDetector({formats:['code_128']});}}catch(e){camDetector=null;}
+    camLoop();
+  }
+  function camClose(){clearTimeout(camTimer);camTimer=null;if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}$('cam').style.display='none';$('camVideo').srcObject=null;}
+  async function camFrame(){
+    const v=$('camVideo');if(!v.videoWidth)return null;
+    if(camDetector){try{const r=await camDetector.detect(v);if(r.length&&r[0].rawValue)return r[0].rawValue;}catch(e){}}
+    const sc=Math.min(1,1280/v.videoWidth),w=Math.round(v.videoWidth*sc),h=Math.round(v.videoHeight*sc);
+    if(!camCanvas){camCanvas=document.createElement('canvas');camCtx=camCanvas.getContext('2d',{willReadFrequently:true});}
+    if(camCanvas.width!==w||camCanvas.height!==h){camCanvas.width=w;camCanvas.height=h;}
+    camCtx.drawImage(v,0,0,w,h);const d=camCtx.getImageData(0,0,w,h).data,g=new Uint8Array(w*h);
+    for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(d[j]*77+d[j+1]*150+d[j+2]*29)>>8;
+    const now=Date.now();let found=null;
+    for(const [val,c] of c128Scan(g,w,h,36)){const a=(camHits.get(val)||[]).filter(t=>now-t<1500);for(let k=0;k<c;k++)a.push(now);camHits.set(val,a);if(a.length>=2)found=val;}
+    return found;
+  }
+  async function camLoop(){
+    if(!camStream)return;
+    if(!camBusy){camBusy=true;try{const code=await camFrame();if(code)camGot(code);}catch(e){}camBusy=false;}
+    if(camStream)camTimer=setTimeout(camLoop,80);
+  }
+  function camGot(code){
+    const now=Date.now();
+    if(code===camLast.v&&now-camLast.seen<900){camLast.seen=now;return;}   // same barcode still in view: count it once
+    camLast={v:code,seen:now};
+    try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
+    const stay=st.mode==='OUT'&&!st.askExp;                               // fast mode: keep scanning
+    if(!stay)camClose();
+    $('scan').value=code;submitScan();
+    if(stay){camSay($('msg').textContent||code);}
+  }
+
+  // ---------------------------------------------------------------- photo of the barcode (phone camera app)
+  function loadImage(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{res({im,url});};im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('not an image'));};im.src=url;});}
+  async function decodePhoto(file){
+    const {im,url}=await loadImage(file);
+    try{
+      const W0=im.naturalWidth||im.width,H0=im.naturalHeight||im.height,seen=new Set(),cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
+      for(const tw of [1600,1000,2400,700,3200,99999]){            // last one = full resolution, for small/far barcodes
+        const w=Math.min(tw,W0);if(seen.has(w))continue;seen.add(w);const h=Math.round(H0*w/W0);cv.width=w;cv.height=h;cx.drawImage(im,0,0,w,h);
+        const d=cx.getImageData(0,0,w,h).data,g=new Uint8Array(w*h);for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(d[j]*77+d[j+1]*150+d[j+2]*29)>>8;
+        let best=null,bc=0;for(const [v,c] of c128Scan(g,w,h,60)){if(c>bc){best=v;bc=c;}}
+        if(best)return best;
+      }
+      return null;
+    }finally{URL.revokeObjectURL(url);}
+  }
+  $('photoBtn').onclick=()=>{$('photoIn').value='';$('photoIn').click();};
+  $('photoIn').onchange=async()=>{
+    const f=$('photoIn').files&&$('photoIn').files[0];if(!f)return;msg('warn','Reading the photo…');
+    try{const code=await decodePhoto(f);
+      if(!code){msg('err','No barcode found in the photo. Take it again: closer, in good light, the whole barcode in the picture and in focus.');beep(false);return;}
+      try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
+      $('scan').value=code;submitScan();
+    }catch(e){msg('err','Could not read that photo: '+(e.message||e.name));}
+  };
+
+  // ---------------------------------------------------------------- video of the barcodes (phone camera app)
+  function waitSeek(v,t){return new Promise(res=>{let done=false;const f=()=>{if(!done){done=true;v.removeEventListener('seeked',f);res();}};v.addEventListener('seeked',f);setTimeout(f,2500);v.currentTime=t;});}
+  async function decodeVideo(file,progress){
+    const url=URL.createObjectURL(file),v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.src=url;
+    try{
+      await new Promise((res,rej)=>{v.onloadedmetadata=res;v.onerror=()=>rej(new Error('this video cannot be read'));setTimeout(()=>rej(new Error('the video took too long to load')),20000);});
+      const dur=Math.min(v.duration,90);if(!isFinite(dur)||dur<=0)throw new Error('the video is empty');
+      const sc=Math.min(1,1280/v.videoWidth),w=Math.round(v.videoWidth*sc),h=Math.round(v.videoHeight*sc);
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d',{willReadFrequently:true}),g=new Uint8Array(w*h);
+      const step=dur>40?0.3:0.2,dets=[];
+      for(let t=0.02;t<dur;t+=step){
+        await waitSeek(v,t);cx.drawImage(v,0,0,w,h);const d=cx.getImageData(0,0,w,h).data;
+        for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(d[j]*77+d[j+1]*150+d[j+2]*29)>>8;
+        let best=null,bc=0;for(const [val,c] of c128Scan(g,w,h,30)){if(c>bc){best=val;bc=c;}}
+        if(best)dets.push({t,code:best,c:bc});
+        if(progress)progress(Math.min(99,Math.round(t/dur*100)),dets.length);
+      }
+      return groupDetections(dets);
+    }finally{URL.revokeObjectURL(url);v.removeAttribute('src');try{v.load();}catch(e){}}
+  }
+  $('videoBtn').onclick=()=>{$('videoIn').value='';$('videoIn').click();};
+  $('videoIn').onchange=async()=>{
+    const f=$('videoIn').files&&$('videoIn').files[0];if(!f)return;msg('warn','Reading the video… 0%');
+    try{
+      const res=await decodeVideo(f,(p,n)=>msg('warn','Reading the video… '+p+'%  ('+n+' frames with a barcode)'));
+      if(!res.length){msg('err','No barcode found in the video. Record again: hold each barcode about 2 seconds, close enough, steady, in good light.');beep(false);return;}
+      const known=[],unknown=[];res.forEach(r=>{const it=lookupItem(map,r.code);if(it)known.push({item:it,qty:r.qty});else unknown.push(r.code);});
+      qNote=unknown.length?'  Not in the item list: '+unknown.join(', ')+'.':'';
+      if(!known.length){msg('err','Barcodes were read but none is in the item list:'+qNote);beep(false);return;}
+      queue=known;qTotal=known.length;try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
+      nextFromQueue();
+      if(qTotal>0&&qNote)$('msg').textContent+=qNote;
+    }catch(e){msg('err','Could not read the video: '+(e.message||e.name));}
+  };
+  $('camBtn').onclick=camOpen;$('camClose').onclick=camClose;
+  $('camTorch').onclick=async()=>{try{camTorchOn=!camTorchOn;await camStream.getVideoTracks()[0].applyConstraints({advanced:[{torch:camTorchOn}]});}catch(e){camSay('The light is not available on this camera.');}};
+  render();renderConflicts();initFolder();loadExpDir();
+})();
+</script>
+</body>
+</html>
