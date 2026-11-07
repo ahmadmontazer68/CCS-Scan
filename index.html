@@ -91,12 +91,35 @@ select{padding:8px 10px;border:2px solid var(--line);border-radius:8px;backgroun
 .conf{margin-bottom:12px}
 .conf .msg{display:block;margin-top:8px}
 .conf button{margin:6px 8px 0 0;padding:7px 12px}
+header{padding:8px 14px}
+header .who{margin:0;gap:8px;font-size:14px;font-weight:600;white-space:nowrap}
+select{max-width:100%}
+.bar select{flex:1 1 230px;min-width:0}
+header input{width:240px;max-width:62vw;font-size:16px;padding:7px 10px}
+.scanline{display:flex;align-items:stretch}
+.scanline #qtyBox{width:74px;margin-right:8px}
+.scanline #qtyBox input{height:100%;padding:6px 4px;text-align:center}
+.scanline #scan{flex:1;min-width:0;border-radius:8px 0 0 8px;border-right-width:0}
+.scanline #addBtn{border-radius:0 8px 8px 0;padding:0 24px;font-size:17px}
+.camrow{display:flex;gap:8px;margin-top:8px}
+.camrow .btn{flex:1;padding:10px 6px}
+.grid{grid-template-columns:150px 1.6fr auto}
+table{font-size:13px}
+th{font-size:11px;padding:4px 6px}
+td{padding:5px 6px}
+.q{gap:3px}
+.q button{width:26px;height:26px;font-size:14px}
+.q input{width:52px;padding:3px;font-size:14px}
+#listWrap input.exp{width:106px;padding:4px 6px;font-size:13px}
+.u{font-size:11px;font-weight:600;color:var(--muted);margin-left:4px;white-space:nowrap}
+.u.odd{color:var(--warn);background:var(--warnbg);border-radius:4px;padding:1px 5px}
+#camGuide{left:10%;right:10%;top:36%;height:22%;box-shadow:0 0 0 9999px rgba(0,0,0,.84)}
+#camGuide::after{content:'';position:absolute;left:5%;right:5%;top:50%;height:2px;background:rgba(255,70,70,.85)}
 </style>
 </head>
 <body>
 <header>
-  <h1>CCS Scan Helper</h1><span class="sub">scan &rarr; Excel file in the CCS template format &middot; nothing to install</span><span class="sub" id="ver" style="opacity:.6"></span>
-  <div class="who"><span>Prepared by</span><input id="who" type="text" placeholder="name"></div>
+  <div class="who"><span>Prepared by</span><input id="who" type="text" placeholder="your name (English)" autocomplete="off"></div>
 </header>
 <div id="cam">
   <video id="camVideo" playsinline muted autoplay></video><div id="camGuide"></div>
@@ -114,7 +137,7 @@ select{padding:8px 10px;border:2px solid var(--line);border-radius:8px;backgroun
       </ol>
       <div class="note">Until then use “Copy for Excel” (paste into an Excel or Teams chat) or the “Phone: share sheet” option.</div></div>
   </div>
-  <div class="card folder" id="folderCard">
+  <div class="card folder" id="folderCard" style="display:none">
     <div class="st" id="folderStatus"></div>
     <button class="btn alt" id="fChoose" type="button">Choose shared folder</button>
     <button class="btn" id="fAllow" type="button" style="display:none">Allow access again</button>
@@ -122,24 +145,26 @@ select{padding:8px 10px;border:2px solid var(--line);border-radius:8px;backgroun
     <button class="btn alt" id="fTest" type="button" style="display:none">Test folder</button>
     <button class="btn alt" id="fForget" type="button" style="display:none">Disconnect</button>
   </div>
-  <div class="conf" id="conf"></div>
+  <div class="conf" id="conf" style="display:none"></div>
   <div class="tabs">
     <button class="tab out" id="tabOUT" type="button">STOCK OUT <small id="cOUT">0 lines</small></button>
     <button class="tab in" id="tabIN" type="button">STOCK IN <small id="cIN">0 lines</small></button>
   </div>
 
   <div class="card">
-    <div class="scanrow">
-      <div class="grow"><label for="scan" id="scanLabel">Scan barcode (or type part of the item name)</label>
-        <input id="scan" type="text" autocomplete="off" autofocus></div>
-      <div style="width:90px" id="qtyBox"><label for="qty">Qty / scan</label><input id="qty" type="number" min="1" value="1"></div>
+    <label for="scan" id="scanLabel">Scan barcode (or type part of the item name)</label>
+    <div class="scanline">
+      <div id="qtyBox"><input id="qty" type="number" min="1" value="1" aria-label="Quantity per scan" title="Quantity per scan"></div>
+      <input id="scan" type="text" autocomplete="off" autofocus>
       <button class="btn" id="addBtn" type="button">Add</button>
+    </div>
+    <div class="camrow">
       <button class="btn alt" id="camBtn" type="button">📷 Camera</button>
       <button class="btn alt" id="photoBtn" type="button">📸 Photo</button>
       <button class="btn alt" id="videoBtn" type="button" title="Record a short video while you point at the barcodes one after another">🎥 Video</button>
-      <input id="videoIn" type="file" accept="video/*" capture="environment" style="display:none">
-      <input id="photoIn" type="file" accept="image/*" capture="environment" style="display:none">
     </div>
+    <input id="videoIn" type="file" accept="video/*" capture="environment" style="display:none">
+    <input id="photoIn" type="file" accept="image/*" capture="environment" style="display:none">
     <div id="sugg"></div>
     <div id="msg" class="msg"></div>
   </div>
@@ -147,7 +172,7 @@ select{padding:8px 10px;border:2px solid var(--line);border-radius:8px;backgroun
   <div class="card" id="recv">
     <div class="name" id="recvName"></div>
     <div class="grid">
-      <div><label for="rQty" id="rQtyLbl">Qty received</label><input id="rQty" type="number" min="1" value="1"></div>
+      <div><label for="rQty" id="rQtyLbl">Qty received</label><div class="q" style="gap:6px"><input id="rQty" type="number" min="1" value="1" style="width:96px;font-size:17px;padding:8px"><span id="rUnit" class="u" style="font-size:15px"></span></div><div class="note" id="rUnitNote"></div></div>
       <div><label for="rExp">Expiry (31/12/2030 or 12/2030)</label><input id="rExp" type="text" placeholder="DD/MM/YYYY" autocomplete="off">
         <label class="chk"><input type="checkbox" id="rNoExp"> No expiry date on this item</label><div id="chips"></div></div>
       <div style="display:flex;gap:6px"><button class="btn in" id="rSave" type="button">Save</button><button class="btn alt" id="rCancel" type="button">Cancel</button></div>
@@ -175,7 +200,7 @@ select{padding:8px 10px;border:2px solid var(--line);border-radius:8px;backgroun
     </div>
     <div class="bar" style="margin-bottom:8px">
       <button class="btn" id="xlsx" type="button">&#11015; Save Excel (.xlsx)</button>
-      <button class="btn alt" id="copy" type="button">Copy for Excel</button>
+      <button class="btn alt" id="copy" type="button" style="display:none">Copy for Excel</button>
       <button class="btn alt" id="undo" type="button">&#8630; Undo</button>
       <button class="btn danger" id="clear" type="button">Clear list</button>
       <label class="chk" style="margin:0 0 0 6px"><input type="checkbox" id="snd" checked> sound</label>
@@ -211,6 +236,7 @@ select{padding:8px 10px;border:2px solid var(--line);border-radius:8px;backgroun
       <div class="note">Saved on this computer only. <span id="extraInfo"></span></div>
     </details>
   </div>
+  <div class="note" style="text-align:center;margin:2px 0 0"><span id="ver"></span></div>
 </main>
 
 <script>
@@ -222,7 +248,8 @@ const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['E
 // DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
 // the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
 const UPLOAD_LINK = '';
-const VERSION = '2026-11-06.5';          // shown in the page header, so you can see which copy of the file you are running
+const VERSION = '2026-11-07.1';
+const FOLDER_FEATURE = false;          // shared-folder sync is switched off (not usable on the hospital PCs); the code is kept          // shown in the page header, so you can see which copy of the file you are running
 const EXPORT = {
   OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
   IN:  { sheet: 'inventory list', file: 'CCS_StockIn',  cols: TEMPLATE_COLS }
@@ -550,7 +577,9 @@ function c128Scan(gray, w, h, K) {
   function englishOnly(t,strict){const re=strict?/[^A-Za-z0-9 ._-]/g:/[^\x20-\x7E]/g;const out=String(t||'').replace(re,'');return{text:out,removed:out!==String(t||'')};}
   const EMBEDDED=(()=>{try{return window.top!==window.self;}catch(e){return true;}})();
   const TOUCH=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
-  function focusScan(){if(!TOUCH)$('scan').focus();}
+  function focusScan(){if(camStream)return;$('scan').focus();}          // the cursor always returns to the scan field (not while the camera is open)
+  const unitOf=ir=>{const it=map.get(ir);return it&&it.unit?it.unit:'';};
+  const unitBadge=u=>u?'<span class="u'+(u!=='EAC'?' odd':'')+'" title="Count in '+xmlEsc(u)+'">'+xmlEsc(u)+'</span>':'';
   const shortLoc=l=>(l||'').split(';')[0].trim();
 
   // ---------------------------------------------------------------- shared folder
@@ -665,7 +694,7 @@ function c128Scan(gray, w, h, K) {
     l.slice().reverse().forEach((x,ri)=>{const i=l.length-1-ri;
       h+='<tr class="'+(x===lastTouched?'new':'')+'"><td class="num">'+(i+1)+'</td><td class="num">'+x.ir+'</td><td>'+xmlEsc(x.name)+'</td>'+
         (showExp?'<td><input class="exp" type="text" inputmode="text" autocomplete="off" placeholder="no expiry" title="Edit the expiry date: 31/12/2030 or 12/2030. Empty = no expiry" value="'+(x.expiry?dmy(x.expiry):'')+'" data-a="e" data-i="'+i+'"></td>':'')+
-        '<td><div class="q"><button data-a="m" data-i="'+i+'">−</button><input type="number" min="1" value="'+x.qty+'" data-a="q" data-i="'+i+'"><button data-a="p" data-i="'+i+'">+</button></div></td>'+
+        '<td><div class="q"><button data-a="m" data-i="'+i+'">−</button><input type="number" min="1" value="'+x.qty+'" data-a="q" data-i="'+i+'"><button data-a="p" data-i="'+i+'">+</button>'+unitBadge(unitOf(x.ir))+'</div></td>'+
         '<td><button class="x" title="Remove" data-a="d" data-i="'+i+'">✕</button></td></tr>';});
     $('listWrap').innerHTML=h+'</tbody></table>';
     $('tot').textContent=l.length+' lines · '+l.reduce((a,x)=>a+x.qty,0)+' units';
@@ -697,13 +726,15 @@ function c128Scan(gray, w, h, K) {
     if(st.mode==='OUT'&&!st.askExp){
       const q=qtyHint||Math.max(1,Math.floor(+$('qty').value)||1);snapshot();
       lastTouched=addLine(list(),'OUT',item,q,'');touched(['OUT']);render();
-      msg('ok','OUT  '+item.name+'  ×'+q+'  → total '+lastTouched.qty+(item.loc?'   ('+shortLoc(item.loc)+')':''));beep(true);
+      msg('ok','OUT  '+item.name+'  ×'+q+(item.unit?' '+item.unit:'')+'  → total '+lastTouched.qty+(item.loc?'   ('+shortLoc(item.loc)+')':''));beep(true);
       $('qty').value=1;$('scan').value='';focusScan();return;
     }
     const out=st.mode==='OUT';
     pendingItem=item;$('recv').className=out?'out':'';$('recv').style.display='block';
     $('recvName').textContent=(tag||'')+(out?'OUT: ':'IN: ')+item.name+'  ('+item.ir+')'+(item.loc?'  ·  '+shortLoc(item.loc):'');
-    $('rQtyLbl').textContent=out?'Qty taken':'Qty received';$('rSave').className='btn'+(out?'':' in');
+    const un=item.unit||'';$('rQtyLbl').textContent=(out?'Qty taken':'Qty received')+(un?' ('+un+')':'');$('rSave').className='btn'+(out?'':' in');
+    $('rUnit').textContent=un;$('rUnit').className='u'+(un&&un!=='EAC'?' odd':'');$('rUnit').style.fontSize='15px';
+    $('rUnitNote').textContent=(un&&un!=='EAC')?'This item is counted in '+un+' - not in single pieces.':'';
     const prev=list().filter(x=>x.ir===item.ir).pop();
     let pre=prev&&prev.expiry?prev.expiry:(out&&item.exps&&item.exps.length?item.exps[0]:'');
     $('rQty').value=qtyHint||1;$('rExp').value=dmy(pre);$('rNoExp').checked=false;$('rExp').disabled=false;
@@ -725,7 +756,7 @@ function c128Scan(gray, w, h, K) {
       else if(mode==='IN'){msg('err','Enter the expiry date, or tick “No expiry date”.');beep(false);$('rExp').focus();return;}
       else note='  (no expiry date saved)';}
     snapshot();lastTouched=addLine(list(),mode,pendingItem,q,exp);touched([mode]);
-    msg(note?'warn':'ok',mode+'  '+pendingItem.name+'  ×'+q+(exp?'  exp '+dmy(exp):'')+note);beep(!note);
+    msg(note?'warn':'ok',mode+'  '+pendingItem.name+'  ×'+q+(pendingItem.unit?' '+pendingItem.unit:'')+(exp?'  exp '+dmy(exp):'')+note);beep(!note);
     pendingItem=null;$('recv').style.display='none';render();focusScan();nextFromQueue();
   }
   function cancelRecv(skip){pendingItem=null;$('recv').style.display='none';$('msg').className='msg';focusScan();if(skip===true)nextFromQueue();else{queue=[];qTotal=0;}}
@@ -761,7 +792,7 @@ function c128Scan(gray, w, h, K) {
     if(/^\d{3,5}$/.test(t))showList(endsWithItems(t));
     else if(t.length>=3&&!/^\d+$/.test(t))showSugg(t);else $('sugg').style.display='none';});
   $('sugg').addEventListener('click',e=>{const d=e.target.closest('div[data-ir]');if(d){const it=map.get(d.dataset.ir);if(it)pick(it);}});
-  $('addBtn').addEventListener('click',submitScan);
+  $('addBtn').addEventListener('click',()=>{submitScan();if(!pendingItem)focusScan();});
   $('rSave').addEventListener('click',saveRecv);$('rCancel').addEventListener('click',()=>cancelRecv(true));
   ['rQty','rExp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();saveRecv();}if(e.key==='Escape')cancelRecv(true);}));
   $('rNoExp').addEventListener('change',()=>{$('rExp').disabled=$('rNoExp').checked;});
@@ -847,7 +878,7 @@ function c128Scan(gray, w, h, K) {
     st.shareLink=(v===defaultLink())?'':v;save();renderLink();msg('ok',!v?(defaultLink()?'Back to the default link.':'Link removed.'):'Link saved on this device.');});
   $('openShared').onclick=()=>{const u=shareUrl();if(u)window.open(u,'_blank','noopener');};
   $('autoOpen').onchange=()=>{st.autoOpen=$('autoOpen').checked;save();};
-  renderLink();$('ver').textContent='build '+VERSION+(PWA?' (app)':'');renderCat();renderInstall();if(!items.length)msg('warn','No item list yet. Tap “Import item list…” and choose the Excel list or the setup file from your team.');if(EMBEDDED)$('embedWarn').style.display='block';
+  renderLink();$('ver').textContent='build '+VERSION+(PWA?' (app)':'');renderCat();renderInstall();if(!items.length)msg('warn','No item list yet. Tap “Import item list…” and choose the Excel list or the setup file from your team.');if(EMBEDDED){$('embedWarn').style.display='block';$('copy').style.display='';}
   $('copy').onclick=()=>{
     const cfg=EXPORT[st.mode],rows=buildRows(list(),items,$('allItems').checked);if(!list().length){msg('err','The list is empty.');return;}
     const tsv=[cfg.cols.map(c=>c[0]).join('\t')].concat(rows.map(r=>cfg.cols.map(c=>c[2]==='d'&&r[c[1]]?r[c[1]].split('-').reverse().join('/'):(r[c[1]]==null?'':r[c[1]])).join('\t'))).join('\n');
@@ -879,14 +910,15 @@ function c128Scan(gray, w, h, K) {
   $('catFile').onchange=async()=>{
     const f=$('catFile').files&&$('catFile').files[0];if(!f)return;msg('warn','Reading '+f.name+'…');
     try{
-      let res;
-      if(/\.json$/i.test(f.name)||f.type==='application/json')res=parseSetupJson(await f.text());
+      let res,isJson=false;
+      if(/\.json$/i.test(f.name)||f.type==='application/json'){res=parseSetupJson(await f.text());isJson=true;}
       else{if(typeof DecompressionStream!=='function')throw new Error('this browser is too old to read Excel files - use the setup file (.json)');const r=await parseXlsxCatalog(await f.arrayBuffer());res={items:r.items,uploadLink:''};}
       if(!res.items.length)throw new Error('no items with a 10-digit ir_number were found');
-      const c={items:res.items,source:f.name,at:Date.now(),uploadLink:res.uploadLink||(catalog&&catalog.uploadLink)||''};
+      const oldLink=(catalog&&catalog.uploadLink)||'';
+      const c={items:res.items,source:f.name,at:Date.now(),uploadLink:isJson?res.uploadLink:oldLink};
       try{localStorage.setItem(CAT_KEY,JSON.stringify(c));}catch(e){throw new Error('could not store the list on this phone (storage full?)');}
       catalog=c;rebuild();renderCat();renderLink();
-      msg('ok','Item list loaded: '+c.items.length+' items.'+(res.uploadLink?' Shared folder link set.':''));beep(true);
+      msg('ok','Item list loaded: '+c.items.length+' items.'+(isJson&&res.uploadLink?' Shared folder link set.':(isJson&&oldLink?' The old shared folder link was removed.':'')));beep(true);
     }catch(e){msg('err','Could not read that file: '+(e.message||e.name));beep(false);}
   };
   $('catReset').onclick=()=>{try{localStorage.removeItem(CAT_KEY);}catch(e){}catalog=null;rebuild();renderCat();renderLink();msg('ok','Using the list built into this file.');};
@@ -921,23 +953,32 @@ function c128Scan(gray, w, h, K) {
         :(e.name==='NotAllowedError'&&!(location.protocol==='https:'||location.hostname==='localhost'))?'The browser does not allow the live camera for a page opened from a file or from another app, and it cannot even ask you for permission here. Tap “📸 Photo” instead (it opens the phone camera and works), or open the page from an https:// address.'
         :'Could not start the camera: '+(e.name==='NotAllowedError'?'camera permission was refused (allow it in the browser address bar, or in Android Settings > Apps > Chrome > Permissions > Camera).':e.name==='NotFoundError'?'no camera found.':(e.message||e.name))+' You can still tap “📸 Photo”.');
       return;}
-    $('cam').style.display='block';camSay('Hold the barcode inside the frame');camHits=new Map();camLast={v:'',seen:0};camTorchOn=false;
+    $('cam').style.display='block';camSay('Put ONE barcode inside the frame - everything outside it is ignored');camHits=new Map();camLast={v:'',seen:0};camTorchOn=false;
     const v=$('camVideo');v.srcObject=camStream;try{await v.play();}catch(e){}
     try{const tr=camStream.getVideoTracks()[0],caps=tr.getCapabilities?tr.getCapabilities():{};$('camTorch').style.display=caps.torch?'':'none';}catch(e){}
     camDetector=null;try{if('BarcodeDetector' in window){const f=await BarcodeDetector.getSupportedFormats();if(f.includes('code_128'))camDetector=new BarcodeDetector({formats:['code_128']});}}catch(e){camDetector=null;}
     camLoop();
   }
   function camClose(){clearTimeout(camTimer);camTimer=null;if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}$('cam').style.display='none';$('camVideo').srcObject=null;}
+  function camRoi(){          // the area inside the white frame, in video pixels (the video is shown with object-fit: cover)
+    const v=$('camVideo'),g=$('camGuide'),vr=v.getBoundingClientRect(),gr=g.getBoundingClientRect(),vw=v.videoWidth,vh=v.videoHeight;
+    if(!vw||!vr.width)return null;
+    const scale=Math.max(vr.width/vw,vr.height/vh),offX=(vr.width-vw*scale)/2,offY=(vr.height-vh*scale)/2,inset=4;
+    let sx=(gr.left+inset-vr.left-offX)/scale,sy=(gr.top+inset-vr.top-offY)/scale,sw=(gr.width-2*inset)/scale,sh=(gr.height-2*inset)/scale;
+    sx=Math.max(0,sx);sy=Math.max(0,sy);sw=Math.min(vw-sx,sw);sh=Math.min(vh-sy,sh);
+    return(sw>24&&sh>24)?{sx,sy,sw,sh}:null;
+  }
   async function camFrame(){
-    const v=$('camVideo');if(!v.videoWidth)return null;
-    if(camDetector){try{const r=await camDetector.detect(v);if(r.length&&r[0].rawValue)return r[0].rawValue;}catch(e){}}
-    const sc=Math.min(1,1280/v.videoWidth),w=Math.round(v.videoWidth*sc),h=Math.round(v.videoHeight*sc);
+    const v=$('camVideo'),roi=camRoi();if(!roi)return null;
+    const sc=Math.min(1,1280/roi.sw),w=Math.max(16,Math.round(roi.sw*sc)),h=Math.max(16,Math.round(roi.sh*sc));
     if(!camCanvas){camCanvas=document.createElement('canvas');camCtx=camCanvas.getContext('2d',{willReadFrequently:true});}
     if(camCanvas.width!==w||camCanvas.height!==h){camCanvas.width=w;camCanvas.height=h;}
-    camCtx.drawImage(v,0,0,w,h);const d=camCtx.getImageData(0,0,w,h).data,g=new Uint8Array(w*h);
+    camCtx.drawImage(v,roi.sx,roi.sy,roi.sw,roi.sh,0,0,w,h);                       // only this small area is looked at
+    if(camDetector){try{const r=await camDetector.detect(camCanvas);if(r.length&&r[0].rawValue)return r[0].rawValue;}catch(e){}}
+    const d=camCtx.getImageData(0,0,w,h).data,g=new Uint8Array(w*h);
     for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(d[j]*77+d[j+1]*150+d[j+2]*29)>>8;
     const now=Date.now();let found=null;
-    for(const [val,c] of c128Scan(g,w,h,36)){const a=(camHits.get(val)||[]).filter(t=>now-t<1500);for(let k=0;k<c;k++)a.push(now);camHits.set(val,a);if(a.length>=2)found=val;}
+    for(const [val,c] of c128Scan(g,w,h,24)){const a=(camHits.get(val)||[]).filter(t=>now-t<1500);for(let k=0;k<c;k++)a.push(now);camHits.set(val,a);if(a.length>=2)found=val;}
     return found;
   }
   async function camLoop(){
@@ -1015,9 +1056,9 @@ function c128Scan(gray, w, h, K) {
       if(qTotal>0&&qNote)$('msg').textContent+=qNote;
     }catch(e){msg('err','Could not read the video: '+(e.message||e.name));}
   };
-  $('camBtn').onclick=camOpen;$('camClose').onclick=camClose;
+  $('camBtn').onclick=camOpen;$('camClose').onclick=()=>{camClose();focusScan();};
   $('camTorch').onclick=async()=>{try{camTorchOn=!camTorchOn;await camStream.getVideoTracks()[0].applyConstraints({advanced:[{torch:camTorchOn}]});}catch(e){camSay('The light is not available on this camera.');}};
-  render();renderConflicts();initFolder();loadExpDir();
+  render();renderConflicts();if(FOLDER_FEATURE)initFolder();loadExpDir();
 })();
 </script>
 </body>
