@@ -29,6 +29,7 @@ main{max-width:1100px;margin:16px auto;padding:0 14px 60px}
 .tab{flex:1;padding:14px;border:2px solid var(--line);background:var(--card);border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;color:var(--ink)}
 .tab small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
 .tab.on.out{border-color:var(--out);background:var(--outbg);color:var(--out)}
+.tab.on.sh{border-color:var(--blue2);background:var(--card);color:var(--blue2)}
 .tab.on.in{border-color:var(--in);background:var(--inbg);color:var(--in)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
 .scanrow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
@@ -58,6 +59,12 @@ button{font:inherit;cursor:pointer}
 .grid{display:grid;grid-template-columns:90px 1.6fr auto;gap:10px;align-items:end}
 @media(max-width:700px){.grid{grid-template-columns:1fr 1fr}}
 .chk{display:flex;gap:6px;align-items:center;font-size:13px;margin-top:6px;color:var(--ink)}
+#shList{overflow-x:auto}
+#shList input.sq{width:74px;padding:6px 8px;font-size:15px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+#shList tr.off td{opacity:.45}
+.from{font-size:11px;color:var(--muted)}
+.shrow{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.shbox label.l{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
 table{width:100%;border-collapse:collapse}
 th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:2px solid var(--line)}
 td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
@@ -149,7 +156,9 @@ td{padding:5px 6px}
   <div class="tabs">
     <button class="tab out" id="tabOUT" type="button">STOCK OUT <small id="cOUT">0 lines</small></button>
     <button class="tab in" id="tabIN" type="button">STOCK IN <small id="cIN">0 lines</small></button>
+    <button class="tab sh" id="tabSH" type="button">SHARED <small>all phones</small></button>
   </div>
+  <div id="scanView">
 
   <div class="card">
     <label for="scan" id="scanLabel">Scan barcode (or type part of the item name)</label>
@@ -203,16 +212,59 @@ td{padding:5px 6px}
       <button class="btn alt" id="copy" type="button" style="display:none">Copy for Excel</button>
       <button class="btn alt" id="undo" type="button">&#8630; Undo</button>
       <button class="btn danger" id="clear" type="button">Clear list</button>
+      <button class="btn alt" id="sendFile" type="button" title="Backup: send your lists as a small file (Teams / WhatsApp) to the charge nurse">&#128228; Send file</button>
       <label class="chk" style="margin:0 0 0 6px"><input type="checkbox" id="snd" checked> sound</label>
       <label class="chk" style="margin:0 0 0 6px" title="Each STOCK OUT scan asks for the expiry date, like the paper list"><input type="checkbox" id="askExp" checked> ask expiry on STOCK OUT</label>
       <label class="chk" style="margin:0 0 0 6px" title="Whole item list like the CCS template, Qty filled only for scanned items"><input type="checkbox" id="allItems"> export all items</label>
       <label class="chk" style="margin:0 0 0 6px" title="Adds a second sheet “Info” (Prepared by, date, counts). The file author is always set to your name. Turn off if CCS refuses the file."><input type="checkbox" id="infoSheet" checked> name sheet in file</label>
-      <span class="tot" id="tot"></span>
+      <span class="tot" id="tot"></span><span class="tot" id="shBadge"></span>
     </div>
     <textarea id="copyBox" readonly style="display:none;width:100%;height:140px;font:13px monospace;margin-bottom:8px;border:2px solid var(--blue2);border-radius:8px;background:var(--card);color:var(--ink);padding:8px"></textarea>
     <div id="listWrap"></div>
     <div class="note">The list is kept on this computer even if you close the page. Save the Excel file (same columns as the CCS template), then use
       <b>Import Stock Out from Excel</b> / <b>Import Stock In from Excel</b> in CCS.</div>
+  </div>
+  </div><!-- /scanView -->
+
+  <div id="sharedView" style="display:none">
+    <div class="card">
+      <div class="bar" style="margin-bottom:6px">
+        <b>Combined list from all phones</b>
+        <label class="chk" style="margin:0 0 0 6px"><input type="radio" name="shMode" value="OUT" checked> STOCK OUT</label>
+        <label class="chk" style="margin:0"><input type="radio" name="shMode" value="IN"> STOCK IN</label>
+        <select id="shSource" style="padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-size:15px">
+          <option value="live">Live (shared list)</option><option value="files">From files</option></select>
+        <button class="btn alt" id="shRefresh" type="button" style="padding:8px 14px">&#8635; Refresh</button>
+      </div>
+      <div class="note" id="shInfo" style="margin:0 0 8px"></div>
+      <div id="shList"></div>
+      <div class="bar" style="margin-top:10px">
+        <button class="btn" id="shSave" type="button">&#11015; Save Excel (.xlsx)</button>
+        <button class="btn alt" id="shMark" type="button">Mark as imported</button>
+        <button class="btn danger" id="shDiscard" type="button" title="Unchecked lines are thrown away (they will not show again)">Discard unchecked</button>
+        <button class="btn alt" id="shFilesBtn" type="button">Merge files…</button>
+        <input id="shFiles" type="file" accept=".json,application/json" multiple style="display:none">
+        <span class="tot" id="shTot"></span>
+      </div>
+      <div class="msg" id="shMsg"></div>
+      <div class="note">Charge nurse: check the lines, fix a quantity if needed, <b>Save Excel</b>, import it in CCS, then press <b>Mark as imported</b> so these lines do not appear again.</div>
+    </div>
+    <div class="card shbox">
+      <details id="shConn"><summary><b>Connection to the shared list</b> <span class="note" id="shStatus" style="display:inline;margin-left:8px"></span></summary>
+        <label class="l" for="shUrl">Web app link (from the person who set up the Google Sheet)</label>
+        <input id="shUrl" type="text" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
+        <label class="l" for="shScanCode">Unit code (everybody who scans)</label>
+        <input id="shScanCode" type="text" autocomplete="off" autocapitalize="characters">
+        <label class="l" for="shChargeCode">Charge nurse code (only to open the combined list)</label>
+        <input id="shChargeCode" type="text" autocomplete="off" autocapitalize="characters">
+        <label class="chk"><input type="checkbox" id="shOn"> Send my scans to the shared list</label>
+        <div class="bar" style="margin-top:10px">
+          <button class="btn alt" id="shTest" type="button">Test connection</button>
+          <button class="btn alt" id="shExportSetup" type="button" title="A setup file with the item list, the shared folder link and this shared-list link + unit code (not the charge nurse code)">Export setup file</button>
+        </div>
+        <div class="note">Needs internet. If it is offline, your scans wait on the phone and are sent later. Backup without internet: <b>📤 Send file</b> on the scan page, then the charge nurse uses <b>Merge files…</b>.</div>
+      </details>
+    </div>
   </div>
 
   <div class="card" id="catalogCard">
@@ -248,7 +300,7 @@ const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['E
 // DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
 // the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
 const UPLOAD_LINK = '';
-const VERSION = '2026-11-07.1';
+const VERSION = '2026-11-08.1';
 const FOLDER_FEATURE = false;          // shared-folder sync is switched off (not usable on the hospital PCs); the code is kept          // shown in the page header, so you can see which copy of the file you are running
 const EXPORT = {
   OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
@@ -454,7 +506,8 @@ function parseSetupJson(text){
   const items=[];
   for(const a of arr){if(!Array.isArray(a))continue;const ir=String(a[0]||'').trim();if(!/^\d{10}$/.test(ir)||!a[1])continue;
     items.push([ir,String(a[1]),a[2]||'',a[3]||'',a[4]==null?null:a[4],a[5]==null?null:a[5],a[6]==null?null:a[6],Array.isArray(a[7])?a[7].filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)):[]]);}
-  return{items,uploadLink:(o&&typeof o.uploadLink==='string'&&/^https:\/\//i.test(o.uploadLink))?o.uploadLink:''};
+  return{items,uploadLink:(o&&typeof o.uploadLink==='string'&&/^https:\/\//i.test(o.uploadLink))?o.uploadLink:'',
+    syncUrl:(o&&typeof o.syncUrl==='string'&&/^https:\/\//i.test(o.syncUrl))?o.syncUrl:'',scanCode:(o&&typeof o.scanCode==='string')?o.scanCode.replace(/[^A-Za-z0-9]/g,'').slice(0,30):''};
 }
 // ---- Code 128 decoder (camera frames) -------------------------------------
 const C128 = "212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112".split(' ').map(s => s.split('').map(Number));
@@ -571,7 +624,7 @@ function c128Scan(gray, w, h, K) {
   let pendingItem=null,lastTouched=null,audio=null;
   function beep(ok){if(!$('snd').checked)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);o.frequency.value=ok?880:220;g.gain.value=.08;o.start();o.stop(audio.currentTime+(ok?.07:.3));}catch(e){}}
   function msg(kind,text){const m=$('msg');m.className='msg '+kind;m.textContent=text;}
-  function snapshot(){st.hist.push(JSON.stringify(st.lists));if(st.hist.length>30)st.hist.shift();}
+  function snapshot(){st.hist.push(JSON.stringify(st.lists));shHist.push(JSON.stringify(sh.sess));if(st.hist.length>30){st.hist.shift();shHist.shift();}}
   const list=()=>st.lists[st.mode];
   // The files and the CCS list are English: keep names English-only (strict = letters, digits, space . _ -)
   function englishOnly(t,strict){const re=strict?/[^A-Za-z0-9 ._-]/g:/[^\x20-\x7E]/g;const out=String(t||'').replace(re,'');return{text:out,removed:out!==String(t||'')};}
@@ -678,11 +731,12 @@ function c128Scan(gray, w, h, K) {
   window.addEventListener('focus',()=>{refreshFromFolder();});
   setInterval(()=>{if(document.visibilityState==='visible')refreshFromFolder();},30000);
 
-  function touched(modes){modes.forEach(m=>{st.dirty[m]=true;});save();schedulePush(modes);}
+  function touched(modes){modes.forEach(m=>{st.dirty[m]=true;});save();schedulePush(modes);shQueue(modes);}
 
   // ---------------------------------------------------------------- list
   function render(){
-    $('tabOUT').classList.toggle('on',st.mode==='OUT');$('tabIN').classList.toggle('on',st.mode==='IN');
+    const sv=view==='shared';$('scanView').style.display=sv?'none':'';$('sharedView').style.display=sv?'':'none';$('tabSH').classList.toggle('on',sv);
+    $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);
     ['OUT','IN'].forEach(m=>{const l=st.lists[m];$('c'+m).textContent=l.length+' line'+(l.length===1?'':'s')+' · '+l.reduce((a,x)=>a+x.qty,0)+' units';});
     $('askExp').checked=st.askExp;$('qtyBox').style.display=(st.mode==='OUT'&&!st.askExp)?'':'none';
     $('scanLabel').textContent=st.mode==='OUT'?'Scan barcode of the item you TAKE (or type the last 4 digits / part of the name)':'Scan barcode of the item you RECEIVE (or type the last 4 digits / part of the name)';
@@ -797,7 +851,7 @@ function c128Scan(gray, w, h, K) {
   ['rQty','rExp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();saveRecv();}if(e.key==='Escape')cancelRecv(true);}));
   $('rNoExp').addEventListener('change',()=>{$('rExp').disabled=$('rNoExp').checked;});
   $('askExp').addEventListener('change',()=>{st.askExp=$('askExp').checked;save();render();focusScan();});
-  function setMode(m){st.mode=m;cancelRecv();$('sugg').style.display='none';save();render();focusScan();}
+  function setMode(m){view='scan';st.mode=m;cancelRecv();$('sugg').style.display='none';save();render();focusScan();}
   $('tabOUT').onclick=()=>setMode('OUT');$('tabIN').onclick=()=>setMode('IN');
   st.who=englishOnly(st.who,true).text;$('who').value=st.who;
   $('who').addEventListener('input',()=>{const r=englishOnly($('who').value,true);if(r.removed){$('who').value=r.text;msg('warn','“Prepared by”: English letters only (A-Z, 0-9). Please type your name in English.');}st.who=$('who').value;save();});
@@ -887,9 +941,9 @@ function c128Scan(gray, w, h, K) {
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tsv).then(done,()=>manual('The browser blocked automatic copying.'));
     else manual('Automatic copying is not available here.');
   };
-  $('undo').onclick=()=>{const s=st.hist.pop();if(!s){msg('warn','Nothing to undo.');return;}const before=JSON.stringify(st.lists);st.lists=JSON.parse(s);lastTouched=null;
+  $('undo').onclick=()=>{const s=st.hist.pop(),hs=shHist.pop();if(!s){msg('warn','Nothing to undo.');return;}shRestoreSessions(hs);const before=JSON.stringify(st.lists);st.lists=JSON.parse(s);lastTouched=null;
     const ch=['OUT','IN'].filter(m=>JSON.stringify(JSON.parse(before)[m])!==JSON.stringify(st.lists[m]));touched(ch.length?ch:[st.mode]);render();msg('warn','Last change undone.');focusScan();};
-  $('clear').onclick=()=>{if(!list().length)return;if(confirm('Clear the whole '+(st.mode==='OUT'?'STOCK OUT':'STOCK IN')+' list? Make sure you downloaded it first.')){snapshot();st.lists[st.mode]=[];lastTouched=null;touched([st.mode]);render();msg('warn','List cleared (Undo brings it back).');focusScan();}};
+  $('clear').onclick=()=>{if(!list().length)return;if(confirm('Clear the whole '+(st.mode==='OUT'?'STOCK OUT':'STOCK IN')+' list? Make sure you downloaded it first.')){snapshot();shNewSession(st.mode);st.lists[st.mode]=[];lastTouched=null;touched([st.mode]);render();msg('warn','List cleared (Undo brings it back). Lines already sent to the shared list stay there.');focusScan();}};
   $('nAdd').onclick=async()=>{const ir=$('nIr').value.trim(),nm=$('nName').value.trim(),un=$('nUnit').value.trim();
     if(!/^\d{6,12}$/.test(ir)||!nm){msg('err','Enter the IR number (digits) and the item name.');return;}
     if(englishOnly(nm,false).removed||englishOnly(un,false).removed){msg('err','Item name and unit must be in English letters only (the CCS list is English).');return;}
@@ -918,7 +972,8 @@ function c128Scan(gray, w, h, K) {
       const c={items:res.items,source:f.name,at:Date.now(),uploadLink:isJson?res.uploadLink:oldLink};
       try{localStorage.setItem(CAT_KEY,JSON.stringify(c));}catch(e){throw new Error('could not store the list on this phone (storage full?)');}
       catalog=c;rebuild();renderCat();renderLink();
-      msg('ok','Item list loaded: '+c.items.length+' items.'+(isJson&&res.uploadLink?' Shared folder link set.':(isJson&&oldLink?' The old shared folder link was removed.':'')));beep(true);
+      let shNote='';if(isJson&&res.syncUrl){shApplySetup(res.syncUrl,res.scanCode);shNote=' Shared list connected.';}
+      msg('ok','Item list loaded: '+c.items.length+' items.'+(isJson&&res.uploadLink?' Shared folder link set.':(isJson&&oldLink?' The old shared folder link was removed.':''))+shNote);beep(true);
     }catch(e){msg('err','Could not read that file: '+(e.message||e.name));beep(false);}
   };
   $('catReset').onclick=()=>{try{localStorage.removeItem(CAT_KEY);}catch(e){}catalog=null;rebuild();renderCat();renderLink();msg('ok','Using the list built into this file.');};
@@ -1058,7 +1113,199 @@ function c128Scan(gray, w, h, K) {
   };
   $('camBtn').onclick=camOpen;$('camClose').onclick=()=>{camClose();focusScan();};
   $('camTorch').onclick=async()=>{try{camTorchOn=!camTorchOn;await camStream.getVideoTracks()[0].applyConstraints({advanced:[{torch:camTorchOn}]});}catch(e){camSay('The light is not available on this camera.');}};
-  render();renderConflicts();if(FOLDER_FEATURE)initFolder();loadExpDir();
+
+  // ================================================================ SHARED LIST: several phones -> ONE list for the charge nurse
+  // ==AGG START==
+  function whoLabel(b){return (b.by&&String(b.by).trim())||('Phone '+String(b.device||'').slice(-4));}
+  function aggregateBatches(batches){
+    const m=new Map();
+    (batches||[]).forEach(b=>(b.lines||[]).forEach(l=>{
+      const exp=l.expiry||'',k=l.ir+'|'+exp;let a=m.get(k);
+      if(!a){a={ir:l.ir,name:l.name||'',expiry:exp,qty:0,from:[],src:[]};m.set(k,a);}
+      const q=+l.qty||0;a.qty+=q;if(!a.name&&l.name)a.name=l.name;
+      const w=whoLabel(b);if(a.from.indexOf(w)<0)a.from.push(w);
+      if(b.key)a.src.push({key:b.key,qty:q});
+    }));
+    return [...m.values()].sort((x,y)=>(x.name||'').localeCompare(y.name||'')||x.expiry.localeCompare(y.expiry));
+  }
+  // files: every file holds a phone's WHOLE list for one session; for the same phone+session the newest file wins
+  function latestFileBatches(files,mode){
+    const by=new Map();
+    (files||[]).forEach(f=>{if(!f||f.mode!==mode)return;const k=f.device+'|'+f.mode+'|'+f.session,o=by.get(k);if(!o||String(f.createdAt)>String(o.createdAt))by.set(k,f);});
+    return [...by.values()].map(f=>({key:'',device:f.device,by:f.by,session:f.session,updated:f.createdAt,lines:f.lines}));
+  }
+  // ==AGG END==
+  let view='scan';
+  const SH_KEY='ccsShared.v1'+PROFILE;
+  let sh={url:'',scanCode:'',chargeCode:'',device:'',enabled:false,sess:{OUT:1,IN:1},pend:{},sent:{},lastOk:0,lastErr:'',files:[]};
+  try{const o=JSON.parse(localStorage.getItem(SH_KEY)||'null');if(o&&typeof o==='object'){sh=Object.assign(sh,o);sh.sess=Object.assign({OUT:1,IN:1},o.sess||{});sh.pend=o.pend||{};sh.sent=o.sent||{};sh.files=Array.isArray(o.files)?o.files:[];}}catch(e){}
+  if(!/^[0-9a-f]{16}$/.test(sh.device||'')){try{sh.device=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>('0'+b.toString(16)).slice(-2)).join('');}catch(e){sh.device=(Math.random().toString(16)+'0000000000000000').slice(2,18);}}
+  function shSave(){try{localStorage.setItem(SH_KEY,JSON.stringify(sh));}catch(e){}}
+  shSave();
+  const shHist=[];
+  function shRestoreSessions(s){if(!s)return;try{sh.sess=Object.assign({OUT:1,IN:1},JSON.parse(s));shSave();}catch(e){}}
+  function shNewSession(m){sh.sess[m]=(sh.sess[m]||1)+1;shSave();}
+  const okUrl=u=>/^https:\/\//i.test(u)||/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(u);
+  const shReady=()=>!!(sh.enabled&&okUrl(sh.url||'')&&(sh.scanCode||sh.chargeCode));
+  const hm=t=>{const d=new Date(t);return pad2(d.getHours())+':'+pad2(d.getMinutes());};
+  function shPayload(m){return{action:'push',code:sh.scanCode||sh.chargeCode,device:sh.device,by:(st.who||'').trim(),mode:m,session:sh.sess[m],lines:st.lists[m].map(l=>({ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty}))};}
+  let shTimer=null,shBusy=false,shRetry=0;
+  function shQueue(modes){
+    if(!shReady())return;
+    modes.forEach(m=>{const p=shPayload(m),k=m+':'+p.session;if(!p.lines.length&&!sh.sent[k]&&!sh.pend[k])return;sh.pend[k]=JSON.stringify(p);});
+    shSave();shBadge();clearTimeout(shTimer);shTimer=setTimeout(shFlush,700);
+  }
+  async function shPost(action,extra,timeoutMs){
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),timeoutMs||20000);
+    try{
+      const res=await fetch(sh.url,{method:'POST',body:JSON.stringify(Object.assign({},extra||{},{action})),redirect:'follow',signal:ctl.signal});
+      let j;try{j=await res.json();}catch(e){throw new Error('the link did not answer correctly - check the web app link');}
+      if(!j||j.ok!==true)throw new Error((j&&j.error)||'the shared list refused the request');
+      return j;
+    }catch(e){if(e&&e.name==='AbortError')throw new Error('no answer (timeout)');if(e&&e.name==='TypeError')throw new Error('cannot reach the shared list (internet or link?)');throw e;}
+    finally{clearTimeout(to);}
+  }
+  async function shFlush(){
+    if(shBusy||!shReady())return;
+    const keys=Object.keys(sh.pend);if(!keys.length){shBadge();return;}
+    if(navigator.onLine===false){shBadge();return;}
+    shBusy=true;let failed=false;
+    try{
+      for(const k of keys){
+        const body=sh.pend[k],p=JSON.parse(body);p.code=sh.scanCode||sh.chargeCode;
+        await shPost('push',p);
+        if(sh.pend[k]===body)delete sh.pend[k];
+        sh.sent[k]=true;sh.lastOk=Date.now();sh.lastErr='';shSave();
+      }
+      shRetry=0;
+    }catch(e){failed=true;sh.lastErr=e.message||String(e);shSave();shRetry=Math.min(shRetry+1,5);clearTimeout(shTimer);shTimer=setTimeout(shFlush,Math.min(20000*Math.pow(2,shRetry-1),300000));}
+    finally{shBusy=false;shBadge();if(!failed&&Object.keys(sh.pend).length){clearTimeout(shTimer);shTimer=setTimeout(shFlush,300);}}
+  }
+  function shBadge(){
+    const n=Object.keys(sh.pend).length;let t='';
+    if(shReady()){if(n)t=(navigator.onLine===false)?'📴 offline - '+n+' waiting, will be sent when the internet is back':(sh.lastErr?'⚠ shared list: '+n+' waiting ('+sh.lastErr+')':'⏳ shared list: sending…');else if(sh.lastOk)t='✓ shared list '+hm(sh.lastOk);else t='shared list: on';}
+    $('shBadge').textContent=t;$('shBadge').style.color=(n&&sh.lastErr)?'var(--out)':'';
+    $('shStatus').textContent=shReady()?t:(sh.url?'Not sending yet: tick “Send my scans” and fill in the unit code.':'Not connected');
+  }
+  window.addEventListener('online',()=>{shRetry=0;shFlush();});window.addEventListener('offline',shBadge);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)shFlush();});
+  setInterval(shFlush,60000);
+
+  // ---- connection card
+  function renderConn(){$('shUrl').value=sh.url;$('shScanCode').value=sh.scanCode;$('shChargeCode').value=sh.chargeCode;$('shOn').checked=!!sh.enabled;shBadge();}
+  function shApplySetup(url,code){sh.url=url;if(code)sh.scanCode=code;sh.enabled=true;shSave();renderConn();shQueue(['OUT','IN']);}
+  function shConnChanged(){
+    sh.url=$('shUrl').value.trim();sh.scanCode=$('shScanCode').value.trim().replace(/\s+/g,'');sh.chargeCode=$('shChargeCode').value.trim().replace(/\s+/g,'');sh.enabled=$('shOn').checked;shSave();
+    if(sh.url&&!okUrl(sh.url))shMsg('err','The link must start with https://');
+    shRetry=0;if(shReady()){const m=[];['OUT','IN'].forEach(x=>{if(st.lists[x].length)m.push(x);});if(m.length)shQueue(m);else shFlush();}shBadge();
+  }
+  ['shUrl','shScanCode','shChargeCode'].forEach(id=>$(id).addEventListener('change',shConnChanged));$('shOn').addEventListener('change',shConnChanged);
+  $('shTest').onclick=async()=>{
+    shConnChanged();if(!okUrl(sh.url)){shMsg('err','Type the web app link first (https://…).');return;}
+    shMsg('warn','Testing…');
+    try{const j=await shPost('whoami',{code:sh.chargeCode||sh.scanCode},12000);shMsg('ok','Connected ✓  Your code works as: '+(j.role==='charge'?'charge nurse (can open the combined list)':'scanner (sends scans)')+'.');}
+    catch(e){shMsg('err','Not connected: '+(e.message||e.name));}
+  };
+
+  // ---- the combined list (charge nurse)
+  let shRows=[],shLoaded=null,shEdited=false;
+  function shMode(){const r=document.querySelector('input[name=shMode]:checked');return r?r.value:'OUT';}
+  function shMsg(kind,text){const m=$('shMsg');m.className='msg '+kind;m.textContent=text;}
+  function shRender(){
+    const live=$('shSource').value==='live';
+    $('shMark').style.display=live?'':'none';$('shDiscard').style.display=live?'':'none';
+    if(!shRows.length){$('shList').innerHTML='<div class="empty">'+(shLoaded?'Nothing waiting in this list.':'Press Refresh.')+'</div>';$('shTot').textContent='';return;}
+    const anyExp=shRows.some(r=>r.expiry);
+    let h='<table><thead><tr><th></th><th>Item</th>'+(anyExp?'<th>Expiry</th>':'')+'<th>Qty</th></tr></thead><tbody>';
+    shRows.forEach((r,i)=>{h+='<tr class="'+(r.include?'':'off')+'" data-ir="'+xmlEsc(r.ir)+'" data-from="'+xmlEsc(r.from.join(', '))+'"><td><input type="checkbox" data-a="c" data-i="'+i+'"'+(r.include?' checked':'')+'></td><td>'+xmlEsc(r.name)+'<div class="from">'+xmlEsc(r.ir)+' · from '+xmlEsc(r.from.join(', '))+'</div></td>'+(anyExp?'<td>'+(r.expiry?dmy(r.expiry):'')+'</td>':'')+
+      '<td><input class="sq" type="number" min="1" value="'+r.qty+'" data-a="q" data-i="'+i+'">'+unitBadge(unitOf(r.ir))+(r.qty!==r.orig?'<div class="from">was '+r.orig+'</div>':'')+'</td></tr>';});
+    $('shList').innerHTML=h+'</tbody></table>';
+    const inc=shRows.filter(r=>r.include);$('shTot').textContent=inc.length+' line'+(inc.length===1?'':'s')+' · '+inc.reduce((a,r)=>a+r.qty,0)+' units';
+  }
+  $('shList').addEventListener('change',e=>{const t=e.target,i=+t.dataset.i,r=shRows[i];if(!r)return;shEdited=true;if(t.dataset.a==='c')r.include=t.checked;else if(t.dataset.a==='q'){const v=Math.floor(+t.value);r.qty=v>=1?v:1;}setTimeout(shRender,0);});
+  async function shRefresh(force,keepMsg){
+    const mode=shMode(),live=$('shSource').value==='live';
+    if(shEdited&&!force&&shRows.length&&!confirm('You changed some quantities / checkboxes. Refreshing will drop those changes. Continue?'))return;
+    let batches;
+    if(live){
+      if(!okUrl(sh.url)||!sh.chargeCode){$('shInfo').textContent='Open “Connection” below and fill in the web app link and the charge nurse code.';shRows=[];shLoaded=null;shRender();$('shConn').open=true;return;}
+      $('shInfo').textContent='Loading…';
+      try{const j=await shPost('list',{code:sh.chargeCode,mode});batches=j.batches||[];$('shInfo').textContent='Live list, '+batches.length+' phone list'+(batches.length===1?'':'s')+' · updated '+hm(Date.now());}
+      catch(e){shRows=[];shLoaded=null;shRender();$('shInfo').textContent='';shMsg('err','Could not load the shared list: '+(e.message||e.name));return;}
+    }else{
+      batches=latestFileBatches(sh.files,mode);$('shInfo').textContent=batches.length?'From '+batches.length+' phone list'+(batches.length===1?'':'s')+' in the merged files (newest file per phone). Use “Merge files…” to add more.':'No files merged yet for this list. Use “Merge files…”.';
+    }
+    shRows=aggregateBatches(batches).map(a=>Object.assign(a,{include:true,orig:a.qty}));shLoaded={mode,live,batches};shEdited=false;shRender();if(!keepMsg)$('shMsg').className='msg';
+  }
+  $('tabSH').onclick=()=>{view='shared';render();renderConn();if(!shLoaded||shLoaded.mode!==shMode())shRefresh(true);};
+  document.querySelectorAll('input[name=shMode]').forEach(r=>r.addEventListener('change',()=>shRefresh(true)));
+  $('shSource').onchange=()=>shRefresh(true);$('shRefresh').onclick=()=>shRefresh(false);
+  $('shSave').onclick=async()=>{
+    const inc=shRows.filter(r=>r.include);if(!inc.length){shMsg('err','Nothing selected to save.');return;}
+    const mode=shLoaded?shLoaded.mode:shMode(),cfg=EXPORT[mode],who0=(st.who||'').trim(),typeName=mode==='OUT'?'STOCK OUT':'STOCK IN',nowD=new Date();
+    const lines=inc.map(r=>({ir:r.ir,name:r.name,expiry:r.expiry,qty:r.qty})),names=[];inc.forEach(r=>r.from.forEach(f=>{if(names.indexOf(f)<0)names.push(f);}));
+    const meta={who:who0,created:nowD,title:typeName,infoName:'Info',info:st.infoSheet?[
+      ['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],
+      ['Type',typeName],['Lines',lines.length],['Total units',lines.reduce((a,x)=>a+x.qty,0)],['Combined from',names.join(', ')],['Source',$('shSource').value==='live'?'Shared list (live)':'Merged files'],['Tool','CCS Scan Helper'],
+      ['Note','Information only. The data to import is on the first sheet (inventory list).']]:null};
+    const bytes=buildXlsx(cfg.sheet,cfg.cols,buildRows(lines,items,false),meta);
+    const who=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),name=cfg.file+'_ALL_'+stamp()+(who?'_'+who:'')+'.xlsx';
+    const r=await saveExport(name,bytes);
+    if(r.cancelled){shMsg('warn','Save cancelled - nothing was saved.');return;}
+    shMsg(who0?'ok':'warn','Saved '+r.name+' in '+r.where+'. Import it in CCS, then press “Mark as imported”.'+(who0?'':'  ⚠ “Prepared by” is empty (type your name at the top).'));
+  };
+  function shMarkItems(rows){const out=[];rows.forEach(r=>r.src.forEach(s=>out.push({key:s.key,ir:r.ir,expiry:r.expiry,qty:s.qty})));return out;}
+  async function shMark(status,rows,okText){
+    if(!rows.length){shMsg('err','Nothing to do.');return;}
+    try{const j=await shPost('mark',{code:sh.chargeCode,status,exportId:'EXP-'+stamp()+(st.who?'-'+st.who.replace(/\W+/g,''):''),items:shMarkItems(rows)});shEdited=false;await shRefresh(true,true);shMsg('ok',okText+': '+rows.length+' line'+(rows.length===1?'':'s')+'.');}
+    catch(e){shMsg('err','Could not update the shared list: '+(e.message||e.name));}
+  }
+  $('shMark').onclick=()=>{const inc=shRows.filter(r=>r.include);if(!inc.length){shMsg('err','Nothing selected.');return;}
+    if(!confirm('Mark these '+inc.length+' lines as imported? Do it after you saved the Excel and imported it in CCS. They will disappear from this list.'))return;
+    if($('shSource').value==='files'){return;}shMark('EXPORTED',inc,'Marked as imported');};
+  $('shDiscard').onclick=()=>{const off=shRows.filter(r=>!r.include);if(!off.length){shMsg('err','No unchecked lines to discard.');return;}
+    if(!confirm('Throw away the '+off.length+' unchecked lines? They will not appear again.'))return;shMark('DISCARDED',off,'Discarded');};
+
+  // ---- backup without internet: a phone sends a small file, the charge nurse merges files
+  async function saveText(name,text){
+    const file=new File([text],name,{type:'application/json'});
+    if(typeof navigator.share==='function'&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name});return{where:'the share sheet'};}catch(e){if(e&&e.name==='AbortError')return{cancelled:true};}}
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    return{where:'the browser Downloads folder'};
+  }
+  $('sendFile').onclick=async()=>{
+    const batches=[];['OUT','IN'].forEach(m=>{if(st.lists[m].length)batches.push({mode:m,session:sh.sess[m],lines:st.lists[m].map(l=>({ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty}))});});
+    if(!batches.length){msg('err','Both lists are empty - nothing to send.');return;}
+    const who0=(st.who||'').trim(),who=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,'');
+    const text=JSON.stringify({format:'ccs-batch-1',device:sh.device,by:who0,createdAt:new Date().toISOString(),batches});
+    const r=await saveText('CCS_batch_'+stamp()+(who?'_'+who:'')+'.json',text);
+    if(r.cancelled){msg('warn','Cancelled - nothing was sent.');return;}
+    msg(who0?'ok':'warn','File ready in '+r.where+'. Send it to the charge nurse (Teams / WhatsApp). The charge nurse opens SHARED > Merge files…'+(who0?'':'  ⚠ “Prepared by” is empty.'));
+  };
+  $('shFilesBtn').onclick=()=>{$('shFiles').value='';$('shFiles').click();};
+  $('shFiles').onchange=async()=>{
+    const fs=Array.from($('shFiles').files||[]);if(!fs.length)return;let added=0,bad=[];
+    for(const f of fs){
+      try{
+        const o=JSON.parse(await f.text());if(!o||o.format!=='ccs-batch-1'||!Array.isArray(o.batches))throw new Error('not a batch file');
+        const dev=String(o.device||'').replace(/[^0-9a-z]/gi,'').slice(0,32);if(!dev)throw new Error('no device id');
+        o.batches.forEach(b=>{if(b.mode!=='OUT'&&b.mode!=='IN')return;const lines=(Array.isArray(b.lines)?b.lines:[]).map(l=>({ir:String(l.ir||'').trim(),name:String(l.name||'').slice(0,150),expiry:/^\d{4}-\d{2}-\d{2}$/.test(l.expiry||'')?l.expiry:'',qty:Math.floor(+l.qty)})).filter(l=>l.ir&&l.qty>=1);
+          sh.files.push({device:dev,by:String(o.by||'').slice(0,40),mode:b.mode,session:Math.floor(+b.session)||1,createdAt:String(o.createdAt||''),lines});added++;});
+      }catch(e){bad.push(f.name+' ('+(e.message||e.name)+')');}
+    }
+    const keep=new Map();sh.files.forEach(f=>{const k=f.device+'|'+f.mode+'|'+f.session,o=keep.get(k);if(!o||String(f.createdAt)>=String(o.createdAt))keep.set(k,f);});sh.files=[...keep.values()].slice(-300);shSave();
+    $('shSource').value='files';await shRefresh(true);
+    shMsg(bad.length?'warn':'ok','Merged '+fs.length+' file'+(fs.length===1?'':'s')+' ('+added+' list'+(added===1?'':'s')+').'+(bad.length?'  Could not read: '+bad.join('; '):''));
+  };
+  $('shExportSetup').onclick=async()=>{
+    const base=(catalog&&catalog.items.length)?catalog.items:ITEMS;
+    const o={format:'ccs-setup-1',unit:'',builtAt:VERSION,uploadLink:defaultLink()||'',syncUrl:okUrl(sh.url)?sh.url:'',scanCode:sh.scanCode||'',items:base};
+    const r=await saveText('ccs_setup_'+stamp()+'.json',JSON.stringify(o));
+    if(r.cancelled)return;shMsg('ok','Setup file saved in '+r.where+'. It has the item list, the shared folder link and the shared-list link + unit code (NOT the charge nurse code). Share it only inside the hospital.');
+  };
+  shBadge();renderConn();$('shConn').open=!shReady();
+
+  render();renderConflicts();if(FOLDER_FEATURE)initFolder();loadExpDir();if(shReady()&&Object.keys(sh.pend).length)shFlush();
 })();
 </script>
 </body>
