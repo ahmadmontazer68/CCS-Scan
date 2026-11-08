@@ -253,6 +253,7 @@ td{padding:5px 6px}
       <details id="shConn"><summary><b>Connection to the shared list</b> <span class="note" id="shStatus" style="display:inline;margin-left:8px"></span></summary>
         <label class="l" for="shUrl">Web app link (from the person who set up the Google Sheet)</label>
         <input id="shUrl" type="text" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
+        <div class="note" id="shUrlNote" style="margin:4px 0 0"></div>
         <label class="l" for="shScanCode">Unit code (everybody who scans)</label>
         <input id="shScanCode" type="text" autocomplete="off" autocapitalize="characters">
         <label class="l" for="shChargeCode">Charge nurse code (only to open the combined list)</label>
@@ -300,7 +301,7 @@ const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['E
 // DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
 // the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
 const UPLOAD_LINK = '';
-const VERSION = '2026-11-08.1';
+const VERSION = '2026-11-08.2';
 const FOLDER_FEATURE = false;          // shared-folder sync is switched off (not usable on the hospital PCs); the code is kept          // shown in the page header, so you can see which copy of the file you are running
 const EXPORT = {
   OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
@@ -1137,8 +1138,9 @@ function c128Scan(gray, w, h, K) {
   // ==AGG END==
   let view='scan';
   const SH_KEY='ccsShared.v1'+PROFILE;
-  let sh={url:'',scanCode:'',chargeCode:'',device:'',enabled:false,sess:{OUT:1,IN:1},pend:{},sent:{},lastOk:0,lastErr:'',files:[]};
-  try{const o=JSON.parse(localStorage.getItem(SH_KEY)||'null');if(o&&typeof o==='object'){sh=Object.assign(sh,o);sh.sess=Object.assign({OUT:1,IN:1},o.sess||{});sh.pend=o.pend||{};sh.sent=o.sent||{};sh.files=Array.isArray(o.files)?o.files:[];}}catch(e){}
+  let sh={v:2,url:'',urlDefault:'',scanCode:'',chargeCode:'',device:'',enabled:true,sess:{OUT:1,IN:1},pend:{},sent:{},lastOk:0,lastErr:'',files:[]};
+  try{const o=JSON.parse(localStorage.getItem(SH_KEY)||'null');if(o&&typeof o==='object'){sh=Object.assign(sh,o);sh.sess=Object.assign({OUT:1,IN:1},o.sess||{});sh.pend=o.pend||{};sh.sent=o.sent||{};sh.files=Array.isArray(o.files)?o.files:[];
+    if(!o.v){sh.enabled=(!o.url&&!o.scanCode&&!o.chargeCode)?true:!!o.enabled;sh.v=2;}}}catch(e){}
   if(!/^[0-9a-f]{16}$/.test(sh.device||'')){try{sh.device=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>('0'+b.toString(16)).slice(-2)).join('');}catch(e){sh.device=(Math.random().toString(16)+'0000000000000000').slice(2,18);}}
   function shSave(){try{localStorage.setItem(SH_KEY,JSON.stringify(sh));}catch(e){}}
   shSave();
@@ -1184,18 +1186,19 @@ function c128Scan(gray, w, h, K) {
   function shBadge(){
     const n=Object.keys(sh.pend).length;let t='';
     if(shReady()){if(n)t=(navigator.onLine===false)?'📴 offline - '+n+' waiting, will be sent when the internet is back':(sh.lastErr?'⚠ shared list: '+n+' waiting ('+sh.lastErr+')':'⏳ shared list: sending…');else if(sh.lastOk)t='✓ shared list '+hm(sh.lastOk);else t='shared list: on';}
+    else if(sh.enabled&&okUrl(sh.url||'')&&!sh.scanCode&&!sh.chargeCode)t='shared list: type the unit code (SHARED tab)';
     $('shBadge').textContent=t;$('shBadge').style.color=(n&&sh.lastErr)?'var(--out)':'';
-    $('shStatus').textContent=shReady()?t:(sh.url?'Not sending yet: tick “Send my scans” and fill in the unit code.':'Not connected');
+    $('shStatus').textContent=shReady()?t:(sh.url?((sh.scanCode||sh.chargeCode)?'Not sending: tick “Send my scans”.':'Type the unit code to start sending.'):'Not connected');
   }
   window.addEventListener('online',()=>{shRetry=0;shFlush();});window.addEventListener('offline',shBadge);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)shFlush();});
   setInterval(shFlush,60000);
 
   // ---- connection card
-  function renderConn(){$('shUrl').value=sh.url;$('shScanCode').value=sh.scanCode;$('shChargeCode').value=sh.chargeCode;$('shOn').checked=!!sh.enabled;shBadge();}
-  function shApplySetup(url,code){sh.url=url;if(code)sh.scanCode=code;sh.enabled=true;shSave();renderConn();shQueue(['OUT','IN']);}
+  function renderConn(){$('shUrl').value=sh.url;$('shUrlNote').textContent=(sh.url&&sh.url===sh.urlDefault)?'✓ This link was filled in automatically for your unit.':'';$('shScanCode').value=sh.scanCode;$('shChargeCode').value=sh.chargeCode;$('shOn').checked=!!sh.enabled;shBadge();}
+  function shApplySetup(url,code){sh.url=url;if(code)sh.scanCode=String(code).toUpperCase();sh.enabled=true;shSave();renderConn();shQueue(['OUT','IN']);}
   function shConnChanged(){
-    sh.url=$('shUrl').value.trim();sh.scanCode=$('shScanCode').value.trim().replace(/\s+/g,'');sh.chargeCode=$('shChargeCode').value.trim().replace(/\s+/g,'');sh.enabled=$('shOn').checked;shSave();
+    sh.url=$('shUrl').value.trim();sh.scanCode=$('shScanCode').value.trim().replace(/\s+/g,'').toUpperCase();sh.chargeCode=$('shChargeCode').value.trim().replace(/\s+/g,'').toUpperCase();$('shScanCode').value=sh.scanCode;$('shChargeCode').value=sh.chargeCode;sh.enabled=$('shOn').checked;shSave();
     if(sh.url&&!okUrl(sh.url))shMsg('err','The link must start with https://');
     shRetry=0;if(shReady()){const m=[];['OUT','IN'].forEach(x=>{if(st.lists[x].length)m.push(x);});if(m.length)shQueue(m);else shFlush();}shBadge();
   }
@@ -1303,7 +1306,21 @@ function c128Scan(gray, w, h, K) {
     const r=await saveText('ccs_setup_'+stamp()+'.json',JSON.stringify(o));
     if(r.cancelled)return;shMsg('ok','Setup file saved in '+r.where+'. It has the item list, the shared folder link and the shared-list link + unit code (NOT the charge nurse code). Share it only inside the hospital.');
   };
-  shBadge();renderConn();$('shConn').open=!shReady();
+  // The unit's default link: a tiny file "config.json" next to index.html (edit it on GitHub, no need to touch the app).
+  // Never overwrites a link the person typed by hand.
+  async function shLoadConfig(){
+    try{
+      const r=await fetch('config.json?'+Date.now(),{cache:'no-store'});if(!r.ok)return;
+      const c=await r.json(),u=(typeof c.syncUrl==='string')?c.syncUrl.trim():'';if(!u||!okUrl(u))return;
+      const code=(typeof c.scanCode==='string')?c.scanCode.replace(/[^A-Za-z0-9]/g,'').toUpperCase():'';
+      let changed=false;
+      if(!sh.url||sh.url===sh.urlDefault){if(sh.url!==u){sh.url=u;changed=true;}}
+      sh.urlDefault=u;
+      if(code&&!sh.scanCode){sh.scanCode=code;changed=true;}
+      shSave();if(changed){renderConn();shRetry=0;const m=['OUT','IN'].filter(x=>st.lists[x].length);if(shReady()&&m.length)shQueue(m);else shFlush();}else renderConn();
+    }catch(e){}
+  }
+  shBadge();renderConn();$('shConn').open=!shReady();shLoadConfig();
 
   render();renderConflicts();if(FOLDER_FEATURE)initFolder();loadExpDir();if(shReady()&&Object.keys(sh.pend).length)shFlush();
 })();
