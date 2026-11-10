@@ -27,7 +27,20 @@ header input{padding:5px 8px;border-radius:6px;border:0;width:150px}
 main{max-width:1100px;margin:16px auto;padding:0 14px 60px}
 .tabs{display:flex;gap:6px;margin-bottom:12px}
 .tab{flex:1;min-width:0;padding:11px 2px;border:2px solid var(--line);background:var(--card);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;color:var(--ink)}
+.thumb{float:left;margin:0 8px 2px 0;border-radius:6px;object-fit:cover;border:1px solid var(--line);background:#fff}
+.phbox{display:flex;gap:10px;align-items:center;margin:6px 0 8px}
+.phbox .noph{width:72px;height:72px;border:2px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center}
+.phbox .btn{padding:7px 10px;font-size:13px;margin:0 4px 4px 0}
+.phbox a{font-size:13px}
+#sugg .thumb{margin-top:2px}
 .tab small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+#tabCNT{display:none!important}
+.aka{color:var(--muted);font-weight:400}
+body.locked main{display:none!important}
+#gate{max-width:440px;margin:30px auto;padding:22px;background:var(--card);border:2px solid var(--line);border-radius:14px}
+#gate h2{margin:0 0 6px;font-size:21px}
+#gate input{width:100%;font-size:20px;padding:12px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);letter-spacing:2px;text-transform:uppercase;box-sizing:border-box}
+#gate .btn{width:100%;margin-top:12px;font-size:18px;padding:13px}
 .tab.on.cnt{border-color:#9b6fd8;background:rgba(140,100,200,.18);color:#9b6fd8}
 #roomBar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
 .room{padding:8px 12px;border:2px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);font-weight:700;font-size:14px;cursor:pointer}
@@ -136,6 +149,15 @@ td{padding:5px 6px}
   <div id="unitTag" style="display:none;font-weight:700;font-size:17px"></div>
   <div class="who"><span>Prepared by</span><input id="who" type="text" placeholder="your name (English)" autocomplete="off"></div>
 </header>
+<div id="gate" style="display:none">
+  <h2>Sign in</h2>
+  <div class="note" id="gateUnit" style="margin-bottom:12px"></div>
+  <label for="gatePw" style="font-weight:600">Unit password</label>
+  <input id="gatePw" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. PLTCU1">
+  <button class="btn" id="gateBtn" type="button">Sign in</button>
+  <div class="msg" id="gateMsg"></div>
+  <div class="note" style="margin-top:12px">Ask your charge nurse for the password. You sign in once on this phone. Needs internet the first time.</div>
+</div>
 <div id="cam">
   <video id="camVideo" playsinline muted autoplay></video><div id="camGuide"></div>
   <div id="camTop"><span id="camTitle">Point the camera at the barcode</span><button id="camTorch" type="button" style="display:none">🔦 Light</button><button id="camClose" type="button">✕ Close</button></div>
@@ -190,11 +212,13 @@ td{padding:5px 6px}
 
   <div class="card" id="recv">
     <div class="name" id="recvName"></div>
+    <div class="phbox"><div id="rPhoto"></div><div><button class="btn alt" id="rPhotoBtn" type="button">📷 Add photo</button><button class="btn alt" id="rPhotoDel" type="button" style="display:none">Remove photo</button><br><a id="rPhotoSearch" href="#" target="_blank" rel="noopener">🔎 Find a picture on the internet</a></div><input id="rPhotoFile" type="file" accept="image/*" style="display:none"></div>
     <div class="grid">
       <div><label for="rQty" id="rQtyLbl">Qty received</label><div class="q" style="gap:6px"><input id="rQty" type="number" min="1" value="1" style="width:96px;font-size:17px;padding:8px"><span id="rUnit" class="u" style="font-size:15px"></span></div><div class="note" id="rUnitNote"></div></div>
       <div><label for="rExp">Expiry (31/12/2030 or 12/2030)</label><input id="rExp" type="text" placeholder="DD/MM/YYYY" autocomplete="off">
+        <label class="chk"><input type="checkbox" id="rSetDef" checked> Set as default expiry date</label><div class="note" id="rDefInfo" style="margin:2px 0 4px"></div>
         <label class="chk"><input type="checkbox" id="rNoExp"> No expiry date on this item</label><div id="chips"></div></div>
-      <div style="display:flex;gap:6px"><button class="btn in" id="rSave" type="button">Save</button><button class="btn alt" id="rCancel" type="button">Cancel</button></div>
+      <div style="display:flex;gap:6px"><button class="btn in" id="rSave" type="button">Save</button><button class="btn alt" id="rMore" type="button" style="display:none" title="Save this expiry date and add another expiry date of the same item">Save + next expiry</button><button class="btn alt" id="rCancel" type="button">Cancel</button></div>
     </div>
   </div>
 
@@ -215,7 +239,7 @@ td{padding:5px 6px}
       <span class="note" style="margin:0">Shared folder link (OneDrive / SharePoint / Forms):</span>
       <input id="shareLink" type="text" placeholder="https://…" autocomplete="off" style="flex:1;min-width:220px;max-width:460px;font-size:15px;padding:8px 10px">
       <button class="btn alt" id="openShared" type="button" style="display:none;padding:8px 14px">📂 Open shared folder</button>
-      <label class="chk" id="autoRow" style="margin:0 0 0 6px;display:none"><input type="checkbox" id="autoOpen" checked> open it after saving</label>
+      <label class="chk" id="autoRow" style="margin:0 0 0 6px;display:none"><input type="checkbox" id="autoOpen"> open it after saving</label>
     </div>
     <div class="bar" style="margin-bottom:8px">
       <button class="btn" id="xlsx" type="button">&#11015; Save Excel (.xlsx)</button>
@@ -224,7 +248,7 @@ td{padding:5px 6px}
       <button class="btn danger" id="clear" type="button">Clear list</button>
       <button class="btn alt" id="sendFile" type="button" title="Backup: send your lists as a small file (Teams / WhatsApp) to the charge nurse">&#128228; Send file</button>
       <label class="chk" style="margin:0 0 0 6px"><input type="checkbox" id="snd" checked> sound</label>
-      <label class="chk" style="margin:0 0 0 6px" title="Each STOCK OUT scan asks for the expiry date, like the paper list"><input type="checkbox" id="askExp" checked> ask expiry on STOCK OUT</label>
+      <label class="chk" style="display:none"><input type="checkbox" id="askExp" checked> ask expiry on STOCK OUT</label>
       <label class="chk" style="margin:0 0 0 6px" title="Whole item list like the CCS template, Qty filled only for scanned items"><input type="checkbox" id="allItems"> export all items</label>
       <label class="chk" style="margin:0 0 0 6px" title="Adds a second sheet “Info” (Prepared by, date, counts). The file author is always set to your name. Turn off if CCS refuses the file."><input type="checkbox" id="infoSheet" checked> name sheet in file</label>
       <span class="tot" id="tot"></span><span class="tot" id="shBadge"></span>
@@ -242,7 +266,6 @@ td{padding:5px 6px}
         <b>Combined list from all phones</b>
         <label class="chk" style="margin:0 0 0 6px"><input type="radio" name="shMode" value="OUT" checked> STOCK OUT</label>
         <label class="chk" style="margin:0"><input type="radio" name="shMode" value="IN"> STOCK IN</label>
-        <label class="chk" style="margin:0"><input type="radio" name="shMode" value="COUNT"> COUNT</label>
         <select id="shSource" style="padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-size:15px">
           <option value="live">Live (shared list)</option><option value="files">From files</option></select>
         <button class="btn alt" id="shRefresh" type="button" style="padding:8px 14px">&#8635; Refresh</button>
@@ -272,6 +295,7 @@ td{padding:5px 6px}
         <label class="chk"><input type="checkbox" id="shOn"> Send my scans to the shared list</label>
         <div class="bar" style="margin-top:10px">
           <button class="btn alt" id="shTest" type="button">Test connection</button>
+          <button class="btn alt" id="shSignOut" type="button">Sign out</button>
           <button class="btn alt" id="shExportSetup" type="button" title="A setup file with the item list, the shared folder link and this shared-list link + unit code (not the charge nurse code)">Export setup file</button>
         </div>
         <div class="note">Needs internet. If it is offline, your scans wait on the phone and are sent later. Backup without internet: <b>📤 Send file</b> on the scan page, then the charge nurse uses <b>Merge files…</b>.</div>
@@ -284,6 +308,7 @@ td{padding:5px 6px}
       <b>Item list:</b> <span id="catInfo" style="flex:1;min-width:200px"></span>
       <button class="btn alt" id="catImport" type="button" style="padding:8px 14px">Import item list…</button>
       <button class="btn alt" id="catReset" type="button" style="display:none;padding:8px 14px">Use built-in list</button>
+      <button class="btn alt" id="phZip" type="button" style="padding:8px 14px" title="All photos added on this phone, as a zip to upload to the website">Photos for the website (.zip)</button>
       <input id="catFile" type="file" accept=".xlsx,.json,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none">
     </div>
     <div class="note">Import the CCS inventory Excel (columns ir_number, item name, Expiry, Location, max_stock, min_stock, Unit Price, Qty_type) or a setup file (.json) from your team. It is kept on this phone.</div>
@@ -312,7 +337,7 @@ const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['E
 // DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
 // the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
 const UPLOAD_LINK = '';
-const VERSION = '2026-11-09.1';
+const VERSION = '2026-11-10.3';
 const FOLDER_FEATURE = false;          // shared-folder sync is switched off (not usable on the hospital PCs); the code is kept          // shown in the page header, so you can see which copy of the file you are running
 const EXPORT = {
   OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
@@ -419,7 +444,7 @@ function buildXlsx(sheetName,cols,rows,meta){
 function lookupItem(map,code){const c=(code||'').trim();return map.get(c)||null;}
 function searchItems(items,text,limit){
   const w=(text||'').toLowerCase().split(/\s+/).filter(Boolean);if(!w.length)return[];
-  const out=[];for(const it of items){const n=it.name.toLowerCase();if(w.every(x=>n.includes(x)||it.ir.startsWith(x))){out.push(it);if(out.length>=limit)break;}}return out;
+  const out=[];for(const it of items){const n=it.key||it.name.toLowerCase();if(w.every(x=>n.includes(x)||it.ir.startsWith(x))){out.push(it);if(out.length>=limit)break;}}return out;
 }
 // add to a list (array of {ir,name,expiry,qty}); merge identical lines. returns the touched line
 function addLine(list,mode,item,qty,expiry){
@@ -498,7 +523,8 @@ function catalogFromRows(rows){
   for(let i=hi+1;i<rows.length;i++){
     const r=rows[i];if(!r)continue;let ir=g(r,'ir_number');if(typeof ir==='number')ir=String(Math.round(ir));ir=String(ir==null?'':ir).trim();
     if(!/^\d{10}$/.test(ir))continue;
-    let it=by.get(ir);if(!it){it={ir,name:'',unit:'',loc:'',price:null,max:null,min:null,exps:new Set()};by.set(ir,it);order.push(ir);}
+    let it=by.get(ir);if(!it){it={ir,name:'',unit:'',loc:'',price:null,max:null,min:null,exps:new Set(),alias:''};by.set(ir,it);order.push(ir);}
+    {const al=[g(r,'other names'),g(r,'other name'),g(r,'alias'),g(r,'aliases')].find(v=>v!=null&&String(v).trim());if(al&&!it.alias)it.alias=String(al).trim().slice(0,300);}
     const nm=String(g(r,'item name')||'').trim(),un=g(r,'qty_type'),lc=g(r,'location');
     if(!it.name&&nm)it.name=nm;if(!it.unit&&un)it.unit=String(un).trim().toUpperCase();if(!it.loc&&lc)it.loc=String(lc).trim();
     if(it.price==null)it.price=num(g(r,'unit price'));if(it.max==null)it.max=num(g(r,'max_stock'));if(it.min==null)it.min=num(g(r,'min_stock'));
@@ -506,7 +532,7 @@ function catalogFromRows(rows){
     if(typeof ex==='number'&&ex>20000&&ex<80000)iso=serialToIso(ex);else if(typeof ex==='string')iso=parseExpiry(ex)||'';
     if(/^\d{4}-\d{2}-\d{2}$/.test(iso))it.exps.add(iso);
   }
-  return order.map(ir=>{const it=by.get(ir);return[ir,it.name||ir,it.unit,it.loc,it.price,it.max,it.min,[...it.exps].sort()];});
+  return order.map(ir=>{const it=by.get(ir);return[ir,it.name||ir,it.unit,it.loc,it.price,it.max,it.min,[...it.exps].sort(),it.alias||''];});
 }
 async function parseXlsxCatalog(arrayBuffer){
   const u8=new Uint8Array(arrayBuffer),ents=zipEntries(u8);
@@ -530,7 +556,7 @@ function parseSetupJson(text){
   for(const a of arr){if(!Array.isArray(a))continue;const ir=String(a[0]||'').trim();if(!/^\d{10}$/.test(ir)||!a[1])continue;
     items.push([ir,String(a[1]),a[2]||'',a[3]||'',a[4]==null?null:a[4],a[5]==null?null:a[5],a[6]==null?null:a[6],Array.isArray(a[7])?a[7].filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)):[]]);}
   return{items,uploadLink:(o&&typeof o.uploadLink==='string'&&/^https:\/\//i.test(o.uploadLink))?o.uploadLink:'',
-    syncUrl:(o&&typeof o.syncUrl==='string'&&/^https:\/\//i.test(o.syncUrl))?o.syncUrl:'',scanCode:(o&&typeof o.scanCode==='string')?o.scanCode.replace(/[^A-Za-z0-9]/g,'').slice(0,30):''};
+    photos:(o&&o.photos&&typeof o.photos==='object'&&!Array.isArray(o.photos))?o.photos:null,syncUrl:(o&&typeof o.syncUrl==='string'&&/^https:\/\//i.test(o.syncUrl))?o.syncUrl:'',scanCode:(o&&typeof o.scanCode==='string')?o.scanCode.replace(/[^A-Za-z0-9]/g,'').slice(0,30):''};
 }
 // ---- Code 128 decoder (camera frames) -------------------------------------
 const C128 = "212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112".split(' ').map(s => s.split('').map(Number));
@@ -631,21 +657,23 @@ function c128Scan(gray, w, h, K) {
   const PROFILE=new URLSearchParams(location.search).get('profile')||APP_ID;   // lets two copies run side by side for testing
   let UNIT_NAME='';try{UNIT_NAME=localStorage.getItem('ccsUnit.v1'+PROFILE)||'';}catch(e){}
   const LS='ccsScanHelper.v2'+PROFILE;
-  let st={mode:'OUT',askExp:true,saveMode:'downloads',copyShared:true,shareLink:'',infoSheet:true,autoOpen:true,lists:{OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[]},rooms:['Store 1','Store 2','Store 3'],cnt:'CNT1',who:'',extra:[],hist:[],sync:{OUT:'',IN:''},dirty:{OUT:false,IN:false},conflicts:{OUT:null,IN:null}};
+  let st={mode:'OUT',askExp:true,saveMode:'downloads',copyShared:true,shareLink:'',infoSheet:true,autoOpen:false,lists:{OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[]},rooms:['Store 1','Store 2','Store 3'],cnt:'CNT1',who:'',extra:[],hist:[],sync:{OUT:'',IN:''},dirty:{OUT:false,IN:false},conflicts:{OUT:null,IN:null}};
   const isCnt=m=>/^CNT[1-3]$/.test(m);const roomName=m=>st.rooms[+String(m).slice(3)-1]||('Store '+String(m).slice(3));
   let hadSaved=false;
-  try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){hadSaved=true;st.lists=Object.assign({OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[]},s.lists||{});if(Array.isArray(s.rooms)&&s.rooms.length===3)st.rooms=s.rooms.map((x,i)=>String(x).replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,20)||('Store '+(i+1)));if(/^CNT[1-3]$/.test(s.cnt))st.cnt=s.cnt;st.who=s.who||'';st.extra=s.extra||[];st.mode=/^(OUT|IN|CNT[1-3])$/.test(s.mode)?s.mode:'OUT';st.askExp=s.askExp!==false;st.saveMode=['downloads','ask','folder'].includes(s.saveMode)?s.saveMode:'downloads';st.copyShared=s.copyShared!==false;st.shareLink=s.shareLink||'';st.infoSheet=s.infoSheet!==false;st.autoOpen=s.autoOpen!==false;
+  try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){hadSaved=true;st.lists=Object.assign({OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[]},s.lists||{});if(Array.isArray(s.rooms)&&s.rooms.length===3)st.rooms=s.rooms.map((x,i)=>String(x).replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,20)||('Store '+(i+1)));if(/^CNT[1-3]$/.test(s.cnt))st.cnt=s.cnt;st.who=s.who||'';st.extra=s.extra||[];st.mode=/^(OUT|IN)$/.test(s.mode)?s.mode:'OUT';st.askExp=true;st.saveMode=['downloads','ask','folder'].includes(s.saveMode)?s.saveMode:'downloads';st.copyShared=s.copyShared!==false;st.shareLink=s.shareLink||'';st.infoSheet=s.infoSheet!==false;st.autoOpen=(s.ao2===true)?s.autoOpen===true:false;
     st.sync=Object.assign({OUT:'',IN:''},s.sync||{});st.dirty=Object.assign({OUT:false,IN:false},s.dirty||{});}}catch(e){}
   if(!hadSaved&&IS_IOS&&typeof navigator.share==='function')st.saveMode='share';   // iPhone apps cannot download files nicely: use the share sheet (Save to Files, OneDrive, Teams)
-  function save(){try{localStorage.setItem(LS,JSON.stringify({lists:st.lists,rooms:st.rooms,cnt:st.cnt,who:st.who,extra:st.extra,mode:st.mode,askExp:st.askExp,saveMode:st.saveMode,copyShared:st.copyShared,shareLink:st.shareLink,infoSheet:st.infoSheet,autoOpen:st.autoOpen,sync:st.sync,dirty:st.dirty}));}catch(e){}}
+  function save(){try{localStorage.setItem(LS,JSON.stringify({lists:st.lists,rooms:st.rooms,cnt:st.cnt,who:st.who,extra:st.extra,mode:st.mode,askExp:st.askExp,saveMode:st.saveMode,copyShared:st.copyShared,shareLink:st.shareLink,infoSheet:st.infoSheet,autoOpen:st.autoOpen,ao2:true,sync:st.sync,dirty:st.dirty}));}catch(e){}}
   const CAT_KEY='ccsScanHelper.catalog.v1'+PROFILE;
   function loadCatalog(){try{const c=JSON.parse(localStorage.getItem(CAT_KEY)||'null');if(c&&Array.isArray(c.items)&&c.items.length)return c;}catch(e){}return null;}
+  let USE_LOC=true;try{USE_LOC=localStorage.getItem('ccsUnitLoc.v1'+PROFILE)!=='0';}catch(e){}
+  let MASTER_URL='master_list.xlsx',PHOTOS_BASE='photos/';
   let catalog=loadCatalog();
   const defaultLink=()=>(catalog&&catalog.uploadLink)||UPLOAD_LINK;
   let items=[],map=new Map();
-  function rebuild(){const base=(catalog&&catalog.items.length)?catalog.items:ITEMS;items=base.map(a=>({ir:a[0],name:a[1],unit:a[2]||'',loc:a[3]||'',price:a[4],max:a[5],min:a[6],exps:a[7]||[]}))
+  function rebuild(){const base=(catalog&&catalog.items.length)?catalog.items:ITEMS;items=base.map(a=>({ir:a[0],name:a[1],unit:a[2]||'',loc:USE_LOC?(a[3]||''):'',price:a[4],max:a[5],min:a[6],exps:a[7]||[],alias:a[8]||''}))
       .concat(st.extra.map(a=>({ir:a[0],name:a[1],unit:a[2]||'',loc:'',price:null,max:null,min:null,exps:[],extra:true})));
-    map=new Map();items.forEach(i=>map.set(i.ir,i));$('extraInfo').textContent=st.extra.length?st.extra.length+' extra item(s) saved.':'';}
+    map=new Map();items.forEach(i=>{i.key=(i.name+' '+(i.alias||'')).toLowerCase();map.set(i.ir,i);});$('extraInfo').textContent=st.extra.length?st.extra.length+' extra item(s) saved.':'';}
   rebuild();
   let pendingItem=null,lastTouched=null,audio=null;
   function beep(ok){if(!$('snd').checked)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);o.frequency.value=ok?880:220;g.gain.value=.08;o.start();o.stop(audio.currentTime+(ok?.07:.3));}catch(e){}}
@@ -773,8 +801,9 @@ function c128Scan(gray, w, h, K) {
     const IN=st.mode==='IN';
     const showExp=true;                                   // the expiry date is always shown and can be edited
     let h='<table><thead><tr><th>#</th><th>IR number</th><th>Item</th>'+(showExp?'<th>Expiry</th>':'')+'<th>Qty</th><th></th></tr></thead><tbody>';
-    l.slice().reverse().forEach((x,ri)=>{const i=l.length-1-ri;
-      h+='<tr class="'+(x===lastTouched?'new':'')+'"><td class="num">'+(i+1)+'</td><td class="num">'+x.ir+'</td><td>'+xmlEsc(x.name)+'</td>'+
+    const grp=isCnt(st.mode);let prevIr='';const gTot={},gN={};if(grp)l.forEach(y=>{gTot[y.ir]=(gTot[y.ir]||0)+y.qty;gN[y.ir]=(gN[y.ir]||0)+1;});
+    (grp?l.map((x,i)=>i).sort((a,b)=>l[a].name.localeCompare(l[b].name)||(l[a].expiry||'9999').localeCompare(l[b].expiry||'9999')):l.map((x,i)=>i).reverse()).forEach(i=>{const x=l[i];const first=grp&&x.ir!==prevIr;prevIr=x.ir;
+      h+='<tr class="'+(x===lastTouched?'new':'')+'"><td class="num">'+(i+1)+'</td><td class="num">'+x.ir+'</td><td>'+thumb(x.ir,40)+xmlEsc(x.name)+(first&&gN[x.ir]>1?'<div class="from">item total here: '+gTot[x.ir]+' ('+gN[x.ir]+' expiry dates)</div>':'')+'</td>'+
         (showExp?'<td><input class="exp" type="text" inputmode="text" autocomplete="off" placeholder="no expiry" title="Edit the expiry date: 31/12/2030 or 12/2030. Empty = no expiry" value="'+(x.expiry?dmy(x.expiry):'')+'" data-a="e" data-i="'+i+'">'+(isCnt(st.mode)?expBadge(x.expiry):'')+'</td>':'')+
         '<td><div class="q"><button data-a="m" data-i="'+i+'">−</button><input type="number" min="1" value="'+x.qty+'" data-a="q" data-i="'+i+'"><button data-a="p" data-i="'+i+'">+</button>'+unitBadge(unitOf(x.ir))+'</div></td>'+
         '<td><button class="x" title="Remove" data-a="d" data-i="'+i+'">✕</button></td></tr>';});
@@ -800,15 +829,15 @@ function c128Scan(gray, w, h, K) {
     const expired=st.mode==='OUT'&&exp&&exp<today;
     msg(expired?'warn':'ok','Expiry changed: '+x.name+' → '+(exp?dmy(exp):'no expiry')+note+(expired?'  ⚠ EXPIRED item':''));
   }
-  $('listWrap').addEventListener('change',e=>{const t=e.target;if(t.dataset.a==='e'){editExpiry(+t.dataset.i,t.value);return;}if(t.dataset.a!=='q')return;const v=Math.floor(+t.value);snapshot();list()[+t.dataset.i].qty=v>=1?v:1;touched([st.mode]);render();});
+  $('listWrap').addEventListener('change',e=>{const t=e.target;if(t.dataset.a==='e'){const ei=+t.dataset.i,ev=t.value;setTimeout(()=>editExpiry(ei,ev),0);return;}if(t.dataset.a!=='q')return;const v=Math.floor(+t.value);snapshot();list()[+t.dataset.i].qty=v>=1?v:1;touched([st.mode]);setTimeout(render,0);});
 
   let queue=[],qTotal=0,qNote='';
   function pick(item,qtyHint,tag){
     $('sugg').style.display='none';
     if(st.mode==='OUT'&&!st.askExp){
       const q=qtyHint||Math.max(1,Math.floor(+$('qty').value)||1);snapshot();
-      lastTouched=addLine(list(),'OUT',item,q,'');touched(['OUT']);render();
-      msg('ok','OUT  '+item.name+'  ×'+q+(item.unit?' '+item.unit:'')+'  → total '+lastTouched.qty+(item.loc?'   ('+shortLoc(item.loc)+')':''));beep(true);
+      const de=defOf(item);lastTouched=addLine(list(),'OUT',item,q,de);touched(['OUT']);render();
+      msg('ok','OUT  '+item.name+'  ×'+q+(item.unit?' '+item.unit:'')+(de?'  exp '+dmy(de):'  (no default expiry date yet)')+'  → total '+lastTouched.qty+(item.loc?'   ('+shortLoc(item.loc)+')':''));beep(true);
       $('qty').value=1;$('scan').value='';focusScan();return;
     }
     const out=st.mode==='OUT';
@@ -816,17 +845,19 @@ function c128Scan(gray, w, h, K) {
     $('recvName').textContent=(tag||'')+(out?'OUT: ':(isCnt(st.mode)?'COUNT '+roomName(st.mode)+': ':'IN: '))+item.name+'  ('+item.ir+')'+(item.loc?'  ·  '+shortLoc(item.loc):'');
     const un=item.unit||'';$('rQtyLbl').textContent=(out?'Qty taken':(isCnt(st.mode)?'Qty counted':'Qty received'))+(un?' ('+un+')':'');$('rSave').className='btn'+(out?'':' in');
     $('rUnit').textContent=un;$('rUnit').className='u'+(un&&un!=='EAC'?' odd':'');$('rUnit').style.fontSize='15px';
-    $('rUnitNote').textContent=(un&&un!=='EAC')?'This item is counted in '+un+' - not in single pieces.':'';
+    $('rUnitNote').textContent=(un&&un!=='EAC')?'This item is counted in '+un+' - not in single pieces.':'';$('rMore').style.display=(isCnt(st.mode)||st.mode==='IN')?'':'none';renderRecvPhoto(item);$('rSetDef').checked=true;$('rDefInfo').textContent=defInfo(item);
     const prev=list().filter(x=>x.ir===item.ir).pop();
-    let pre=prev&&prev.expiry?prev.expiry:(out&&item.exps&&item.exps.length?item.exps[0]:'');
-    $('rQty').value=qtyHint||1;$('rExp').value=dmy(pre);$('rNoExp').checked=false;$('rExp').disabled=false;
+    let pre=isCnt(st.mode)?'':(defOf(item)||(prev&&prev.expiry?prev.expiry:''));
+    $('rQty').value=isCnt(st.mode)?'':(qtyHint||1);$('rExp').value=dmy(pre);$('rNoExp').checked=false;$('rExp').disabled=false;
     const ch=$('chips');ch.innerHTML='';
     if(out&&item.exps&&item.exps.length>1){ch.appendChild(document.createTextNode('Batches in store: '));
       item.exps.forEach(e=>{const b=document.createElement('button');b.type='button';b.textContent=dmy(e);b.onclick=()=>{$('rExp').value=dmy(e);$('rNoExp').checked=false;$('rExp').disabled=false;$('rQty').focus();$('rQty').select();};ch.appendChild(b);});}
+    if(isCnt(st.mode)){const seen=new Set(item.exps||[]);['CNT1','CNT2','CNT3'].forEach(m=>st.lists[m].forEach(x=>{if(x.ir===item.ir&&x.expiry)seen.add(x.expiry);}));
+      if(seen.size){ch.appendChild(document.createTextNode('Dates seen: '));[...seen].sort().forEach(e=>{const b=document.createElement('button');b.type='button';b.textContent=dmy(e);b.onclick=()=>{$('rExp').value=dmy(e);$('rNoExp').checked=false;$('rExp').disabled=false;$('rQty').focus();};ch.appendChild(b);});}}
     $('scan').value='';
-    msg('warn',out?'Check the quantity and expiry date, then press Save (Enter).':'Enter the quantity and expiry date, then press Save.');beep(true);$('rQty').focus();$('rQty').select();
+    msg('warn',isCnt(st.mode)?'Type the quantity and the expiry date. This item has several expiry dates? Use “Save + next expiry”.':(out?'Check the quantity and expiry date, then press Save (Enter).':'Enter the quantity and expiry date, then press Save.'));beep(true);$('rQty').focus();$('rQty').select();
   }
-  function saveRecv(){
+  function saveRecv(keep){
     if(!pendingItem)return;const mode=st.mode;
     const q=Math.floor(+$('rQty').value);if(!(q>=1)){msg('err','Quantity must be 1 or more.');return;}
     let exp='',note='';const today=new Date().toISOString().slice(0,10);
@@ -837,8 +868,12 @@ function c128Scan(gray, w, h, K) {
         if((mode==='OUT'||isCnt(mode))&&exp<today)note='  ⚠ EXPIRED item';}
       else if(mode==='IN'||isCnt(mode)){msg('err','Enter the expiry date, or tick “No expiry date”.');beep(false);$('rExp').focus();return;}
       else note='  (no expiry date saved)';}
+    if(isCnt(mode)){const ex=list().find(x=>x.ir===pendingItem.ir&&(x.expiry||'')===exp);if(ex&&!confirm('Already counted in '+roomName(mode)+': '+ex.qty+(exp?' with expiry '+dmy(exp):' without an expiry date')+'.\nOK = ADD these '+q+' (total '+(ex.qty+q)+').\nCancel = do not add.'))return;}
     snapshot();lastTouched=addLine(list(),mode,pendingItem,q,exp);touched([mode]);
-    msg(note?'warn':'ok',(isCnt(mode)?roomName(mode):mode)+'  '+pendingItem.name+'  ×'+q+(pendingItem.unit?' '+pendingItem.unit:'')+(exp?'  exp '+dmy(exp):'')+note);beep(!note);
+    let defNote='';if($('rSetDef').checked&&exp&&!isCnt(mode)){const cur=sh.defs[pendingItem.ir];if(!cur||cur.e!==exp){setDef(pendingItem.ir,exp);defNote='  · saved as the new default expiry';}}
+    const smsg=(isCnt(mode)?roomName(mode):mode)+'  '+pendingItem.name+'  ×'+q+(pendingItem.unit?' '+pendingItem.unit:'')+(exp?'  exp '+dmy(exp):'')+note+defNote+(isCnt(mode)?totalNote(pendingItem.ir):'');
+    const mk2=note?'warn':'ok';msg(mk2,smsg);beep(!note);
+    if(keep===true){const it=pendingItem;pendingItem=null;$('recv').style.display='none';render();pick(it,0,'');msg(mk2,smsg);return;}
     pendingItem=null;$('recv').style.display='none';render();focusScan();nextFromQueue();
   }
   function cancelRecv(skip){pendingItem=null;$('recv').style.display='none';$('msg').className='msg';focusScan();if(skip===true)nextFromQueue();else{queue=[];qTotal=0;}}
@@ -850,11 +885,11 @@ function c128Scan(gray, w, h, K) {
   function showSugg(text){
     const r=searchItems(items,text,8),s=$('sugg');
     if(!r.length||/^\d+$/.test(text)){s.style.display='none';return r;}
-    s.innerHTML=r.map(it=>'<div data-ir="'+it.ir+'"><b>'+it.ir+'</b>'+xmlEsc(it.name)+'</div>').join('');s.style.display='block';return r;
+    s.innerHTML=r.map(it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir+'</b>'+xmlEsc(it.name)+'</div>').join('');s.style.display='block';return r;
   }
   function endsWithItems(t){return items.filter(i=>i.ir.endsWith(t));}
   function showList(r){const s=$('sugg');if(!r.length){s.style.display='none';return;}
-    s.innerHTML=r.slice(0,8).map(it=>'<div data-ir="'+it.ir+'"><b>'+it.ir.slice(0,-4)+'<span style="font-size:1.25em">'+it.ir.slice(-4)+'</span></b>'+xmlEsc(it.name)+'</div>').join('');s.style.display='block';}
+    s.innerHTML=r.slice(0,8).map(it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir.slice(0,-4)+'<span style="font-size:1.25em">'+it.ir.slice(-4)+'</span></b>'+xmlEsc(it.name)+'</div>').join('');s.style.display='block';}
   function submitScan(){
     const t=$('scan').value.trim();if(!t)return;
     const it=lookupItem(map,t);
@@ -875,8 +910,8 @@ function c128Scan(gray, w, h, K) {
     else if(t.length>=3&&!/^\d+$/.test(t))showSugg(t);else $('sugg').style.display='none';});
   $('sugg').addEventListener('click',e=>{const d=e.target.closest('div[data-ir]');if(d){const it=map.get(d.dataset.ir);if(it)pick(it);}});
   $('addBtn').addEventListener('click',()=>{submitScan();if(!pendingItem)focusScan();});
-  $('rSave').addEventListener('click',saveRecv);$('rCancel').addEventListener('click',()=>cancelRecv(true));
-  ['rQty','rExp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();saveRecv();}if(e.key==='Escape')cancelRecv(true);}));
+  $('rSave').addEventListener('click',()=>saveRecv(false));$('rMore').addEventListener('click',()=>saveRecv(true));$('rCancel').addEventListener('click',()=>cancelRecv(true));
+  ['rQty','rExp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(isCnt(st.mode)&&id==='rQty'&&!$('rExp').value.trim()&&!$('rNoExp').checked){$('rExp').focus();return;}saveRecv(false);}if(e.key==='Escape')cancelRecv(true);}));
   $('rNoExp').addEventListener('change',()=>{$('rExp').disabled=$('rNoExp').checked;});
   $('askExp').addEventListener('change',()=>{st.askExp=$('askExp').checked;save();render();focusScan();});
   function setMode(m){view='scan';if(isCnt(m))st.cnt=m;st.mode=m;cancelRecv();$('sugg').style.display='none';save();render();focusScan();}
@@ -1002,6 +1037,7 @@ function c128Scan(gray, w, h, K) {
       try{localStorage.setItem(CAT_KEY,JSON.stringify(c));}catch(e){throw new Error('could not store the list on this phone (storage full?)');}
       catalog=c;rebuild();renderCat();renderLink();
       let shNote='';if(isJson&&res.syncUrl){shApplySetup(res.syncUrl,res.scanCode);shNote=' Shared list connected.';}
+      if(isJson&&res.photos)phImport(res.photos).then(n=>{if(n){msg('ok','Item list loaded: '+c.items.length+' items, '+n+' item photos.'+shNote);render();}});
       msg('ok','Item list loaded: '+c.items.length+' items.'+(isJson&&res.uploadLink?' Shared folder link set.':(isJson&&oldLink?' The old shared folder link was removed.':''))+shNote);beep(true);
     }catch(e){msg('err','Could not read that file: '+(e.message||e.name));beep(false);}
   };
@@ -1166,8 +1202,8 @@ function c128Scan(gray, w, h, K) {
   // ==AGG END==
   let view='scan';
   const SH_KEY='ccsShared.v1'+PROFILE;
-  let sh={v:2,url:'',urlDefault:'',scanCode:'',chargeCode:'',device:'',enabled:true,sess:{OUT:1,IN:1},pend:{},sent:{},lastOk:0,lastErr:'',files:[]};
-  try{const o=JSON.parse(localStorage.getItem(SH_KEY)||'null');if(o&&typeof o==='object'){sh=Object.assign(sh,o);sh.sess=Object.assign({OUT:1,IN:1},o.sess||{});sh.pend=o.pend||{};sh.sent=o.sent||{};sh.files=Array.isArray(o.files)?o.files:[];
+  let sh={v:2,defs:{},defPend:{},url:'',urlDefault:'',scanCode:'',chargeCode:'',device:'',enabled:true,sess:{OUT:1,IN:1},pend:{},sent:{},lastOk:0,lastErr:'',files:[]};
+  try{const o=JSON.parse(localStorage.getItem(SH_KEY)||'null');if(o&&typeof o==='object'){sh=Object.assign(sh,o);sh.sess=Object.assign({OUT:1,IN:1},o.sess||{});sh.pend=o.pend||{};sh.sent=o.sent||{};sh.files=Array.isArray(o.files)?o.files:[];sh.defs=(o.defs&&typeof o.defs==='object')?o.defs:{};sh.defPend=(o.defPend&&typeof o.defPend==='object')?o.defPend:{};
     if(!o.v){sh.enabled=(!o.url&&!o.scanCode&&!o.chargeCode)?true:!!o.enabled;sh.v=2;}}}catch(e){}
   if(!/^[0-9a-f]{16}$/.test(sh.device||'')){try{sh.device=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>('0'+b.toString(16)).slice(-2)).join('');}catch(e){sh.device=(Math.random().toString(16)+'0000000000000000').slice(2,18);}}
   function shSave(){try{localStorage.setItem(SH_KEY,JSON.stringify(sh));}catch(e){}}
@@ -1197,7 +1233,7 @@ function c128Scan(gray, w, h, K) {
   }
   async function shFlush(){
     if(shBusy||!shReady())return;
-    const keys=Object.keys(sh.pend);if(!keys.length){shBadge();return;}
+    const keys=Object.keys(sh.pend);if(!keys.length&&!Object.keys(sh.defPend).length){shBadge();return;}
     if(navigator.onLine===false){shBadge();return;}
     shBusy=true;let failed=false;
     try{
@@ -1207,12 +1243,14 @@ function c128Scan(gray, w, h, K) {
         if(sh.pend[k]===body)delete sh.pend[k];
         sh.sent[k]=true;sh.lastOk=Date.now();sh.lastErr='';shSave();
       }
+      const dk=Object.keys(sh.defPend);
+      if(dk.length){const snap=Object.assign({},sh.defPend);await shPost('setDefaults',{code:sh.scanCode||sh.chargeCode,by:(st.who||'').trim(),items:dk.map(ir=>({ir,expiry:snap[ir]}))});dk.forEach(ir=>{if(sh.defPend[ir]===snap[ir])delete sh.defPend[ir];});sh.lastOk=Date.now();sh.lastErr='';shSave();}
       shRetry=0;
-    }catch(e){failed=true;sh.lastErr=e.message||String(e);shSave();shRetry=Math.min(shRetry+1,5);clearTimeout(shTimer);shTimer=setTimeout(shFlush,Math.min(20000*Math.pow(2,shRetry-1),300000));}
+    }catch(e){failed=true;sh.lastErr=e.message||String(e);shSave();gateOnError(e);shRetry=Math.min(shRetry+1,5);clearTimeout(shTimer);shTimer=setTimeout(shFlush,Math.min(20000*Math.pow(2,shRetry-1),300000));}
     finally{shBusy=false;shBadge();if(!failed&&Object.keys(sh.pend).length){clearTimeout(shTimer);shTimer=setTimeout(shFlush,300);}}
   }
   function shBadge(){
-    const n=Object.keys(sh.pend).length;let t='';
+    const n=Object.keys(sh.pend).length+Object.keys(sh.defPend).length;let t='';
     if(shReady()){if(n)t=(navigator.onLine===false)?'📴 offline - '+n+' waiting, will be sent when the internet is back':(sh.lastErr?'⚠ shared list: '+n+' waiting ('+sh.lastErr+')':'⏳ shared list: sending…');else if(sh.lastOk)t='✓ shared list '+hm(sh.lastOk);else t='shared list: on';}
     else if(sh.enabled&&okUrl(sh.url||'')&&!sh.scanCode&&!sh.chargeCode)t='shared list: type the unit code (SHARED tab)';
     $('shBadge').textContent=t;$('shBadge').style.color=(n&&sh.lastErr)?'var(--out)':'';
@@ -1223,7 +1261,7 @@ function c128Scan(gray, w, h, K) {
   setInterval(shFlush,60000);
 
   // ---- connection card
-  function renderConn(){$('shUrl').value=sh.url;$('shUrlNote').textContent=(sh.url&&sh.url===sh.urlDefault)?'✓ This link was filled in automatically for your unit.':'';$('shScanCode').value=sh.scanCode;$('shChargeCode').value=sh.chargeCode;$('shOn').checked=!!sh.enabled;shBadge();}
+  function renderConn(){$('shUrl').value=sh.url;$('shUrlNote').textContent=(sh.url&&sh.url===sh.urlDefault)?'✓ This link was filled in automatically for your unit.':'';$('shScanCode').value=sh.scanCode;$('shScanCode').readOnly=!!sh.codeFromCfg;$('shScanCode').title=sh.codeFromCfg?'Set automatically for your unit':'';$('shChargeCode').value=sh.chargeCode;$('shOn').checked=!!sh.enabled;shBadge();}
   function shApplySetup(url,code){sh.url=url;if(code)sh.scanCode=String(code).toUpperCase();sh.enabled=true;shSave();renderConn();shQueue(['OUT','IN','CNT1','CNT2','CNT3']);}
   function shConnChanged(){
     sh.url=$('shUrl').value.trim();sh.scanCode=$('shScanCode').value.trim().replace(/\s+/g,'').toUpperCase();sh.chargeCode=$('shChargeCode').value.trim().replace(/\s+/g,'').toUpperCase();$('shScanCode').value=sh.scanCode;$('shChargeCode').value=sh.chargeCode;sh.enabled=$('shOn').checked;shSave();
@@ -1249,7 +1287,7 @@ function c128Scan(gray, w, h, K) {
     const isC=shLoaded&&shLoaded.mode==='COUNT';$('shMark').textContent=isC?'Mark as done':'Mark as imported';
     const anyExp=isC||shRows.some(r=>r.expiry);
     let h='<table><thead><tr><th></th><th>Item</th>'+(anyExp?'<th>Expiry</th>':'')+'<th>Qty</th></tr></thead><tbody>';
-    shRows.forEach((r,i)=>{h+='<tr class="'+(r.include?'':'off')+'" data-ir="'+xmlEsc(r.ir)+'" data-from="'+xmlEsc(r.from.join(', '))+'"><td><input type="checkbox" data-a="c" data-i="'+i+'"'+(r.include?' checked':'')+'></td><td>'+xmlEsc(r.name)+'<div class="from">'+(isC?'<b>'+xmlEsc(roomName(r.mode))+'</b> · ':'')+xmlEsc(r.ir)+' · from '+xmlEsc(r.from.join(', '))+'</div></td>'+(anyExp?'<td>'+(r.expiry?dmy(r.expiry):'')+(isC?expBadge(r.expiry):'')+'</td>':'')+
+    shRows.forEach((r,i)=>{h+='<tr class="'+(r.include?'':'off')+'" data-ir="'+xmlEsc(r.ir)+'" data-from="'+xmlEsc(r.from.join(', '))+'"><td><input type="checkbox" data-a="c" data-i="'+i+'"'+(r.include?' checked':'')+'></td><td>'+thumb(r.ir,40)+xmlEsc(r.name)+'<div class="from">'+(isC?'<b>'+xmlEsc(roomName(r.mode))+'</b> · ':'')+xmlEsc(r.ir)+' · from '+xmlEsc(r.from.join(', '))+'</div></td>'+(anyExp?'<td>'+(r.expiry?dmy(r.expiry):'')+(isC?expBadge(r.expiry):'')+'</td>':'')+
       '<td><input class="sq" type="number" min="1" value="'+r.qty+'" data-a="q" data-i="'+i+'">'+unitBadge(unitOf(r.ir))+(r.qty!==r.orig?'<div class="from">was '+r.orig+'</div>':'')+'</td></tr>';});
     $('shList').innerHTML=h+'</tbody></table>';
     const inc=shRows.filter(r=>r.include);$('shTot').textContent=inc.length+' line'+(inc.length===1?'':'s')+' · '+inc.reduce((a,r)=>a+r.qty,0)+' units';
@@ -1337,9 +1375,9 @@ function c128Scan(gray, w, h, K) {
   };
   $('shExportSetup').onclick=async()=>{
     const base=(catalog&&catalog.items.length)?catalog.items:ITEMS;
-    const o={format:'ccs-setup-1',unit:'',builtAt:VERSION,uploadLink:defaultLink()||'',syncUrl:okUrl(sh.url)?sh.url:'',scanCode:sh.scanCode||'',items:base};
+    const o={format:'ccs-setup-1',unit:UNIT_NAME||'',photos:phExport(base),builtAt:VERSION,uploadLink:defaultLink()||'',syncUrl:okUrl(sh.url)?sh.url:'',scanCode:sh.scanCode||'',items:base};
     const r=await saveText('ccs_setup_'+stamp()+'.json',JSON.stringify(o));
-    if(r.cancelled)return;shMsg('ok','Setup file saved in '+r.where+'. It has the item list, the shared folder link and the shared-list link + unit code (NOT the charge nurse code). Share it only inside the hospital.');
+    if(r.cancelled)return;shMsg('ok','Setup file saved in '+r.where+'. It has the item list ('+Object.keys(o.photos).length+' photos), the shared folder link and the shared-list link + unit code (NOT the charge nurse code). Share it only inside the hospital.');
   };
   // The unit's default link: a tiny file "config.json" next to index.html (edit it on GitHub, no need to touch the app).
   // Never overwrites a link the person typed by hand.
@@ -1349,17 +1387,80 @@ function c128Scan(gray, w, h, K) {
     try{
       const r=await fetch('config.json?'+Date.now(),{cache:'no-store'});if(!r.ok)return;
       const c=await r.json();
+      if(typeof c.master==='string'&&/^[\w.\/-]+\.xlsx$/.test(c.master))MASTER_URL=c.master;
+      if(typeof c.photos==='string'&&/^[\w.\/-]*\/$/.test(c.photos))PHOTOS_BASE=c.photos;
+      {const lo=c.locations!==false;if(lo!==USE_LOC){USE_LOC=lo;try{localStorage.setItem('ccsUnitLoc.v1'+PROFILE,lo?'1':'0');}catch(e){}rebuild();render();}}
       if(typeof c.unit==='string'){const nm=c.unit.replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,30);if(nm&&nm!==UNIT_NAME){UNIT_NAME=nm;try{localStorage.setItem('ccsUnit.v1'+PROFILE,nm);}catch(e){}showUnit();}}
       const u=(typeof c.syncUrl==='string')?c.syncUrl.trim():'';if(!u||!okUrl(u))return;
       const code=(typeof c.scanCode==='string')?c.scanCode.replace(/[^A-Za-z0-9]/g,'').toUpperCase():'';
       let changed=false;
       if(!sh.url||sh.url===sh.urlDefault){if(sh.url!==u){sh.url=u;changed=true;}}
       sh.urlDefault=u;
-      if(code&&!sh.scanCode){sh.scanCode=code;changed=true;}
+      if(code&&sh.scanCode!==code){sh.scanCode=code;changed=true;}if(sh.codeFromCfg!==!!code){sh.codeFromCfg=!!code;changed=true;}
       shSave();if(changed){renderConn();shRetry=0;const m=['OUT','IN','CNT1','CNT2','CNT3'].filter(x=>st.lists[x].length);if(shReady()&&m.length)shQueue(m);else shFlush();}else renderConn();
     }catch(e){}
   }
-  shBadge();renderConn();$('shConn').open=!shReady();shLoadConfig();
+  // ---- default expiry dates (shared by the unit through the Google Sheet; kept on the phone too)
+  function defOf(item){const d=sh.defs[item.ir];if(d&&d.e)return d.e;const today=new Date().toISOString().slice(0,10),ex=(item.exps||[]).filter(e=>e>=today);return ex.length?ex[0]:'';}
+  function defInfo(item){const d=sh.defs[item.ir];if(d&&d.e)return 'Default: '+dmy(d.e)+(d.by?'  (set by '+d.by+(d.at?', '+String(d.at).slice(0,10):'')+')':'');const e=defOf(item);return e?'Default: '+dmy(e)+'  (from the item list)':'No default expiry date yet for this item.';}
+  function setDef(ir,e){sh.defs[ir]={e,by:(st.who||'').trim(),at:new Date().toISOString().slice(0,16).replace('T',' ')};sh.defPend[ir]=e;shSave();shBadge();if(shReady()){clearTimeout(shTimer);shTimer=setTimeout(shFlush,700);}}
+  let shDefAt=0;
+  async function shLoadDefaults(){
+    if(!shReady()||navigator.onLine===false)return;
+    try{const j=await shPost('defaults',{code:sh.scanCode||sh.chargeCode},15000).catch(e=>{gateOnError(e);throw e;});const d=j.defaults||{};Object.keys(d).forEach(ir=>{if(sh.defPend[ir]===undefined&&d[ir]&&d[ir].e)sh.defs[ir]=d[ir];});shDefAt=Date.now();shSave();}catch(e){}
+  }
+  setInterval(shLoadDefaults,180000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-shDefAt>60000)shLoadDefaults();});
+  // ---- the item master list and the item photos, read from the website (GitHub) - nothing to import on the phones
+  let WEBPH=new Set();try{WEBPH=new Set(JSON.parse(localStorage.getItem('ccsWebPhotos.v1')||'[]'));}catch(e){}
+  async function loadMaster(){
+    if(!/^https?:$/.test(location.protocol))return;
+    try{
+      const r=await fetch(MASTER_URL+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;
+      if(typeof DecompressionStream!=='function')return;
+      const res=await parseXlsxCatalog(await r.arrayBuffer());if(!res.items.length)return;
+      const c={items:res.items,source:'the master list on the website',at:Date.now(),uploadLink:(catalog&&catalog.uploadLink)||'',master:true};
+      try{localStorage.setItem(CAT_KEY,JSON.stringify(c));}catch(e){}
+      catalog=c;rebuild();renderCat();render();
+    }catch(e){}
+  }
+  async function loadWebPhotos(){
+    if(!/^https?:$/.test(location.protocol))return;
+    try{const r=await fetch(PHOTOS_BASE+'index.json?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json(),a=Array.isArray(j)?j:(Array.isArray(j.photos)?j.photos:[]);
+      WEBPH=new Set(a.map(String).filter(x=>/^[A-Za-z0-9._-]{3,20}$/.test(x)));try{localStorage.setItem('ccsWebPhotos.v1',JSON.stringify([...WEBPH]));}catch(e){}render();}catch(e){}
+  }
+  // photos you added on this phone -> one zip for the website ("photos" folder on GitHub)
+  $('phZip').onclick=async()=>{
+    const local=[...PH.entries()].filter(([ir,d])=>okPhoto(d));
+    if(!local.length){msg('err','No photos on this phone yet. Add photos with 📷 in the item panel first.');return;}
+    const files=[];local.forEach(([ir,d])=>{const b=atob(d.split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);files.push({name:'photos/'+ir+'.jpg',data:u});});
+    const all=[...new Set([...WEBPH,...local.map(x=>x[0])])].sort();files.push({name:'photos/index.json',data:new TextEncoder().encode(JSON.stringify({photos:all,updated:new Date().toISOString().slice(0,16)}))});
+    const bytes=zipStore(files),name='photos_for_website_'+stamp()+'.zip',file=new File([bytes],name,{type:'application/zip'});
+    let where='the browser Downloads folder';
+    if(typeof navigator.share==='function'&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name});where='the share sheet';}catch(e){if(e&&e.name==='AbortError')return;}}
+    else{const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}
+    msg('ok','Saved '+name+' ('+local.length+' photos) in '+where+'. Unzip it and upload the "photos" folder to GitHub (it replaces the old one).');
+  };
+  // ---- sign-in: needed when the unit has a shared list (Google Sheet). Staff password = ScanCode, charge nurse password = ChargeCode.
+  if(sh.loggedIn===undefined){sh.loggedIn=!!(sh.scanCode||sh.chargeCode);shSave();}       // phones that already had a code stay signed in
+  const needLogin=()=>okUrl(sh.url||'')&&!sh.codeFromCfg&&!sh.loggedIn;
+  function gateRender(){const lock=needLogin();document.body.classList.toggle('locked',lock);$('gate').style.display=lock?'':'none';$('gateUnit').textContent=(UNIT_NAME?UNIT_NAME+' - ':'')+'CCS Scan Helper';if(lock)setTimeout(()=>$('gatePw').focus(),50);}
+  function gateMsg(k,t){const m=$('gateMsg');m.className='msg '+k;m.textContent=t;}
+  async function gateSignIn(){
+    const pw=$('gatePw').value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();if(!pw){gateMsg('err','Type the password.');return;}
+    if(navigator.onLine===false){gateMsg('err','No internet. Connect to Wi-Fi or mobile data the first time.');return;}
+    $('gateBtn').disabled=true;gateMsg('warn','Checking…');
+    try{const j=await shPost('whoami',{code:pw},15000);sh.scanCode=pw;if(j.role==='charge')sh.chargeCode=pw;sh.loggedIn=true;sh.enabled=true;sh.lastErr='';shSave();
+      $('gatePw').value='';gateMsg('ok','');gateRender();renderConn();shLoadDefaults();const m=['OUT','IN'].filter(x=>st.lists[x].length);if(m.length)shQueue(m);
+      msg('ok','Signed in'+(UNIT_NAME?' to '+UNIT_NAME:'')+(j.role==='charge'?' as charge nurse':'')+'.');focusScan();}
+    catch(e){gateMsg('err',/wrong code|cannot open/i.test(e.message||'')?'Wrong password.':(/too many/i.test(e.message||'')?e.message:'Could not check the password: '+(e.message||e.name)));}
+    finally{$('gateBtn').disabled=false;}
+  }
+  $('gateBtn').onclick=gateSignIn;$('gatePw').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();gateSignIn();}});
+  $('shSignOut').onclick=()=>{if(!confirm('Sign out of this unit on this phone? Scans that are not sent yet stay on the phone.'))return;sh.loggedIn=false;sh.scanCode='';sh.chargeCode='';shSave();renderConn();gateRender();};
+  // the password was changed in the Sheet -> sign in again
+  function gateOnError(e){if(sh.loggedIn&&!sh.codeFromCfg&&/^wrong code/i.test((e&&e.message)||'')){sh.loggedIn=false;shSave();gateRender();gateMsg('warn','The unit password has changed. Please sign in again.');}}
+  shBadge();renderConn();$('shConn').open=!shReady();gateRender();shLoadConfig().finally(()=>{gateRender();loadMaster();loadWebPhotos();shLoadDefaults();});
 
   // ================================================================ STOCK COUNT: 3 store rooms, every line with an expiry date
   function addDaysIso(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
@@ -1367,6 +1468,7 @@ function c128Scan(gray, w, h, K) {
     if(!exp)return{t:'NO EXPIRY DATE',c:'warn'};const today=new Date().toISOString().slice(0,10);
     if(exp<today)return{t:'EXPIRED',c:'bad'};if(exp<=addDaysIso(90))return{t:'< 3 MONTHS',c:'bad2'};if(exp<=addDaysIso(180))return{t:'< 6 MONTHS',c:'warn'};return{t:'OK',c:'ok'};
   }
+  function totalNote(ir){const ls=list().filter(x=>x.ir===ir),n=ls.length,t=ls.reduce((a,x)=>a+x.qty,0);return '  → this expiry: '+(lastTouched?lastTouched.qty:'')+' · item total here: '+t+' ('+n+' expiry date'+(n===1?'':'s')+')';}
   function expBadge(exp){const x=expStatus(exp);return x.c==='ok'?'':'<div class="st '+x.c+'">'+x.t+'</div>';}
   function renderRoomBar(){
     const bar=$('roomBar');if(!isCnt(st.mode)){bar.style.display='none';return;}
@@ -1407,6 +1509,47 @@ function c128Scan(gray, w, h, K) {
     const noExp=lines.filter(x=>!x.expiry).length,exp=lines.filter(x=>expStatus(x.expiry).t==='EXPIRED').length;
     msg(r.where.includes('instead')||!who0?'warn':'ok','Saved '+r.name+' in '+r.where+' (all '+lines.length+' lines of the store rooms in one file).'+(exp?'  ⚠ '+exp+' expired line'+(exp===1?'':'s')+'.':'')+(noExp?'  ⚠ '+noExp+' line'+(noExp===1?'':'s')+' without an expiry date.':'')+(who0?'':'  ⚠ “Prepared by” is empty.'));
   }
+
+  // ================================================================ ITEM PHOTOS (a small picture next to each item)
+  // Kept on this phone (IndexedDB, shared by all unit copies of the app on this site). Shared with colleagues through the setup file.
+  const PH=new Map(),PHOTO_DB='ccsPhotos.v1';
+  function phDb(){return new Promise((res,rej)=>{const q=indexedDB.open(PHOTO_DB,1);q.onupgradeneeded=()=>q.result.createObjectStore('p');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+  async function phLoadAll(){
+    try{const db=await phDb();await new Promise((res,rej)=>{const rq=db.transaction('p').objectStore('p').openCursor();rq.onsuccess=()=>{const c=rq.result;if(c){PH.set(String(c.key),c.value);c.continue();}else res();};rq.onerror=()=>rej(rq.error);});}catch(e){}
+    render();
+  }
+  async function phWrite(entries){            // [[ir,dataUrl|null],...] in one transaction
+    try{const db=await phDb();await new Promise((res,rej)=>{const tx=db.transaction('p','readwrite'),os=tx.objectStore('p');entries.forEach(([ir,d])=>{if(d)os.put(d,ir);else os.delete(ir);});tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});}
+    catch(e){msg('err','Could not keep the photo on this phone: '+((e&&e.message)||'storage error'));return false;}
+    entries.forEach(([ir,d])=>{if(d)PH.set(ir,d);else PH.delete(ir);});return true;
+  }
+  const okPhoto=d=>typeof d==='string'&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(d)&&d.length<200000;
+  function thumb(ir,size){const d=PH.get(ir)||(WEBPH.has(ir)?PHOTOS_BASE+ir+'.jpg':'');return d?'<img class="thumb" src="'+d+'" width="'+size+'" height="'+size+'" alt="" loading="lazy" onerror="this.remove()">':'';}
+  function phExport(base){const o={},irs=new Set((base||[]).map(i=>Array.isArray(i)?String(i[0]):String(i.ir)));PH.forEach((d,ir)=>{if(irs.has(ir)&&okPhoto(d))o[ir]=d;});return o;}
+  async function phImport(obj){const e=Object.entries(obj||{}).filter(([ir,d])=>/^[A-Za-z0-9._-]{3,20}$/.test(ir)&&okPhoto(d));if(!e.length)return 0;return (await phWrite(e))?e.length:0;}
+  // the photo the person picks (camera or gallery) is made small: 160 x 160, JPEG
+  function makeThumb(file){
+    return new Promise((res,rej)=>{
+      const url=URL.createObjectURL(file),img=new Image();
+      img.onload=()=>{try{const S=160,c=document.createElement('canvas');c.width=S;c.height=S;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,S,S);
+        const k=Math.max(S/img.width,S/img.height),w=img.width*k,h=img.height*k;g.drawImage(img,(S-w)/2,(S-h)/2,w,h);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',0.72));}catch(e){rej(e);}};
+      img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('this picture cannot be opened'));};img.src=url;
+    });
+  }
+  function renderRecvPhoto(item){
+    if(!item)return;const loc=PH.get(item.ir),d=loc||(WEBPH.has(item.ir)?PHOTOS_BASE+item.ir+'.jpg':'');
+    $('rPhoto').innerHTML=d?'<img class="thumb" src="'+d+'" width="72" height="72" alt="" style="margin:0">':'<div class="noph">no photo</div>';
+    $('rPhotoBtn').textContent=d?'📷 Change photo':'📷 Add photo';$('rPhotoDel').style.display=loc?'':'none';
+    $('rPhotoSearch').href='https://www.google.com/search?tbm=isch&q='+encodeURIComponent(item.name);
+  }
+  $('rPhotoBtn').onclick=()=>{$('rPhotoFile').value='';$('rPhotoFile').click();};
+  $('rPhotoFile').onchange=async()=>{
+    const f=$('rPhotoFile').files&&$('rPhotoFile').files[0],it=pendingItem;if(!f||!it)return;
+    try{const d=await makeThumb(f);if(await phWrite([[it.ir,d]])){renderRecvPhoto(it);render();msg('ok','Photo saved for '+it.name+'. Colleagues get it with the setup file (SHARED > Connection > Export setup file).');}}
+    catch(e){msg('err','Could not use this picture: '+(e.message||e.name));}
+  };
+  $('rPhotoDel').onclick=async()=>{const it=pendingItem;if(!it||!confirm('Remove the photo of '+it.name+'?'))return;if(await phWrite([[it.ir,null]])){renderRecvPhoto(it);render();}};
+  phLoadAll();
 
   render();renderConflicts();if(FOLDER_FEATURE)initFolder();loadExpDir();if(shReady()&&Object.keys(sh.pend).length)shFlush();
 })();
