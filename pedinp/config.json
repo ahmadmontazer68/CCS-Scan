@@ -1,0 +1,8 @@
+{
+  "unit": "PED INP",
+  "syncUrl": "",
+  "scanCode": "",
+  "master": "../master_list.xlsx",
+  "photos": "../photos/",
+  "locations": false
+}

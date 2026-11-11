@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f4e78">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CCS PLTCU-2">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<title>CCS Scan Helper</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1c2733;--muted:#66758a;--line:#d8dee8;--blue:#1f4e78;--blue2:#2e75b6;
+--out:#b3261e;--outbg:#fdecea;--in:#1e7a3c;--inbg:#e7f5ec;--warn:#8a5a00;--warnbg:#fff4d6;--hi:#fff9c4}
+@media (prefers-color-scheme:dark){:root{--bg:#161b22;--card:#1f2630;--ink:#e6edf3;--muted:#9aa7b5;--line:#344050;
+--blue:#5aa3e0;--blue2:#5aa3e0;--out:#ff8a80;--outbg:#3a1f1f;--in:#66d18a;--inbg:#17301f;--warn:#ffd27a;--warnbg:#3a2f12;--hi:#3a3a14}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 "Segoe UI",system-ui,-apple-system,Arial,sans-serif}
+header{background:var(--blue);color:#fff;padding:12px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+header h1{font-size:18px;margin:0;font-weight:600}
+header .sub{opacity:.85;font-size:13px}
+header .who{margin-left:auto;display:flex;gap:8px;align-items:center;font-size:13px}
+header input{padding:5px 8px;border-radius:6px;border:0;width:150px}
+main{max-width:1100px;margin:16px auto;padding:0 14px 60px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{flex:1;min-width:0;padding:11px 2px;border:2px solid var(--line);background:var(--card);border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;color:var(--ink)}
+.thumb{float:left;margin:0 8px 2px 0;border-radius:6px;object-fit:cover;border:1px solid var(--line);background:#fff}
+.phbox{display:flex;gap:10px;align-items:center;margin:6px 0 8px}
+.phbox .noph{width:72px;height:72px;border:2px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted);text-align:center}
+.phbox .btn{padding:7px 10px;font-size:13px;margin:0 4px 4px 0}
+.phbox a{font-size:13px}
+#sugg .thumb{margin-top:2px}
+.tab small{display:block;font-weight:400;font-size:11px;color:var(--muted)}
+#tabCNT{display:none!important}
+.aka{color:var(--muted);font-weight:400}
+body.locked main{display:none!important}
+#gate{max-width:440px;margin:30px auto;padding:22px;background:var(--card);border:2px solid var(--line);border-radius:14px}
+#gate h2{margin:0 0 6px;font-size:21px}
+#gate input{width:100%;font-size:20px;padding:12px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);letter-spacing:2px;text-transform:uppercase;box-sizing:border-box}
+#gate .btn{width:100%;margin-top:12px;font-size:18px;padding:13px}
+.tab.on.cnt{border-color:#9b6fd8;background:rgba(140,100,200,.18);color:#9b6fd8}
+#roomBar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.room{padding:8px 12px;border:2px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);font-weight:700;font-size:14px;cursor:pointer}
+.room.on{border-color:#9b6fd8;background:rgba(140,100,200,.18);color:#9b6fd8}
+.room small{font-weight:400;margin-left:5px;color:var(--muted)}
+.st{display:inline-block;margin-top:3px;padding:0 6px;border-radius:5px;font-size:11px;font-weight:700;color:#fff}
+.st.bad{background:#c0392b}.st.bad2{background:#d35400}.st.warn{background:#9a7d0a}.st.ok{background:#1e8449}
+.tab.on.out{border-color:var(--out);background:var(--outbg);color:var(--out)}
+.tab.on.sh{border-color:var(--blue2);background:var(--card);color:var(--blue2)}
+.tab.on.in{border-color:var(--in);background:var(--inbg);color:var(--in)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+.scanrow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.scanrow .grow{flex:1;min-width:240px}
+label{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
+input[type=text],input[type=number]{width:100%;padding:11px 12px;font-size:17px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+input:focus{outline:none;border-color:var(--blue2)}
+#scan{font-size:20px;font-weight:600}
+button{font:inherit;cursor:pointer}
+.btn{padding:11px 18px;border-radius:8px;border:0;background:var(--blue);color:#fff;font-weight:600}
+.btn.alt{background:transparent;border:1px solid var(--line);color:var(--ink)}
+.btn.danger{background:transparent;border:1px solid var(--out);color:var(--out)}
+.btn.in{background:var(--in)}
+.msg{padding:10px 12px;border-radius:8px;margin-top:10px;font-weight:600;display:none}
+.msg.ok{display:block;background:var(--inbg);color:var(--in)}
+.msg.err{display:block;background:var(--outbg);color:var(--out)}
+.msg.warn{display:block;background:var(--warnbg);color:var(--warn)}
+#sugg{margin-top:8px;display:none;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+#sugg div{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
+#sugg div:last-child{border-bottom:0}
+#sugg div:hover{background:var(--hi)}
+#sugg b{font-variant-numeric:tabular-nums;margin-right:8px}
+#recv{display:none;border:2px solid var(--in);background:var(--inbg)}
+#recv.out{border-color:var(--out);background:var(--outbg)}
+#chips button{margin:4px 6px 0 0;padding:5px 10px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:13px}
+#recv .name{font-weight:700;margin-bottom:8px}
+.grid{display:grid;grid-template-columns:90px 1.6fr auto;gap:10px;align-items:end}
+@media(max-width:700px){.grid{grid-template-columns:1fr 1fr}}
+.chk{display:flex;gap:6px;align-items:center;font-size:13px;margin-top:6px;color:var(--ink)}
+#shList{overflow-x:auto}
+#shList input.sq{width:74px;padding:6px 8px;font-size:15px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+#shList tr.off td{opacity:.45}
+.from{font-size:11px;color:var(--muted)}
+.shrow{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.shbox label.l{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;padding:6px 8px;border-bottom:2px solid var(--line)}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr.new td{background:var(--hi)}
+td.num{font-variant-numeric:tabular-nums}
+.q{display:flex;align-items:center;gap:4px}
+.q button{width:30px;height:30px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:16px}
+.q input{width:64px;padding:5px;text-align:center;font-size:16px}
+.x{border:0;background:transparent;color:var(--out);font-size:18px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bar .tot{margin-left:auto;color:var(--muted);font-size:13px}
+.empty{padding:26px;text-align:center;color:var(--muted)}
+details summary{cursor:pointer;font-weight:600}
+.note{font-size:12px;color:var(--muted);margin-top:6px}
+#listWrap{overflow-x:auto}
+#listWrap input.exp{width:122px;padding:6px 8px;font-size:15px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font-variant-numeric:tabular-nums}
+#listWrap input.exp:focus{border-color:var(--blue2);outline:none}
+#cam{position:fixed;inset:0;background:#000;z-index:50;display:none}
+#camVideo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#camGuide{position:absolute;left:8%;right:8%;top:32%;height:30%;border:3px solid rgba(255,255,255,.85);border-radius:12px;box-shadow:0 0 0 9999px rgba(0,0,0,.35);pointer-events:none}
+#camTop{position:absolute;top:0;left:0;right:0;display:flex;gap:10px;align-items:center;padding:12px;color:#fff;background:linear-gradient(#000a,#0000)}
+#camTop span{flex:1;font-weight:600}
+#camTop button{padding:10px 14px;border-radius:8px;border:0;background:#fff;color:#111;font-weight:600}
+#camMsg{position:absolute;left:12px;right:12px;bottom:18px;padding:12px;border-radius:10px;background:#000b;color:#fff;text-align:center;font-weight:600}
+select{padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink);font:inherit}
+.folder{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.folder .st{flex:1;min-width:220px;font-size:13px}
+.folder .st b{font-weight:700}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:var(--muted)}
+.dot.on{background:var(--in)}.dot.off{background:var(--out)}
+.conf{margin-bottom:12px}
+.conf .msg{display:block;margin-top:8px}
+.conf button{margin:6px 8px 0 0;padding:7px 12px}
+header{padding:8px 14px}
+header .who{margin:0;gap:8px;font-size:14px;font-weight:600;white-space:nowrap}
+select{max-width:100%}
+.bar select{flex:1 1 230px;min-width:0}
+header input{width:240px;max-width:62vw;font-size:16px;padding:7px 10px}
+.scanline{display:flex;align-items:stretch}
+.scanline #qtyBox{width:74px;margin-right:8px}
+.scanline #qtyBox input{height:100%;padding:6px 4px;text-align:center}
+.scanline #scan{flex:1;min-width:0;border-radius:8px 0 0 8px;border-right-width:0}
+.scanline #addBtn{border-radius:0 8px 8px 0;padding:0 24px;font-size:17px}
+.camrow{display:flex;gap:8px;margin-top:8px}
+.camrow .btn{flex:1;padding:10px 6px}
+.grid{grid-template-columns:150px 1.6fr auto}
+table{font-size:13px}
+th{font-size:11px;padding:4px 6px}
+td{padding:5px 6px}
+.q{gap:3px}
+.q button{width:26px;height:26px;font-size:14px}
+.q input{width:52px;padding:3px;font-size:14px}
+#listWrap input.exp{width:106px;padding:4px 6px;font-size:13px}
+.u{font-size:11px;font-weight:600;color:var(--muted);margin-left:4px;white-space:nowrap}
+.u.odd{color:var(--warn);background:var(--warnbg);border-radius:4px;padding:1px 5px}
+#camGuide{left:10%;right:10%;top:36%;height:22%;box-shadow:0 0 0 9999px rgba(0,0,0,.84)}
+#camGuide::after{content:'';position:absolute;left:5%;right:5%;top:50%;height:2px;background:rgba(255,70,70,.85)}
+/* v7 */
+#catalogCard{display:none!important}
+label[for=shUrl],#shUrl,#shUrlNote{display:none!important}
+#listWrap input.exp{width:150px}
+#rExp{width:100%;min-width:180px;font-size:18px;padding:9px 10px;font-variant-numeric:tabular-nums}
+@media(max-width:700px){#listWrap input.exp{width:132px;font-size:14px}#recv .grid{grid-template-columns:104px 1fr}#recv .grid>div:last-child{grid-column:1/-1}.tab{font-size:12.5px;padding:10px 1px}.tab small{font-size:10px}}
+.tab.on.wo{border-color:#8e44ad;background:rgba(142,68,173,.14);color:#8e44ad}
+#woBar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+#woBar .room{font-size:13px;padding:7px 10px;text-align:left}
+#woBar .room.on{border-color:#8e44ad;background:rgba(142,68,173,.16);color:#8e44ad}
+#recv.wo{border-color:#8e44ad;background:rgba(142,68,173,.10)}
+</style>
+</head>
+<body>
+<header>
+  <div id="unitTag" style="display:none;font-weight:700;font-size:17px"></div>
+  <div class="who"><span>Prepared by</span><input id="who" type="text" placeholder="your name (English)" autocomplete="off"></div>
+</header>
+<div id="gate" style="display:none">
+  <h2>Sign in</h2>
+  <div class="note" id="gateUnit" style="margin-bottom:12px"></div>
+  <label for="gatePw" style="font-weight:600">Unit password</label>
+  <input id="gatePw" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
+  <button class="btn" id="gateBtn" type="button">Sign in</button>
+  <div class="msg" id="gateMsg"></div>
+  <div class="note" style="margin-top:12px">Ask your charge nurse for the password. You sign in once on this phone. Needs internet the first time.</div>
+</div>
+<div id="cam">
+  <video id="camVideo" playsinline muted autoplay></video><div id="camGuide"></div>
+  <div id="camTop"><span id="camTitle">Point the camera at the barcode</span><button id="camTorch" type="button" style="display:none">🔦 Light</button><button id="camClose" type="button">✕ Close</button></div>
+  <div id="camMsg">Starting the camera…</div>
+</div>
+<main>
+  <div class="card" id="installCard" style="display:none"><span id="installTxt"></span> <button class="btn" id="installBtn" type="button" style="display:none;padding:8px 14px;margin-left:8px">Install app</button></div>
+  <div class="card" id="embedWarn" style="display:none;border:2px solid var(--out);background:var(--outbg)">
+    <b style="color:var(--out)">⚠ This page is open inside another page (the SharePoint / OneDrive preview).</b>
+    <div style="margin-top:6px">Here the phone <b>blocks saving files</b> and the camera. Do this once:
+      <ol style="margin:6px 0 0 18px;padding:0">
+        <li>In OneDrive/SharePoint tap <b>⋮ → Download</b> to save <i>ccs_scan_helper.html</i> on the phone.</li>
+        <li>Open the <b>Files</b> app → Downloads → tap the file → <b>Open with Chrome</b>.</li>
+      </ol>
+      <div class="note">Until then use “Copy for Excel” (paste into an Excel or Teams chat) or the “Phone: share sheet” option.</div></div>
+  </div>
+  <div class="card folder" id="folderCard" style="display:none">
+    <div class="st" id="folderStatus"></div>
+    <button class="btn alt" id="fChoose" type="button">Choose shared folder</button>
+    <button class="btn" id="fAllow" type="button" style="display:none">Allow access again</button>
+    <button class="btn alt" id="fRefresh" type="button" style="display:none">Refresh</button>
+    <button class="btn alt" id="fTest" type="button" style="display:none">Test folder</button>
+    <button class="btn alt" id="fForget" type="button" style="display:none">Disconnect</button>
+  </div>
+  <div class="conf" id="conf" style="display:none"></div>
+  <div class="tabs">
+    <button class="tab out" id="tabOUT" type="button">STOCK OUT <small id="cOUT">0 lines</small></button>
+    <button class="tab in" id="tabIN" type="button">STOCK IN <small id="cIN">0 lines</small></button>
+    <button class="tab cnt" id="tabCNT" type="button">COUNT <small id="cCNT">0 lines</small></button>
+    <button class="tab wo" id="tabWO" type="button">WRITE OFF <small id="cWO">0 lines</small></button>
+    <button class="tab sh" id="tabSH" type="button">SHARED <small>all phones</small></button>
+  </div>
+  <div id="scanView">
+
+  <div class="card">
+    <div id="roomBar" style="display:none"></div>
+    <div id="woBar" style="display:none"></div>
+    <label for="scan" id="scanLabel">Scan barcode (or type part of the item name)</label>
+    <div class="scanline">
+      <div id="qtyBox"><input id="qty" type="number" min="1" value="1" aria-label="Quantity per scan" title="Quantity per scan"></div>
+      <input id="scan" type="text" autocomplete="off" autofocus>
+      <button class="btn" id="addBtn" type="button">Add</button>
+    </div>
+    <div class="camrow">
+      <button class="btn alt" id="camBtn" type="button">📷 Camera</button>
+      <button class="btn alt" id="photoBtn" type="button">📸 Photo</button>
+      <button class="btn alt" id="videoBtn" type="button" title="Record a short video while you point at the barcodes one after another">🎥 Video</button>
+    </div>
+    <input id="videoIn" type="file" accept="video/*" capture="environment" style="display:none">
+    <input id="photoIn" type="file" accept="image/*" capture="environment" style="display:none">
+    <div id="sugg"></div>
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <div class="card" id="recv">
+    <div class="name" id="recvName"></div>
+    <div class="phbox"><div id="rPhoto"></div><div><button class="btn alt" id="rPhotoBtn" type="button">📷 Add photo</button><button class="btn alt" id="rPhotoDel" type="button" style="display:none">Remove photo</button><br><a id="rPhotoSearch" href="#" target="_blank" rel="noopener">🔎 Find a picture on the internet</a></div><input id="rPhotoFile" type="file" accept="image/*" style="display:none"></div>
+    <div class="grid">
+      <div><label for="rQty" id="rQtyLbl">Qty received</label><div class="q" style="gap:6px"><input id="rQty" type="number" min="1" value="1" style="width:96px;font-size:17px;padding:8px"><span id="rUnit" class="u" style="font-size:15px"></span></div><div class="note" id="rUnitNote"></div></div>
+      <div><label for="rExp">Expiry (31/12/2030 or 12/2030)</label><input id="rExp" type="text" placeholder="DD/MM/YYYY" autocomplete="off">
+        <label class="chk"><input type="checkbox" id="rSetDef" checked> Set as default expiry date</label><div class="note" id="rDefInfo" style="margin:2px 0 4px"></div>
+        <label class="chk"><input type="checkbox" id="rNoExp"> No expiry date on this item</label><div id="chips"></div></div>
+      <div style="display:flex;gap:6px"><button class="btn in" id="rSave" type="button">Save</button><button class="btn alt" id="rMore" type="button" style="display:none" title="Save this expiry date and add another expiry date of the same item">Save + next expiry</button><button class="btn alt" id="rCancel" type="button">Cancel</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="bar" style="margin-bottom:10px">
+      <span class="note" style="margin:0">Excel file is saved to:</span>
+      <select id="saveMode">
+        <option value="downloads">Browser Downloads folder</option>
+        <option value="ask">Ask me each time (Save as…)</option>
+        <option value="folder">A fixed folder I choose</option>
+        <option value="share">Phone: share sheet (OneDrive, Teams, email…)</option>
+      </select>
+      <button class="btn alt" id="expChoose" type="button" style="display:none;padding:8px 14px">Choose folder</button>
+      <span class="note" id="expName" style="margin:0"></span>
+      <label class="chk" id="copyRow" style="margin:0 0 0 6px;display:none"><input type="checkbox" id="copySh" checked> also copy to the shared folder</label>
+    </div>
+    <div class="bar" style="margin-bottom:10px">
+      <span class="note" style="margin:0">Shared folder link (OneDrive / SharePoint / Forms):</span>
+      <input id="shareLink" type="text" placeholder="https://…" autocomplete="off" style="flex:1;min-width:220px;max-width:460px;font-size:15px;padding:8px 10px">
+      <button class="btn alt" id="openShared" type="button" style="display:none;padding:8px 14px">📂 Open shared folder</button>
+      <label class="chk" id="autoRow" style="margin:0 0 0 6px;display:none"><input type="checkbox" id="autoOpen"> open it after saving</label>
+    </div>
+    <div class="bar" style="margin-bottom:8px">
+      <button class="btn" id="xlsx" type="button">&#11015; Save Excel (.xlsx)</button>
+      <button class="btn alt" id="copy" type="button" style="display:none">Copy for Excel</button>
+      <button class="btn alt" id="undo" type="button">&#8630; Undo</button>
+      <button class="btn danger" id="clear" type="button">Clear list</button>
+      <button class="btn alt" id="sendFile" type="button" title="Backup: send your lists as a small file (Teams / WhatsApp) to the charge nurse">&#128228; Send file</button>
+      <label class="chk" style="margin:0 0 0 6px"><input type="checkbox" id="snd" checked> sound</label>
+      <label class="chk" style="display:none"><input type="checkbox" id="askExp" checked> ask expiry on STOCK OUT</label>
+      <label class="chk" style="margin:0 0 0 6px" title="Whole item list like the CCS template, Qty filled only for scanned items"><input type="checkbox" id="allItems"> export all items</label>
+      <label class="chk" style="margin:0 0 0 6px" title="Adds a second sheet “Info” (Prepared by, date, counts). The file author is always set to your name. Turn off if CCS refuses the file."><input type="checkbox" id="infoSheet" checked> name sheet in file</label>
+      <span class="tot" id="tot"></span><span class="tot" id="shBadge"></span>
+    </div>
+    <textarea id="copyBox" readonly style="display:none;width:100%;height:140px;font:13px monospace;margin-bottom:8px;border:2px solid var(--blue2);border-radius:8px;background:var(--card);color:var(--ink);padding:8px"></textarea>
+    <div id="listWrap"></div>
+    <div class="note">The list is kept on this computer even if you close the page. Save the Excel file (same columns as the CCS template), then use
+      <b>Import Stock Out from Excel</b> / <b>Import Stock In from Excel</b> in CCS.</div>
+  </div>
+  </div><!-- /scanView -->
+
+  <div id="sharedView" style="display:none">
+    <div class="card">
+      <div class="bar" style="margin-bottom:6px">
+        <b>Combined list from all phones</b>
+        <label class="chk" style="margin:0 0 0 6px"><input type="radio" name="shMode" value="OUT" checked> STOCK OUT</label>
+        <label class="chk" style="margin:0"><input type="radio" name="shMode" value="IN"> STOCK IN</label>
+        <label class="chk" style="margin:0"><input type="radio" name="shMode" value="WO"> WRITE OFF</label>
+        <select id="shSource" style="padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-size:15px">
+          <option value="live">Live (shared list)</option><option value="files">From files</option></select>
+        <button class="btn alt" id="shRefresh" type="button" style="padding:8px 14px">&#8635; Refresh</button>
+      </div>
+      <div class="note" id="shInfo" style="margin:0 0 8px"></div>
+      <div id="shList"></div>
+      <div class="bar" style="margin-top:10px">
+        <button class="btn" id="shSave" type="button">&#11015; Save Excel (.xlsx)</button>
+        <button class="btn alt" id="shMark" type="button">Mark as imported</button>
+        <button class="btn danger" id="shDiscard" type="button" title="Unchecked lines are thrown away (they will not show again)">Discard unchecked</button>
+        <button class="btn alt" id="shRecover" type="button" title="Shows again the list that was last marked as imported, so you can save the Excel file again">&#8634; Recover the last list</button>
+        <button class="btn alt" id="shFilesBtn" type="button">Merge files…</button>
+        <input id="shFiles" type="file" accept=".json,application/json" multiple style="display:none">
+        <span class="tot" id="shTot"></span>
+      </div>
+      <div class="msg" id="shMsg"></div>
+      <div class="note">Charge nurse: check the lines, fix a quantity if needed, <b>Save Excel</b>, import it in CCS, then press <b>Mark as imported</b>: the lines disappear here and on the phones of the staff. Cleared by mistake? Press <b>Recover the last list</b>.</div>
+    </div>
+    <div class="card shbox">
+      <details id="shConn"><summary><b>Connection to the shared list</b> <span class="note" id="shStatus" style="display:inline;margin-left:8px"></span></summary>
+        <label class="l" for="shUrl">Web app link (from the person who set up the Google Sheet)</label>
+        <input id="shUrl" type="text" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec">
+        <div class="note" id="shUrlNote" style="margin:4px 0 0"></div>
+        <label class="l" for="shScanCode">Unit code (everybody who scans)</label>
+        <input id="shScanCode" type="text" autocomplete="off" autocapitalize="characters">
+        <label class="l" for="shChargeCode">Charge nurse code (only to open the combined list)</label>
+        <input id="shChargeCode" type="text" autocomplete="off" autocapitalize="characters">
+        <label class="chk"><input type="checkbox" id="shOn"> Send my scans to the shared list</label>
+        <div class="bar" style="margin-top:10px">
+          <button class="btn alt" id="shTest" type="button">Test connection</button>
+          <button class="btn alt" id="shSignOut" type="button">Sign out</button>
+          <button class="btn alt" id="shExportSetup" type="button" title="A setup file with the item list, the shared folder link and this shared-list link + unit code (not the charge nurse code)">Export setup file</button>
+        </div>
+        <div class="note">Needs internet. If it is offline, your scans wait on the phone and are sent later. Backup without internet: <b>📤 Send file</b> on the scan page, then the charge nurse uses <b>Merge files…</b>.</div>
+      </details>
+    </div>
+  </div>
+
+  <div class="card" id="catalogCard">
+    <div class="bar">
+      <b>Item list:</b> <span id="catInfo" style="flex:1;min-width:200px"></span>
+      <button class="btn alt" id="catImport" type="button" style="padding:8px 14px">Import item list…</button>
+      <button class="btn alt" id="catReset" type="button" style="display:none;padding:8px 14px">Use built-in list</button>
+      <button class="btn alt" id="phZip" type="button" style="padding:8px 14px" title="All photos added on this phone, as a zip to upload to the website">Photos for the website (.zip)</button>
+      <input id="catFile" type="file" accept=".xlsx,.json,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" style="display:none">
+    </div>
+    <div class="note">Import the CCS inventory Excel (columns ir_number, item name, Expiry, Location, max_stock, min_stock, Unit Price, Qty_type) or a setup file (.json) from your team. It is kept on this phone.</div>
+  </div>
+
+  <div class="card">
+    <details><summary>Item not in the list? Add it</summary>
+      <div class="grid" style="margin-top:10px;grid-template-columns:150px 1fr 100px auto">
+        <div><label for="nIr">IR number</label><input id="nIr" type="text" autocomplete="off"></div>
+        <div><label for="nName">Item name</label><input id="nName" type="text" autocomplete="off"></div>
+        <div><label for="nUnit">Unit</label><input id="nUnit" type="text" placeholder="EAC" autocomplete="off"></div>
+        <button class="btn" id="nAdd" type="button">Save item</button>
+      </div>
+      <div class="note">Saved on this computer only. <span id="extraInfo"></span></div>
+    </details>
+  </div>
+  <div class="note" style="text-align:center;margin:2px 0 0"><span id="ver"></span></div>
+</main>
+
+<script>
+// ============ SETTINGS you may change =====================================
+// The Excel file has exactly the columns of the CCS template (sheet "inventory list").
+// [heading, key, type ('s' text | 'n' number | 'd' date), column width]
+const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['Expiry','expiry','d',13],['Location','loc','s',42],
+  ['max_stock','max','n',10],['min_stock','min','n',10],['Unit Price','price','n',11],['Qty_type','unit','s',10],['Qty','qty','n',8]];
+// DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
+// the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
+const UPLOAD_LINK = '';
+const VERSION = '2026-11-11.1';
+const FOLDER_FEATURE = false;          // shared-folder sync is switched off (not usable on the hospital PCs); the code is kept          // shown in the page header, so you can see which copy of the file you are running
+const EXPORT = {
+  OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
+  IN:  { sheet: 'inventory list', file: 'CCS_StockIn',  cols: TEMPLATE_COLS }
+};
+// ============ ITEM LIST (from items_master.xlsx) ============================
+const ITEMS = /*ITEMS*/[];
+const PWA = true;               // true in the installable phone app (hosted on https)
+// ==CORE START==
+function pad2(n){return (n<10?'0':'')+n;}
+function validYMD(y,m,d){const t=new Date(Date.UTC(y,m-1,d));return y>=2000&&y<=2100&&t.getUTCFullYear()===y&&t.getUTCMonth()===m-1&&t.getUTCDate()===d;}
+function lastDay(y,m){return new Date(Date.UTC(y,m,0)).getUTCDate();}
+// -> 'YYYY-MM-DD' | null
+function parseExpiry(s){
+  s=(s||'').trim(); let m;
+  if((m=s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/))){const d=+m[1],mo=+m[2],y=+m[3];return validYMD(y,mo,d)?y+'-'+pad2(mo)+'-'+pad2(d):null;}
+  if((m=s.match(/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})$/))){const y=+m[1],mo=+m[2],d=+m[3];return validYMD(y,mo,d)?y+'-'+pad2(mo)+'-'+pad2(d):null;}
+  if((m=s.match(/^(\d{1,2})[\/.\-](\d{4})$/))){const mo=+m[1],y=+m[2];return(mo>=1&&mo<=12&&y>=2000&&y<=2100)?y+'-'+pad2(mo)+'-'+pad2(lastDay(y,mo)):null;}
+  if((m=s.match(/^(\d{4})[\/.\-](\d{1,2})$/))){const y=+m[1],mo=+m[2];return(mo>=1&&mo<=12&&y>=2000&&y<=2100)?y+'-'+pad2(mo)+'-'+pad2(lastDay(y,mo)):null;}
+  if((m=s.match(/^(\d{2})(\d{2})(\d{4})$/))){const d=+m[1],mo=+m[2],y=+m[3];return validYMD(y,mo,d)?y+'-'+pad2(mo)+'-'+pad2(d):null;}
+  if((m=s.match(/^(\d{1,2})[\- ]([A-Za-z]{3,9})[\- ,]*(\d{4})$/))){const mi=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].indexOf(m[2].slice(0,3).toLowerCase());if(mi<0)return null;const d=+m[1],y=+m[3];return validYMD(y,mi+1,d)?y+'-'+pad2(mi+1)+'-'+pad2(d):null;}
+  return null;
+}
+function excelSerial(iso){const p=iso.split('-').map(Number);return Math.round((Date.UTC(p[0],p[1]-1,p[2])-Date.UTC(1899,11,30))/86400000);}
+function xmlEsc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');}
+function colLetter(i){let s='';i++;while(i>0){const r=(i-1)%26;s=String.fromCharCode(65+r)+s;i=Math.floor((i-1)/26);}return s;}
+let CRC_T=null;
+function crc32(b){if(!CRC_T){CRC_T=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;CRC_T[n]=c>>>0;}}
+  let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC_T[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+function zipStore(files){ // files: [{name, data:Uint8Array}]  (no compression)
+  const enc=new TextEncoder(),parts=[],central=[];let off=0;
+  for(const f of files){
+    const nm=enc.encode(f.name),crc=crc32(f.data),sz=f.data.length;
+    const h=new DataView(new ArrayBuffer(30));
+    h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);
+    h.setUint16(10,0,true);h.setUint16(12,0x21,true);h.setUint32(14,crc,true);h.setUint32(18,sz,true);h.setUint32(22,sz,true);
+    h.setUint16(26,nm.length,true);h.setUint16(28,0,true);
+    parts.push(new Uint8Array(h.buffer),nm,f.data);
+    const c=new DataView(new ArrayBuffer(46));
+    c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint16(10,0,true);
+    c.setUint16(12,0,true);c.setUint16(14,0x21,true);c.setUint32(16,crc,true);c.setUint32(20,sz,true);c.setUint32(24,sz,true);
+    c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+    central.push(new Uint8Array(c.buffer),nm);
+    off+=30+nm.length+sz;
+  }
+  let csz=0;for(const p of central)csz+=p.length;
+  const e=new DataView(new ArrayBuffer(22));
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,csz,true);e.setUint32(16,off,true);
+  const all=[...parts,...central,new Uint8Array(e.buffer)];let tot=0;for(const p of all)tot+=p.length;
+  const out=new Uint8Array(tot);let o=0;for(const p of all){out.set(p,o);o+=p.length;}return out;
+}
+// cols: [[heading,key,type('s'|'n'|'d'),width]], rows: array of objects
+function buildXlsx(sheetName,cols,rows,meta){
+  const enc=new TextEncoder();
+  let sd='<row r="1">'+cols.map((c,i)=>'<c r="'+colLetter(i)+'1" t="inlineStr" s="2"><is><t>'+xmlEsc(c[0])+'</t></is></c>').join('')+'</row>';
+  rows.forEach((r,ri)=>{
+    const rn=ri+2;
+    sd+='<row r="'+rn+'">'+cols.map((c,i)=>{
+      const ref=colLetter(i)+rn,v=r[c[1]];
+      if(v===undefined||v===null||v==='')return '';
+      if(c[2]==='n')return '<c r="'+ref+'"><v>'+Number(v)+'</v></c>';
+      if(c[2]==='d')return '<c r="'+ref+'" s="1"><v>'+excelSerial(v)+'</v></c>';
+      return '<c r="'+ref+'" t="inlineStr" s="3"><is><t>'+xmlEsc(v)+'</t></is></c>';
+    }).join('')+'</row>';
+  });
+  const ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main',rel='http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  const X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n';
+  const parts=[
+    ['[Content_Types].xml',X+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'],
+    ['_rels/.rels',X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+rel+'/officeDocument" Target="xl/workbook.xml"/></Relationships>'],
+    ['xl/workbook.xml',X+'<workbook xmlns="'+ns+'" xmlns:r="'+rel+'"><sheets><sheet name="'+xmlEsc(sheetName)+'" sheetId="1" r:id="rId1"/></sheets></workbook>'],
+    ['xl/_rels/workbook.xml.rels',X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+rel+'/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="'+rel+'/styles" Target="styles.xml"/></Relationships>'],
+    ['xl/styles.xml',X+'<styleSheet xmlns="'+ns+'"><numFmts count="1"><numFmt numFmtId="164" formatCode="dd\\-mmm\\-yyyy"/></numFmts><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="4"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'],
+    ['xl/worksheets/sheet1.xml',X+'<worksheet xmlns="'+ns+'"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>'+cols.map((c,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+c[3]+'" customWidth="1"/>').join('')+'</cols><sheetData>'+sd+'</sheetData></worksheet>']
+  ];
+  if(meta){                                                  // who saved it: file author + optional "Info" sheet (second sheet)
+    const P=n=>parts.find(p=>p[0]===n);
+    (meta.extra||[]).forEach((x,k)=>{
+      const n=3+k,rid='rId'+(10+n);
+      let xd='<row r="1">'+x.cols.map((c,i)=>'<c r="'+colLetter(i)+'1" t="inlineStr" s="2"><is><t>'+xmlEsc(c[0])+'</t></is></c>').join('')+'</row>';
+      x.rows.forEach((r,ri)=>{const rn=ri+2;xd+='<row r="'+rn+'">'+x.cols.map((c,i)=>{const ref=colLetter(i)+rn,v=r[c[1]];if(v===undefined||v===null||v==='')return '';
+        if(c[2]==='n')return '<c r="'+ref+'"><v>'+Number(v)+'</v></c>';if(c[2]==='d')return '<c r="'+ref+'" s="1"><v>'+excelSerial(v)+'</v></c>';
+        return '<c r="'+ref+'" t="inlineStr" s="3"><is><t>'+xmlEsc(v)+'</t></is></c>';}).join('')+'</row>';});
+      P('[Content_Types].xml')[1]=P('[Content_Types].xml')[1].replace('</Types>','<Override PartName="/xl/worksheets/sheet'+n+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
+      P('xl/workbook.xml')[1]=P('xl/workbook.xml')[1].replace('</sheets>','<sheet name="'+xmlEsc(x.name)+'" sheetId="'+n+'" r:id="'+rid+'"/></sheets>');
+      P('xl/_rels/workbook.xml.rels')[1]=P('xl/_rels/workbook.xml.rels')[1].replace('</Relationships>','<Relationship Id="'+rid+'" Type="'+rel+'/worksheet" Target="worksheets/sheet'+n+'.xml"/></Relationships>');
+      parts.push(['xl/worksheets/sheet'+n+'.xml',X+'<worksheet xmlns="'+ns+'"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols>'+x.cols.map((c,i)=>'<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+c[3]+'" customWidth="1"/>').join('')+'</cols><sheetData>'+xd+'</sheetData></worksheet>']);
+    });
+    if(meta.info&&meta.info.length){
+      P('[Content_Types].xml')[1]=P('[Content_Types].xml')[1].replace('</Types>','<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>');
+      P('xl/workbook.xml')[1]=P('xl/workbook.xml')[1].replace('</sheets>','<sheet name="'+xmlEsc(meta.infoName||'Info')+'" sheetId="2" r:id="rId3"/></sheets>');
+      P('xl/_rels/workbook.xml.rels')[1]=P('xl/_rels/workbook.xml.rels')[1].replace('</Relationships>','<Relationship Id="rId3" Type="'+rel+'/worksheet" Target="worksheets/sheet2.xml"/></Relationships>');
+      const r2=meta.info.map((kv,i)=>'<row r="'+(i+1)+'"><c r="A'+(i+1)+'" t="inlineStr" s="2"><is><t>'+xmlEsc(kv[0])+'</t></is></c><c r="B'+(i+1)+'" t="inlineStr"><is><t xml:space="preserve">'+xmlEsc(kv[1])+'</t></is></c></row>').join('');
+      parts.push(['xl/worksheets/sheet2.xml',X+'<worksheet xmlns="'+ns+'"><cols><col min="1" max="1" width="22" customWidth="1"/><col min="2" max="2" width="60" customWidth="1"/></cols><sheetData>'+r2+'</sheetData></worksheet>']);
+    }
+    const iso=(meta.created||new Date()).toISOString().replace(/\.\d+Z$/,'Z'),who=xmlEsc(meta.who||'CCS Scan Helper');
+    P('[Content_Types].xml')[1]=P('[Content_Types].xml')[1].replace('</Types>','<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>');
+    P('_rels/.rels')[1]=P('_rels/.rels')[1].replace('</Relationships>','<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>');
+    parts.push(['docProps/core.xml',X+'<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>'+xmlEsc(meta.title||sheetName)+'</dc:title><dc:creator>'+who+'</dc:creator><cp:lastModifiedBy>'+who+'</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">'+iso+'</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">'+iso+'</dcterms:modified></cp:coreProperties>']);
+  }
+  return zipStore(parts.map(f=>({name:f[0],data:enc.encode(f[1])})));
+}
+// -> {ir,name,unit,loc} | null     (items: array of [ir,name,unit,loc])
+function lookupItem(map,code){const c=(code||'').trim();return map.get(c)||null;}
+function searchItems(items,text,limit){
+  const w=(text||'').toLowerCase().split(/\s+/).filter(Boolean);if(!w.length)return[];
+  const out=[];for(const it of items){const n=it.key||it.name.toLowerCase();if(w.every(x=>n.includes(x)||it.ir.startsWith(x))){out.push(it);if(out.length>=limit)break;}}return out;
+}
+// add to a list (array of {ir,name,expiry,qty}); merge identical lines. returns the touched line
+function addLine(list,mode,item,qty,expiry){
+  let l=list.find(x=>x.ir===item.ir&&(x.expiry||'')===(expiry||''));
+  if(l){l.qty+=qty;}else{l={ir:item.ir,name:item.name,qty:qty,expiry:expiry||''};list.push(l);}
+  return l;
+}
+function dmy(iso){return iso&&/^\d{4}-\d{2}-\d{2}$/.test(iso)?iso.slice(8)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4):(iso||'');}
+// rows for the Excel file. includeAll=false: only scanned lines. true: the whole item list (template style),
+// Qty filled only where something was scanned.
+function buildRows(list,items,includeAll){
+  const info=new Map(items.map(i=>[i.ir,i]));
+  const mk=(it,l)=>({ir:it.ir,name:it.name,expiry:(l&&l.expiry)||'',loc:it.loc||'',max:it.max,min:it.min,price:it.price,unit:it.unit||'',qty:l?l.qty:''});
+  if(!includeAll)return list.map(l=>mk(info.get(l.ir)||{ir:l.ir,name:l.name},l));
+  const by=new Map();list.forEach(l=>{if(!by.has(l.ir))by.set(l.ir,[]);by.get(l.ir).push(l);});
+  const out=[];items.forEach(it=>{const ls=by.get(it.ir);if(ls)ls.forEach(l=>out.push(mk(it,l)));else out.push(mk(it,null));});
+  return out;
+}
+// Video: one "presentation" = the same code seen in consecutive frames. Same code shown again later = another unit.
+function groupDetections(dets,gap){
+  gap=gap||1.5;const groups=[];let cur=null;
+  for(const d of dets){
+    if(cur&&cur.code===d.code&&d.t-cur.last<=gap){cur.last=d.t;cur.n++;cur.strong=cur.strong||d.c>=2;}
+    else{cur={code:d.code,first:d.t,last:d.t,n:1,strong:d.c>=2};groups.push(cur);}
+  }
+  const cnt=new Map(),order=[];
+  for(const g of groups){if(g.n<2&&!g.strong)continue;if(!cnt.has(g.code)){cnt.set(g.code,0);order.push(g.code);}cnt.set(g.code,cnt.get(g.code)+1);}
+  return order.map(c=>({code:c,qty:cnt.get(c)}));
+}
+
+// ---- item list import: the CCS inventory Excel (.xlsx) or a setup file (.json) -> [[ir,name,unit,loc,price,max,min,[expiries]]]
+function serialToIso(n){const d=new Date(Date.UTC(1899,11,30)+Math.round(n)*86400000);return d.getUTCFullYear()+'-'+pad2(d.getUTCMonth()+1)+'-'+pad2(d.getUTCDate());}
+function unxml(t){return String(t).replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(+n)).replace(/&#x([0-9a-fA-F]+);/g,(_,h)=>String.fromCharCode(parseInt(h,16))).replace(/&amp;/g,'&');}
+function colIndex(ref){const m=/^([A-Z]+)/.exec(ref);let n=0;for(const ch of m[1])n=n*26+ch.charCodeAt(0)-64;return n-1;}
+async function inflateRaw(u8){const ds=new DecompressionStream('deflate-raw'),w=ds.writable.getWriter();w.write(u8);w.close();return new Uint8Array(await new Response(ds.readable).arrayBuffer());}
+function zipEntries(u8){
+  const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength);let e=u8.length-22;
+  while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw new Error('this is not an .xlsx file');
+  const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const out={};
+  for(let i=0;i<n;i++){
+    if(dv.getUint32(p,true)!==0x02014b50)break;
+    const method=dv.getUint16(p+10,true),csz=dv.getUint32(p+20,true),nl=dv.getUint16(p+28,true),el=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lho=dv.getUint32(p+42,true);
+    out[new TextDecoder().decode(u8.subarray(p+46,p+46+nl))]={method,csz,lho};p+=46+nl+el+cl;
+  }
+  return out;
+}
+async function zipText(u8,ents,name){
+  const ent=ents[name];if(!ent)return null;
+  const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength),start=ent.lho+30+dv.getUint16(ent.lho+26,true)+dv.getUint16(ent.lho+28,true);
+  const data=u8.subarray(start,start+ent.csz);
+  return new TextDecoder().decode(ent.method===0?data:await inflateRaw(data));
+}
+function sheetRows(xml,shared){
+  const rows=[],rowRe=/<row\b[^>]*?(?:\/>|>([\s\S]*?)<\/row>)/g;let rm;
+  while((rm=rowRe.exec(xml))){
+    const row=[],body=rm[1]||'',cRe=/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g;let cm;
+    while((cm=cRe.exec(body))){
+      const at=cm[1],inner=cm[2]||'',r=/\br="([A-Z]+\d+)"/.exec(at),t=/\bt="(\w+)"/.exec(at);if(!r)continue;
+      const vm=/<v>([\s\S]*?)<\/v>/.exec(inner);let v;
+      if(t&&t[1]==='s'&&vm)v=shared[+vm[1]];
+      else if(t&&t[1]==='inlineStr')v=[...inner.matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map(x=>unxml(x[1])).join('');
+      else if(vm)v=(t&&t[1]==='str')?unxml(vm[1]):Number(vm[1]);
+      row[colIndex(r[1])]=v;
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+function catalogFromRows(rows){
+  let hi=-1;const cols={};
+  for(let i=0;i<rows.length&&i<30;i++){const r=rows[i]||[];if(r.some(v=>typeof v==='string'&&v.trim().toLowerCase()==='ir_number')){hi=i;r.forEach((v,j)=>{if(typeof v==='string')cols[v.trim().toLowerCase()]=j;});break;}}
+  if(hi<0)return null;
+  const g=(r,k)=>cols[k]===undefined?undefined:r[cols[k]],num=v=>(v===undefined||v===null||v==='')?null:(isFinite(+v)?+v:null);
+  const by=new Map(),order=[];
+  for(let i=hi+1;i<rows.length;i++){
+    const r=rows[i];if(!r)continue;let ir=g(r,'ir_number');if(typeof ir==='number')ir=String(Math.round(ir));ir=String(ir==null?'':ir).trim();
+    if(!/^\d{10}$/.test(ir))continue;
+    let it=by.get(ir);if(!it){it={ir,name:'',unit:'',loc:'',price:null,max:null,min:null,exps:new Set(),alias:''};by.set(ir,it);order.push(ir);}
+    {const al=[g(r,'other names'),g(r,'other name'),g(r,'alias'),g(r,'aliases')].find(v=>v!=null&&String(v).trim());if(al&&!it.alias)it.alias=String(al).trim().slice(0,300);}
+    const nm=String(g(r,'item name')||'').trim(),un=g(r,'qty_type'),lc=g(r,'location');
+    if(!it.name&&nm)it.name=nm;if(!it.unit&&un)it.unit=String(un).trim().toUpperCase();if(!it.loc&&lc)it.loc=String(lc).trim();
+    if(it.price==null)it.price=num(g(r,'unit price'));if(it.max==null)it.max=num(g(r,'max_stock'));if(it.min==null)it.min=num(g(r,'min_stock'));
+    const ex=g(r,'expiry');let iso='';
+    if(typeof ex==='number'&&ex>20000&&ex<80000)iso=serialToIso(ex);else if(typeof ex==='string')iso=parseExpiry(ex)||'';
+    if(/^\d{4}-\d{2}-\d{2}$/.test(iso))it.exps.add(iso);
+  }
+  return order.map(ir=>{const it=by.get(ir);return[ir,it.name||ir,it.unit,it.loc,it.price,it.max,it.min,[...it.exps].sort(),it.alias||''];});
+}
+async function parseXlsxCatalog(arrayBuffer){
+  const u8=new Uint8Array(arrayBuffer),ents=zipEntries(u8);
+  const wb=await zipText(u8,ents,'xl/workbook.xml'),rels=await zipText(u8,ents,'xl/_rels/workbook.xml.rels');
+  if(!wb||!rels)throw new Error('this is not an Excel workbook');
+  const ss=await zipText(u8,ents,'xl/sharedStrings.xml');
+  const shared=ss?[...ss.matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>/g)].map(m=>[...m[1].matchAll(/<t\b[^>]*>([\s\S]*?)<\/t>/g)].map(x=>unxml(x[1])).join('')):[];
+  const sheets=[...wb.matchAll(/<sheet\b[^>]*>/g)].map(m=>({name:unxml((/\bname="([^"]*)"/.exec(m[0])||[])[1]||''),rid:(/\br:id="([^"]*)"/.exec(m[0])||[])[1]}));
+  sheets.sort((a,b)=>(b.name.toLowerCase()==='inventory list')-(a.name.toLowerCase()==='inventory list'));
+  for(const sh of sheets){
+    const rm=new RegExp('<Relationship\\b[^>]*\\bId="'+sh.rid+'"[^>]*>').exec(rels);if(!rm)continue;
+    const tg=/\bTarget="([^"]*)"/.exec(rm[0]);if(!tg)continue;
+    const xml=await zipText(u8,ents,tg[1].startsWith('/')?tg[1].slice(1):'xl/'+tg[1]);if(!xml)continue;
+    const items=catalogFromRows(sheetRows(xml,shared));if(items&&items.length)return{items,sheet:sh.name};
+  }
+  throw new Error('no sheet with the columns ir_number / item name was found');
+}
+function parseSetupJson(text){
+  const o=JSON.parse(text),arr=Array.isArray(o)?o:(o&&o.items);if(!Array.isArray(arr))throw new Error('this is not a setup file');
+  const items=[];
+  for(const a of arr){if(!Array.isArray(a))continue;const ir=String(a[0]||'').trim();if(!/^\d{10}$/.test(ir)||!a[1])continue;
+    items.push([ir,String(a[1]),a[2]||'',a[3]||'',a[4]==null?null:a[4],a[5]==null?null:a[5],a[6]==null?null:a[6],Array.isArray(a[7])?a[7].filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)):[]]);}
+  return{items,uploadLink:(o&&typeof o.uploadLink==='string'&&/^https:\/\//i.test(o.uploadLink))?o.uploadLink:'',
+    photos:(o&&o.photos&&typeof o.photos==='object'&&!Array.isArray(o.photos))?o.photos:null,syncUrl:(o&&typeof o.syncUrl==='string'&&/^https:\/\//i.test(o.syncUrl))?o.syncUrl:'',scanCode:(o&&typeof o.scanCode==='string')?o.scanCode.replace(/[^A-Za-z0-9]/g,'').slice(0,30):''};
+}
+// ---- Code 128 decoder (camera frames) -------------------------------------
+const C128 = "212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112".split(' ').map(s => s.split('').map(Number));
+const C128_STOP = C128[106];
+function c128Sum(L, i, n) { let s = 0; for (let k = 0; k < n; k++) s += L[i + k]; return s; }
+function c128Match(L, i, cands) {
+  const S = c128Sum(L, i, 6), m = S / 11; if (m < 0.9) return null;
+  let best = -1, be = 1e9;
+  for (const v of cands) { const w = C128[v]; let e = 0; for (let k = 0; k < 6; k++) e += Math.abs(L[i + k] / m - w[k]); if (e < be) { be = e; best = v; } }
+  return be <= 2.3 ? best : null;
+}
+const C128_DATA = Array.from({ length: 103 }, (_, i) => i), C128_START = [103, 104, 105];
+function c128Text(vals) {
+  let set = { 103: 'A', 104: 'B', 105: 'C' }[vals[0]], out = '', shift = false;
+  for (let k = 1; k < vals.length - 1; k++) {
+    const v = vals[k];
+    if (set === 'C') { if (v <= 99) { out += (v < 10 ? '0' : '') + v; continue; } if (v === 100) { set = 'B'; continue; } if (v === 101) { set = 'A'; continue; } if (v === 102) continue; return null; }
+    let cur = set; if (shift) { cur = set === 'A' ? 'B' : 'A'; shift = false; }
+    if (v <= 95) { out += cur === 'A' ? (v < 64 ? String.fromCharCode(v + 32) : String.fromCharCode(v - 64)) : String.fromCharCode(v + 32); continue; }
+    if (v === 98) { shift = true; continue; } if (v === 99) { set = 'C'; continue; }
+    if (v === 100) { if (set === 'A') set = 'B'; continue; } if (v === 101) { if (set === 'B') set = 'A'; continue; }
+    if (v === 96 || v === 97 || v === 102) continue; return null;
+  }
+  return out;
+}
+function c128Read(L, i, startVal) {
+  const vals = [startVal]; let p = i + 6;
+  for (;;) {
+    if (p + 7 <= L.length) {
+      const m = c128Sum(L, p, 7) / 13;
+      if (m >= 0.9) { let e = 0; for (let k = 0; k < 7; k++) e += Math.abs(L[p + k] / m - C128_STOP[k]);
+        const quiet = p + 7 >= L.length || L[p + 7] >= m * 4.5;   // a real stop bar is followed by empty space
+        if (e <= 2.8 && quiet && vals.length >= 5) break; }
+    }
+    if (p + 6 > L.length || vals.length > 70) return null;
+    const v = c128Match(L, p, C128_DATA); if (v === null) return null;
+    vals.push(v); p += 6;
+  }
+  let chk = vals[0]; for (let k = 1; k < vals.length - 1; k++) chk += k * vals[k];
+  if (chk % 103 !== vals[vals.length - 1]) return null;
+  const t = c128Text(vals); return t ? t : null;
+}
+function c128Runs(line) {
+  const n = line.length, win = Math.max(16, Math.round(n / 12)), pre = new Float64Array(n + 1);
+  for (let i = 0; i < n; i++) pre[i + 1] = pre[i] + line[i];
+  const L = []; let cur = -1, len = 0, firstBlack = false;
+  for (let i = 0; i < n; i++) {
+    const a = Math.max(0, i - win), b = Math.min(n, i + win + 1), mean = (pre[b] - pre[a]) / (b - a);
+    const black = line[i] < mean * 0.88 ? 1 : 0;
+    if (cur === -1) { cur = black; len = 1; firstBlack = black === 1; }
+    else if (black === cur) len++; else { L.push(len); cur = black; len = 1; }
+  }
+  L.push(len); return { L, firstBlack };
+}
+function c128Line(line) {
+  const { L, firstBlack } = c128Runs(line);
+  for (let i = firstBlack ? 0 : 1; i + 6 <= L.length; i += 2) {
+    const m = c128Sum(L, i, 6) / 11; if (m < 0.9) continue;
+    if (i > 0 && L[i - 1] < m * 3) continue;               // quiet zone before the start symbol
+    const sv = c128Match(L, i, C128_START); if (sv === null) continue;
+    const r = c128Read(L, i, sv); if (r) return r;
+  }
+  return null;
+}
+function c128Both(line) { return c128Line(line) || c128Line(Array.prototype.slice.call(line).reverse()); }
+// gray: Uint8Array w*h (row-major). Returns Map(value -> number of scan lines that read it).
+// Every line is the average of 3 neighbouring lines (removes camera noise); if that fails, a lightly smoothed copy is tried.
+function c128Try(line) { let r = c128Both(line); if (r) return r;
+  const n = line.length, sm = new Float32Array(n); for (let i = 0; i < n; i++) sm[i] = (line[Math.max(0, i - 1)] + line[i] + line[Math.min(n - 1, i + 1)]) / 3;
+  return c128Both(sm); }
+function c128Scan(gray, w, h, K) {
+  K = K || 36; const hits = new Map(), add = v => hits.set(v, (hits.get(v) || 0) + 1), top = () => { let b = 0; for (const c of hits.values()) if (c > b) b = c; return b; };
+  const line = new Float32Array(w);
+  for (let k = 0; k < K; k++) {                                   // horizontal lines
+    const y = Math.round(h * (0.05 + 0.9 * (k + 0.5) / K)), y0 = Math.max(0, y - 1), y1 = Math.min(h - 1, y + 1);
+    for (let x = 0; x < w; x++) line[x] = (gray[y0 * w + x] + gray[y * w + x] + gray[y1 * w + x]) / 3;
+    const r = c128Try(line); if (r) { add(r); if (top() >= 2) return hits; }
+  }
+  const col = new Float32Array(h);
+  for (let k = 0; k < K; k++) {                                   // vertical lines (phone held sideways)
+    const x = Math.round(w * (0.05 + 0.9 * (k + 0.5) / K)), x0 = Math.max(0, x - 1), x1 = Math.min(w - 1, x + 1);
+    for (let y = 0; y < h; y++) col[y] = (gray[y * w + x0] + gray[y * w + x] + gray[y * w + x1]) / 3;
+    const r = c128Try(col); if (r) { add(r); if (top() >= 2) return hits; }
+  }
+  return hits;
+}
+
+// ==CORE END==
+
+// ============ app ===========================================================
+(function(){
+  if(typeof document==='undefined')return;
+  const $=id=>document.getElementById(id);
+  let deferredInstall=null;                       // the browser's "install app" offer (Android)
+  const IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const STANDALONE=(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+  const APP_ID='pltcu2';   // make_unit_copies.py writes the unit's folder name here, so every copy of the app on this site keeps its own data (the original copy stays empty)
+  const PROFILE=new URLSearchParams(location.search).get('profile')||APP_ID;   // lets two copies run side by side for testing
+  let UNIT_NAME='';try{UNIT_NAME=localStorage.getItem('ccsUnit.v1'+PROFILE)||'';}catch(e){}
+  const LS='ccsScanHelper.v2'+PROFILE;
+  let st={mode:'OUT',askExp:true,saveMode:'downloads',copyShared:true,shareLink:'',infoSheet:true,autoOpen:false,lists:{OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[],WO1:[],WO2:[],WO3:[],WO4:[],WO5:[]},rooms:['Store 1','Store 2','Store 3'],cnt:'CNT1',who:'',extra:[],hist:[],sync:{OUT:'',IN:''},dirty:{OUT:false,IN:false},conflicts:{OUT:null,IN:null}};
+  const ALLM=['OUT','IN','CNT1','CNT2','CNT3','WO1','WO2','WO3','WO4','WO5'],WOM=['WO1','WO2','WO3','WO4','WO5'];
+  const WO_REASONS=['Expired without use','Near expiry distributed','Distributed to other unit','Damaged','Lost'];
+  const isWo=m=>/^WO[1-5]$/.test(m),woName=m=>WO_REASONS[+String(m).slice(2)-1]||'';st.wo='WO1';
+  const isCnt=m=>/^CNT[1-3]$/.test(m);const roomName=m=>st.rooms[+String(m).slice(3)-1]||('Store '+String(m).slice(3));
+  let hadSaved=false;
+  try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){hadSaved=true;st.lists=Object.assign({OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[],WO1:[],WO2:[],WO3:[],WO4:[],WO5:[]},s.lists||{});if(Array.isArray(s.rooms)&&s.rooms.length===3)st.rooms=s.rooms.map((x,i)=>String(x).replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,20)||('Store '+(i+1)));if(/^CNT[1-3]$/.test(s.cnt))st.cnt=s.cnt;st.who=s.who||'';st.extra=s.extra||[];st.mode=/^(OUT|IN|WO[1-5])$/.test(s.mode)?s.mode:'OUT';if(/^WO[1-5]$/.test(s.wo))st.wo=s.wo;st.askExp=true;st.saveMode=['downloads','ask','folder'].includes(s.saveMode)?s.saveMode:'downloads';st.copyShared=s.copyShared!==false;st.shareLink=s.shareLink||'';st.infoSheet=s.infoSheet!==false;st.autoOpen=(s.ao2===true)?s.autoOpen===true:false;
+    st.sync=Object.assign({OUT:'',IN:''},s.sync||{});st.dirty=Object.assign({OUT:false,IN:false},s.dirty||{});}}catch(e){}
+  if(!hadSaved&&IS_IOS&&typeof navigator.share==='function')st.saveMode='share';   // iPhone apps cannot download files nicely: use the share sheet (Save to Files, OneDrive, Teams)
+  function save(){try{localStorage.setItem(LS,JSON.stringify({lists:st.lists,rooms:st.rooms,cnt:st.cnt,wo:st.wo,who:st.who,extra:st.extra,mode:st.mode,askExp:st.askExp,saveMode:st.saveMode,copyShared:st.copyShared,shareLink:st.shareLink,infoSheet:st.infoSheet,autoOpen:st.autoOpen,ao2:true,sync:st.sync,dirty:st.dirty}));}catch(e){}}
+  const CAT_KEY='ccsScanHelper.catalog.v1'+PROFILE;
+  function loadCatalog(){try{const c=JSON.parse(localStorage.getItem(CAT_KEY)||'null');if(c&&Array.isArray(c.items)&&c.items.length)return c;}catch(e){}return null;}
+  let USE_LOC=true;try{USE_LOC=localStorage.getItem('ccsUnitLoc.v1'+PROFILE)!=='0';}catch(e){}
+  let MASTER_URL='master_list.xlsx',PHOTOS_BASE='photos/';
+  let catalog=loadCatalog();
+  const defaultLink=()=>(catalog&&catalog.uploadLink)||UPLOAD_LINK;
+  let items=[],map=new Map();
+  function rebuild(){const base=(catalog&&catalog.items.length)?catalog.items:ITEMS;items=base.map(a=>({ir:a[0],name:a[1],unit:a[2]||'',loc:USE_LOC?(a[3]||''):'',price:a[4],max:a[5],min:a[6],exps:a[7]||[],alias:a[8]||''}))
+      .concat(st.extra.map(a=>({ir:a[0],name:a[1],unit:a[2]||'',loc:'',price:null,max:null,min:null,exps:[],extra:true})));
+    map=new Map();items.forEach(i=>{i.key=(i.name+' '+(i.alias||'')).toLowerCase();map.set(i.ir,i);});$('extraInfo').textContent=st.extra.length?st.extra.length+' extra item(s) saved.':'';}
+  rebuild();
+  let pendingItem=null,lastTouched=null,audio=null;
+  function beep(ok){if(!$('snd').checked)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);o.frequency.value=ok?880:220;g.gain.value=.08;o.start();o.stop(audio.currentTime+(ok?.07:.3));}catch(e){}}
+  function msg(kind,text){const m=$('msg');m.className='msg '+kind;m.textContent=text;}
+  function snapshot(){st.hist.push(JSON.stringify(st.lists));shHist.push(JSON.stringify(sh.sess));if(st.hist.length>30){st.hist.shift();shHist.shift();}}
+  const list=()=>st.lists[st.mode];
+  // The files and the CCS list are English: keep names English-only (strict = letters, digits, space . _ -)
+  function englishOnly(t,strict){const re=strict?/[^A-Za-z0-9 ._-]/g:/[^\x20-\x7E]/g;const out=String(t||'').replace(re,'');return{text:out,removed:out!==String(t||'')};}
+  const EMBEDDED=(()=>{try{return window.top!==window.self;}catch(e){return true;}})();
+  const TOUCH=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+  function focusScan(){if(camStream)return;$('scan').focus();}          // the cursor always returns to the scan field (not while the camera is open)
+  const unitOf=ir=>{const it=map.get(ir);return it&&it.unit?it.unit:'';};
+  const unitBadge=u=>u?'<span class="u'+(u!=='EAC'?' odd':'')+'" title="Count in '+xmlEsc(u)+'">'+xmlEsc(u)+'</span>':'';
+  const shortLoc=l=>(l||'').split(';')[0].trim();
+
+  // ---------------------------------------------------------------- shared folder
+  const FSA=typeof window.showDirectoryPicker==='function';
+  let dir=null,perm='none',folderErr='',lastSave=null;
+  const DBN='ccsScanHelperDB'+PROFILE;
+  function idb(){return new Promise((res,rej)=>{const q=indexedDB.open(DBN,1);q.onupgradeneeded=()=>q.result.createObjectStore('k');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+  async function idbGet(k){const db=await idb();return new Promise((res,rej)=>{const q=db.transaction('k').objectStore('k').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+  async function idbSet(k,v){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('k','readwrite');if(v===undefined)tx.objectStore('k').delete(k);else tx.objectStore('k').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
+  const ready=()=>!!dir&&perm==='granted';
+  async function readJson(sub,name){try{const d=await dir.getDirectoryHandle(sub);const fh=await d.getFileHandle(name);return JSON.parse(await (await fh.getFile()).text());}catch(e){if(e&&e.name==='NotFoundError')return null;if(e instanceof SyntaxError)return null;throw e;}}
+  async function writeFile(sub,name,data){const d=await dir.getDirectoryHandle(sub,{create:true});const fh=await d.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(data);await w.close();}
+  function fmtT(iso){try{const d=new Date(iso);return d.toLocaleDateString()+' '+d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});}catch(e){return iso;}}
+
+  function renderFolder(){
+    const s=$('folderStatus');let h;
+    $('fChoose').style.display=$('fAllow').style.display=$('fRefresh').style.display=$('fTest').style.display=$('fForget').style.display='none';$('fChoose').textContent='Choose shared folder';
+    if(!FSA){h='<span class="dot"></span><b>Shared folder not available in this browser.</b> Use Microsoft Edge or Chrome. Data stays on this computer.';}
+    else if(!dir){h='<span class="dot"></span><b>Not connected.</b> Lists and Excel files are kept on this computer only. Choose a shared folder (network drive or OneDrive folder) to use them from other computers.';$('fChoose').style.display='';}
+    else if(perm!=='granted'){h='<span class="dot off"></span><b>Shared folder “'+xmlEsc(dir.name)+'”</b> — click <b>Allow access again</b> (the browser asks once per session).';$('fAllow').style.display='';$('fForget').style.display='';}
+    else{h='<span class="dot on"></span><b>Shared folder “'+xmlEsc(dir.name)+'”</b> connected — lists are saved there automatically, Excel files go to the Exports folder.<br><span style="color:var(--muted)">'+(lastSave?'Last saved in the folder: '+lastSave.t.toLocaleTimeString()+' — '+xmlEsc(lastSave.what):'Nothing saved in the folder yet (it is saved after each scan).')+'</span>'+(folderErr?'<br><span style="color:var(--out)">'+xmlEsc(folderErr)+'</span>':'');$('fRefresh').style.display='';$('fTest').style.display='';$('fForget').style.display='';$('fChoose').style.display='';$('fChoose').textContent='Change folder';
+      if(/^OneDrive\b/i.test(dir.name))h+='<br><span style="color:var(--warn);font-weight:700">⚠ This looks like your PERSONAL OneDrive. Other people cannot see it. Click “Change folder” and choose the shared folder.</span>';}
+    s.innerHTML=h;renderSave();
+  }
+  function renderConflicts(){
+    const c=$('conf');c.innerHTML='';
+    ['OUT','IN'].forEach(m=>{const r=st.conflicts[m];if(!r)return;
+      const d=document.createElement('div');d.className='msg warn';
+      d.innerHTML='<b>STOCK '+m+':</b> the shared folder has a different list saved by <b>'+xmlEsc(r.updatedBy||'someone')+'</b> ('+fmtT(r.updatedAt)+', '+(r.list||[]).length+' lines). Yours has '+st.lists[m].length+' lines.<br>'+
+        '<button class="btn" data-c="use" data-m="'+m+'">Use the shared list</button><button class="btn alt" data-c="keep" data-m="'+m+'">Keep mine (replace the shared one)</button>';
+      c.appendChild(d);});
+  }
+  $('conf').addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const m=b.dataset.m,r=st.conflicts[m];if(!r)return;
+    if(b.dataset.c==='use')adopt(m,r);else{st.sync[m]=r.updatedAt;st.conflicts[m]=null;renderConflicts();await pushPending(m);render();}});
+  function adopt(m,r){st.lists[m]=r.list||[];st.sync[m]=r.updatedAt;st.dirty[m]=false;st.conflicts[m]=null;lastTouched=null;save();renderConflicts();render();
+    msg('warn','STOCK '+m+' list loaded from the shared folder (saved by '+(r.updatedBy||'someone')+', '+fmtT(r.updatedAt)+').');}
+
+  let pushTimer=null;const pend=new Set();
+  function schedulePush(modes){if(!ready())return;modes.forEach(m=>pend.add(m));clearTimeout(pushTimer);pushTimer=setTimeout(flushPush,500);}
+  async function flushPush(){if(!ready())return;const ms=[...pend];pend.clear();for(const m of ms)await pushPending(m);renderFolder();}
+  async function pushPending(m){
+    if(!ready())return;
+    try{
+      const remote=await readJson('Pending','pending_'+m+'.json');
+      if(remote&&remote.updatedAt&&remote.updatedAt>(st.sync[m]||'')){st.conflicts[m]=remote;renderConflicts();return;}
+      const rec={mode:m,updatedAt:new Date().toISOString(),updatedBy:st.who||'',list:st.lists[m]};
+      await writeFile('Pending','pending_'+m+'.json',JSON.stringify(rec));
+      st.sync[m]=rec.updatedAt;st.dirty[m]=false;st.conflicts[m]=null;folderErr='';lastSave={t:new Date(),what:'Pending/pending_'+m+'.json ('+st.lists[m].length+' lines)'};save();renderConflicts();
+    }catch(e){folderErr='Could not save to the folder: '+(e.message||e.name);}
+  }
+  async function checkRemote(m){
+    const remote=await readJson('Pending','pending_'+m+'.json');
+    if(!remote){if(st.lists[m].length)await pushPending(m);return;}
+    if(remote.updatedAt===st.sync[m]||remote.updatedAt<(st.sync[m]||''))return;
+    if(JSON.stringify(remote.list)===JSON.stringify(st.lists[m])){st.sync[m]=remote.updatedAt;st.dirty[m]=false;save();return;}
+    if(!st.dirty[m]||!st.lists[m].length)adopt(m,remote);else{st.conflicts[m]=remote;renderConflicts();}
+  }
+  async function syncExtra(){
+    const remote=await readJson('Shared','extra_items.json');const rem=(remote&&remote.items)||[];
+    const by=new Map();rem.forEach(a=>by.set(a[0],a));st.extra.forEach(a=>{if(!by.has(a[0]))by.set(a[0],a);});
+    const merged=[...by.values()];
+    if(merged.length!==st.extra.length){st.extra=merged;save();rebuild();}
+    if(merged.length!==rem.length)await writeFile('Shared','extra_items.json',JSON.stringify({updatedAt:new Date().toISOString(),items:merged}));
+  }
+  let syncing=false;
+  async function refreshFromFolder(){
+    if(!ready()||syncing)return;syncing=true;
+    try{for(const m of ['OUT','IN'])await checkRemote(m);await syncExtra();folderErr='';}
+    catch(e){folderErr='Could not read the folder: '+(e.message||e.name);}
+    syncing=false;renderFolder();render();
+  }
+  async function initFolder(){
+    renderFolder();if(!FSA)return;
+    try{const h=await idbGet('dir');if(h){dir=h;perm=await h.queryPermission({mode:'readwrite'});}}catch(e){}
+    renderFolder();if(ready())await refreshFromFolder();
+  }
+  $('fChoose').onclick=async()=>{try{const h=await window.showDirectoryPicker({mode:'readwrite',id:'ccsshared'});dir=h;perm='granted';await idbSet('dir',h);
+      st.sync={OUT:'',IN:''};st.conflicts={OUT:null,IN:null};['OUT','IN'].forEach(m=>{st.dirty[m]=st.lists[m].length>0;});save();renderConflicts();lastSave=null;folderErr='';
+      renderFolder();await refreshFromFolder();
+      msg('ok','Connected to the shared folder “'+h.name+'”.');}catch(e){if(e.name!=='AbortError'){folderErr=e.message||e.name;renderFolder();}}};
+  $('fAllow').onclick=async()=>{try{perm=await dir.requestPermission({mode:'readwrite'});}catch(e){perm='prompt';}renderFolder();if(ready())await refreshFromFolder();};
+  async function testFolder(){
+    try{
+      const stamp=new Date().toISOString(),txt='CCS Scan Helper connection test\n'+stamp+'\n'+(st.who||'');
+      const fh=await dir.getFileHandle('CCS_connection_test.txt',{create:true});const w=await fh.createWritable();await w.write(txt);await w.close();
+      const back=await (await fh.getFile()).text();if(back!==txt)throw new Error('the file was written but reads back different');
+      const names=[];for await(const [n,h] of dir.entries()){names.push(n+(h.kind==='directory'?'/':''));}
+      const cnt=async sub=>{try{const d=await dir.getDirectoryHandle(sub);let c=0;for await(const x of d.entries())c++;return c;}catch(e){return 0;}};
+      lastSave={t:new Date(),what:'CCS_connection_test.txt'};renderFolder();
+      msg('ok','Folder test OK — wrote CCS_connection_test.txt in the folder “'+dir.name+'” ('+txt.length+' bytes) and read it back. In this folder: '+names.slice(0,25).join(', ')+(names.length>25?' …':'')+'. Pending: '+(await cnt('Pending'))+' file(s), Exports: '+(await cnt('Exports'))+' file(s).');
+    }catch(e){folderErr='Folder test FAILED: '+(e.name||'')+' '+(e.message||'');renderFolder();msg('err',folderErr);}
+  }
+  $('fTest').onclick=testFolder;
+  $('fRefresh').onclick=async()=>{await refreshFromFolder();msg('ok','Checked the shared folder.');};
+  $('fForget').onclick=async()=>{dir=null;perm='none';lastSave=null;try{await idbSet('dir',undefined);}catch(e){}st.conflicts={OUT:null,IN:null};renderConflicts();renderFolder();};
+  window.addEventListener('focus',()=>{refreshFromFolder();});
+  setInterval(()=>{if(document.visibilityState==='visible')refreshFromFolder();},30000);
+
+  function touched(modes){modes.forEach(m=>{st.dirty[m]=true;});save();schedulePush(modes);shQueue(modes);}
+
+  // ---------------------------------------------------------------- list
+  function render(){
+    const sv=view==='shared';$('scanView').style.display=sv?'none':'';$('sharedView').style.display=sv?'':'none';$('tabSH').classList.toggle('on',sv);
+    $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);$('tabCNT').classList.toggle('on',isCnt(st.mode)&&!sv);$('tabWO').classList.toggle('on',isWo(st.mode)&&!sv);
+    {const ls=WOM.map(m=>st.lists[m]),n=ls.reduce((a,l)=>a+l.length,0),u=ls.reduce((a,l)=>a+l.reduce((b,x)=>b+x.qty,0),0);$('cWO').textContent=n+' line'+(n===1?'':'s')+' · '+u+' units';}
+    ['OUT','IN'].forEach(m=>{const l=st.lists[m];$('c'+m).textContent=l.length+' line'+(l.length===1?'':'s')+' · '+l.reduce((a,x)=>a+x.qty,0)+' units';});
+    {const ls=['CNT1','CNT2','CNT3'].map(m=>st.lists[m]),n=ls.reduce((a,l)=>a+l.length,0),u=ls.reduce((a,l)=>a+l.reduce((b,x)=>b+x.qty,0),0);$('cCNT').textContent=n+' line'+(n===1?'':'s')+' · '+u+' units';}
+    $('askExp').checked=st.askExp;$('qtyBox').style.display=(st.mode==='OUT'&&!st.askExp)?'':'none';
+    $('scanLabel').textContent=isWo(st.mode)?('WRITE OFF - '+woName(st.mode)+': scan the item (or type the last 4 digits / part of the name)'):isCnt(st.mode)?('COUNTING in '+roomName(st.mode)+': scan the item (or type the last 4 digits / part of the name), then the quantity and the EXPIRY date'):st.mode==='OUT'?'Scan barcode of the item you TAKE (or type the last 4 digits / part of the name)':'Scan barcode of the item you RECEIVE (or type the last 4 digits / part of the name)';
+    renderRoomBar();renderWoBar();$('xlsx').textContent=isCnt(st.mode)?'⬇ Save count Excel (all rooms)':isWo(st.mode)?'⬇ Save write-off Excel (all reasons)':'⬇ Save Excel (.xlsx)';
+    const l=list();
+    if(!l.length){$('listWrap').innerHTML='<div class="empty">Nothing scanned yet.</div>';$('tot').textContent='';return;}
+    const IN=st.mode==='IN';
+    const showExp=true;                                   // the expiry date is always shown and can be edited
+    let h='<table><thead><tr><th>#</th><th>IR number</th><th>Item</th>'+(showExp?'<th>Expiry</th>':'')+'<th>Qty</th><th></th></tr></thead><tbody>';
+    const grp=isCnt(st.mode);let prevIr='';const gTot={},gN={};if(grp)l.forEach(y=>{gTot[y.ir]=(gTot[y.ir]||0)+y.qty;gN[y.ir]=(gN[y.ir]||0)+1;});
+    (grp?l.map((x,i)=>i).sort((a,b)=>l[a].name.localeCompare(l[b].name)||(l[a].expiry||'9999').localeCompare(l[b].expiry||'9999')):l.map((x,i)=>i).reverse()).forEach(i=>{const x=l[i];const first=grp&&x.ir!==prevIr;prevIr=x.ir;
+      h+='<tr class="'+(x===lastTouched?'new':'')+'"><td class="num">'+(i+1)+'</td><td class="num">'+x.ir+'</td><td>'+thumb(x.ir,56)+xmlEsc(x.name)+(first&&gN[x.ir]>1?'<div class="from">item total here: '+gTot[x.ir]+' ('+gN[x.ir]+' expiry dates)</div>':'')+'</td>'+
+        (showExp?'<td><input class="exp" type="text" inputmode="text" autocomplete="off" placeholder="no expiry" title="Edit the expiry date: 31/12/2030 or 12/2030. Empty = no expiry" value="'+(x.expiry?dmy(x.expiry):'')+'" data-a="e" data-i="'+i+'">'+(isCnt(st.mode)?expBadge(x.expiry):'')+'</td>':'')+
+        '<td><div class="q"><button data-a="m" data-i="'+i+'">−</button><input type="number" min="1" value="'+x.qty+'" data-a="q" data-i="'+i+'"><button data-a="p" data-i="'+i+'">+</button>'+unitBadge(unitOf(x.ir))+'</div></td>'+
+        '<td><button class="x" title="Remove" data-a="d" data-i="'+i+'">✕</button></td></tr>';});
+    $('listWrap').innerHTML=h+'</tbody></table>';
+    $('tot').textContent=l.length+' lines · '+l.reduce((a,x)=>a+x.qty,0)+' units'+(isCnt(st.mode)?' · '+roomName(st.mode):'')+(isWo(st.mode)?' · '+woName(st.mode):'');
+  }
+  $('listWrap').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i,l=list();snapshot();
+    if(b.dataset.a==='p')l[i].qty++;else if(b.dataset.a==='m')l[i].qty=Math.max(1,l[i].qty-1);else if(b.dataset.a==='d')l.splice(i,1);
+    lastTouched=null;touched([st.mode]);render();});
+  function editExpiry(i,raw){
+    const l=list(),x=l[i];if(!x)return;raw=(raw||'').trim();let exp='';
+    const today=new Date().toISOString().slice(0,10);
+    if(raw){exp=parseExpiry(raw);
+      if(!exp){msg('err','Expiry date not understood. Use 31/12/2030 or 12/2030 (or clear it for “no expiry”).');beep(false);render();return;}
+      if(st.mode==='IN'&&exp<today){msg('err','That expiry date is already in the past - check it.');beep(false);render();return;}}
+    if(exp===(x.expiry||'')){render();return;}                      // nothing changed
+    snapshot();
+    const other=l.find((y,j)=>j!==i&&y.ir===x.ir&&(y.expiry||'')===exp);   // another line already has this expiry -> merge
+    let note='';
+    if(other){other.qty+=x.qty;l.splice(i,1);lastTouched=other;note='  (added to the line that already has this expiry)';}
+    else{x.expiry=exp;lastTouched=x;}
+    touched([st.mode]);render();
+    const expired=st.mode==='OUT'&&exp&&exp<today;
+    msg(expired?'warn':'ok','Expiry changed: '+x.name+' → '+(exp?dmy(exp):'no expiry')+note+(expired?'  ⚠ EXPIRED item':''));
+  }
+  $('listWrap').addEventListener('change',e=>{const t=e.target;if(t.dataset.a==='e'){const ei=+t.dataset.i,ev=t.value;setTimeout(()=>editExpiry(ei,ev),0);return;}if(t.dataset.a!=='q')return;const v=Math.floor(+t.value);snapshot();list()[+t.dataset.i].qty=v>=1?v:1;touched([st.mode]);setTimeout(render,0);});
+
+  let queue=[],qTotal=0,qNote='';
+  function pick(item,qtyHint,tag){
+    $('sugg').style.display='none';
+    if(st.mode==='OUT'&&!st.askExp){
+      const q=qtyHint||Math.max(1,Math.floor(+$('qty').value)||1);snapshot();
+      const de=defOf(item);lastTouched=addLine(list(),'OUT',item,q,de);touched(['OUT']);render();
+      msg('ok','OUT  '+item.name+'  ×'+q+(item.unit?' '+item.unit:'')+(de?'  exp '+dmy(de):'  (no default expiry date yet)')+'  → total '+lastTouched.qty+(item.loc?'   ('+shortLoc(item.loc)+')':''));beep(true);
+      $('qty').value=1;$('scan').value='';focusScan();return;
+    }
+    const wo=isWo(st.mode),out=st.mode==='OUT'||wo;
+    pendingItem=item;$('recv').className=wo?'out wo':out?'out':'';$('recv').style.display='block';
+    $('recvName').textContent=(tag||'')+(wo?'WRITE OFF - '+woName(st.mode)+': ':out?'OUT: ':(isCnt(st.mode)?'COUNT '+roomName(st.mode)+': ':'IN: '))+item.name+'  ('+item.ir+')'+(item.loc?'  ·  '+shortLoc(item.loc):'');
+    const un=item.unit||'';$('rQtyLbl').textContent=(wo?'Qty written off':out?'Qty taken':(isCnt(st.mode)?'Qty counted':'Qty received'))+(un?' ('+un+')':'');$('rSave').className='btn'+(out?'':' in');
+    $('rUnit').textContent=un;$('rUnit').className='u'+(un&&un!=='EAC'?' odd':'');$('rUnit').style.fontSize='15px';
+    $('rUnitNote').textContent=(un&&un!=='EAC')?'This item is counted in '+un+' - not in single pieces.':'';$('rMore').style.display=(isCnt(st.mode)||st.mode==='IN')?'':'none';renderRecvPhoto(item);$('rSetDef').checked=!wo;$('rSetDef').parentElement.style.display=wo?'none':'';$('rDefInfo').style.display=wo?'none':'';$('rDefInfo').textContent=defInfo(item);
+    const prev=list().filter(x=>x.ir===item.ir).pop();
+    let pre=isCnt(st.mode)?'':(defOf(item)||(prev&&prev.expiry?prev.expiry:''));
+    $('rQty').value=isCnt(st.mode)?'':(qtyHint||1);$('rExp').value=dmy(pre);$('rNoExp').checked=false;$('rExp').disabled=false;
+    const ch=$('chips');ch.innerHTML='';
+    if(out&&item.exps&&item.exps.length>1){ch.appendChild(document.createTextNode('Batches in store: '));
+      item.exps.forEach(e=>{const b=document.createElement('button');b.type='button';b.textContent=dmy(e);b.onclick=()=>{$('rExp').value=dmy(e);$('rNoExp').checked=false;$('rExp').disabled=false;$('rQty').focus();$('rQty').select();};ch.appendChild(b);});}
+    if(isCnt(st.mode)){const seen=new Set(item.exps||[]);['CNT1','CNT2','CNT3'].forEach(m=>st.lists[m].forEach(x=>{if(x.ir===item.ir&&x.expiry)seen.add(x.expiry);}));
+      if(seen.size){ch.appendChild(document.createTextNode('Dates seen: '));[...seen].sort().forEach(e=>{const b=document.createElement('button');b.type='button';b.textContent=dmy(e);b.onclick=()=>{$('rExp').value=dmy(e);$('rNoExp').checked=false;$('rExp').disabled=false;$('rQty').focus();};ch.appendChild(b);});}}
+    $('scan').value='';
+    msg('warn',isCnt(st.mode)?'Type the quantity and the expiry date. This item has several expiry dates? Use “Save + next expiry”.':(out?'Check the quantity and expiry date, then press Save (Enter).':'Enter the quantity and expiry date, then press Save.'));beep(true);$('rQty').focus();$('rQty').select();
+  }
+  function saveRecv(keep){
+    if(!pendingItem)return;const mode=st.mode;
+    const q=Math.floor(+$('rQty').value);if(!(q>=1)){msg('err','Quantity must be 1 or more.');return;}
+    let exp='',note='';const today=new Date().toISOString().slice(0,10);
+    if(!$('rNoExp').checked){const raw=$('rExp').value.trim();
+      if(raw){exp=parseExpiry(raw);
+        if(!exp){msg('err','Expiry date not understood. Use 31/12/2030 or 12/2030.');beep(false);$('rExp').focus();return;}
+        if(mode==='IN'&&exp<today){msg('err','That expiry date is already in the past - check the box.');beep(false);$('rExp').focus();return;}
+        if((mode==='OUT'||isCnt(mode)||isWo(mode))&&exp<today)note=isWo(mode)?'  (expired)':'  ⚠ EXPIRED item';}
+      else if(mode==='IN'||isCnt(mode)){msg('err','Enter the expiry date, or tick “No expiry date”.');beep(false);$('rExp').focus();return;}
+      else note='  (no expiry date saved)';}
+    if(isCnt(mode)){const ex=list().find(x=>x.ir===pendingItem.ir&&(x.expiry||'')===exp);if(ex&&!confirm('Already counted in '+roomName(mode)+': '+ex.qty+(exp?' with expiry '+dmy(exp):' without an expiry date')+'.\nOK = ADD these '+q+' (total '+(ex.qty+q)+').\nCancel = do not add.'))return;}
+    snapshot();lastTouched=addLine(list(),mode,pendingItem,q,exp);touched([mode]);
+    let defNote='';if($('rSetDef').checked&&exp&&!isCnt(mode)){const cur=sh.defs[pendingItem.ir];if(!cur||cur.e!==exp){setDef(pendingItem.ir,exp);defNote='  · saved as the new default expiry';}}
+    const smsg=(isCnt(mode)?roomName(mode):isWo(mode)?'WRITE OFF ('+woName(mode)+')':mode)+'  '+pendingItem.name+'  ×'+q+(pendingItem.unit?' '+pendingItem.unit:'')+(exp?'  exp '+dmy(exp):'')+note+defNote+(isCnt(mode)?totalNote(pendingItem.ir):'');
+    const mk2=(note&&!isWo(mode))?'warn':'ok';msg(mk2,smsg);beep(mk2==='ok');
+    if(keep===true){const it=pendingItem;pendingItem=null;$('recv').style.display='none';render();pick(it,0,'');msg(mk2,smsg);return;}
+    pendingItem=null;$('recv').style.display='none';render();focusScan();nextFromQueue();
+  }
+  function cancelRecv(skip){pendingItem=null;$('recv').style.display='none';$('msg').className='msg';focusScan();if(skip===true)nextFromQueue();else{queue=[];qTotal=0;}}
+  function nextFromQueue(){
+    while(queue.length){const x=queue.shift();pick(x.item,x.qty,'['+(qTotal-queue.length)+'/'+qTotal+']  ');if(pendingItem)return;}
+    if(qTotal>0){msg('ok','Video scan finished: '+qTotal+' item(s) handled.'+qNote);qTotal=0;qNote='';}
+  }
+
+  function showSugg(text){
+    const r=searchItems(items,text,8),s=$('sugg');
+    if(!r.length||/^\d+$/.test(text)){s.style.display='none';return r;}
+    s.innerHTML=r.map(it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir+'</b>'+xmlEsc(it.name)+'</div>').join('');s.style.display='block';return r;
+  }
+  function endsWithItems(t){return items.filter(i=>i.ir.endsWith(t));}
+  function showList(r){const s=$('sugg');if(!r.length){s.style.display='none';return;}
+    s.innerHTML=r.slice(0,8).map(it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir.slice(0,-4)+'<span style="font-size:1.25em">'+it.ir.slice(-4)+'</span></b>'+xmlEsc(it.name)+'</div>').join('');s.style.display='block';}
+  function submitScan(){
+    const t=$('scan').value.trim();if(!t)return;
+    const it=lookupItem(map,t);
+    if(it){pick(it);return;}
+    if(/^\d{3,5}$/.test(t)){                                   // short code = last digits of the IR number
+      const r=endsWithItems(t);
+      if(r.length===1){pick(r[0]);return;}
+      if(r.length>1){showList(r);msg('warn',r.length+' items end with '+t+' - click the right one.');beep(false);return;}
+      msg('err','No item ends with '+t+'.');beep(false);$('scan').select();return;}
+    if(/^\d{6,}$/.test(t)){msg('err','Code '+t+' is not in the item list. Use “Add it” at the bottom if it is a new item.');beep(false);$('nIr').value=t;document.querySelector('details').open=true;$('scan').select();return;}
+    const r=searchItems(items,t,8);
+    if(r.length===1){pick(r[0]);return;}
+    if(!r.length){msg('err','No item matches “'+t+'”.');beep(false);}else msg('warn','Several items match - click the right one in the list.');
+  }
+  $('scan').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitScan();}});
+  $('scan').addEventListener('input',()=>{const t=$('scan').value.trim();
+    if(/^\d{3,5}$/.test(t))showList(endsWithItems(t));
+    else if(t.length>=3&&!/^\d+$/.test(t))showSugg(t);else $('sugg').style.display='none';});
+  $('sugg').addEventListener('click',e=>{const d=e.target.closest('div[data-ir]');if(d){const it=map.get(d.dataset.ir);if(it)pick(it);}});
+  $('addBtn').addEventListener('click',()=>{submitScan();if(!pendingItem)focusScan();});
+  $('rSave').addEventListener('click',()=>saveRecv(false));$('rMore').addEventListener('click',()=>saveRecv(true));$('rCancel').addEventListener('click',()=>cancelRecv(true));
+  ['rQty','rExp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(isCnt(st.mode)&&id==='rQty'&&!$('rExp').value.trim()&&!$('rNoExp').checked){$('rExp').focus();return;}saveRecv(false);}if(e.key==='Escape')cancelRecv(true);}));
+  $('rNoExp').addEventListener('change',()=>{$('rExp').disabled=$('rNoExp').checked;});
+  $('askExp').addEventListener('change',()=>{st.askExp=$('askExp').checked;save();render();focusScan();});
+  function setMode(m){view='scan';if(isCnt(m))st.cnt=m;if(isWo(m))st.wo=m;st.mode=m;cancelRecv();$('sugg').style.display='none';save();render();focusScan();}
+  $('tabOUT').onclick=()=>setMode('OUT');$('tabIN').onclick=()=>setMode('IN');$('tabCNT').onclick=()=>setMode(isCnt(st.cnt)?st.cnt:'CNT1');$('tabWO').onclick=()=>setMode(isWo(st.wo)?st.wo:'WO1');
+  st.who=englishOnly(st.who,true).text;$('who').value=st.who;
+  $('who').addEventListener('input',()=>{const r=englishOnly($('who').value,true);if(r.removed){$('who').value=r.text;msg('warn','“Prepared by”: English letters only (A-Z, 0-9). Please type your name in English.');}st.who=$('who').value;save();});
+
+  function stamp(){const d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'_'+pad2(d.getHours())+pad2(d.getMinutes());}
+  // ---------------------------------------------------------------- where the Excel file goes
+  const FSAfile=typeof window.showSaveFilePicker==='function';
+  let expDir=null;
+  async function loadExpDir(){try{const h=await idbGet('exportDir');if(h)expDir=h;}catch(e){}renderSave();}
+  function renderSave(){
+    const sm=$('saveMode');sm.value=st.saveMode;
+    [...sm.options].forEach(o=>{if(o.value==='share')o.disabled=typeof navigator.share!=='function';else if(o.value!=='downloads')o.disabled=!(FSA||FSAfile);});
+    $('infoSheet').checked=st.infoSheet;
+    $('expChoose').style.display=st.saveMode==='folder'?'':'none';
+    $('expName').textContent=st.saveMode==='folder'?(expDir?'→ '+expDir.name:'no folder chosen yet'):'';
+    $('copyRow').style.display=ready()?'':'none';$('copySh').checked=st.copyShared;
+  }
+  $('saveMode').onchange=()=>{st.saveMode=$('saveMode').value;save();renderSave();};
+  $('copySh').onchange=()=>{st.copyShared=$('copySh').checked;save();};
+  $('expChoose').onclick=async()=>{try{const h=await window.showDirectoryPicker({mode:'readwrite',id:'ccsexport'});expDir=h;await idbSet('exportDir',h);renderSave();msg('ok','Excel files will be saved in the folder “'+h.name+'”.');}
+    catch(e){if(e.name!=='AbortError')msg('err','Could not use that folder: '+(e.message||e.name));}};
+  function browserDownload(name,bytes){const blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+  async function saveExport(name,bytes){
+    let why='';
+    try{
+      if(EMBEDDED&&st.saveMode==='downloads'&&typeof navigator.share==='function'){      // in a preview frame only the share sheet might be allowed
+        try{const f0=new File([bytes],name,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+          if(!navigator.canShare||navigator.canShare({files:[f0]})){await navigator.share({files:[f0],title:name});return{name,where:'the share sheet'};}}
+        catch(e0){if(e0&&e0.name==='AbortError')return{cancelled:true};}
+      }
+      if(st.saveMode==='share'){
+        if(typeof navigator.share!=='function')throw new Error('the share sheet is not available on this page');
+        const file=new File([bytes],name,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        if(navigator.canShare&&!navigator.canShare({files:[file]}))throw new Error('this browser cannot share files');
+        await navigator.share({files:[file],title:name,text:'CCS file '+name});
+        return{name,where:'the share sheet'};
+      }
+      if(st.saveMode==='ask'&&FSAfile){
+        const fh=await window.showSaveFilePicker({suggestedName:name,id:'ccsexportfile',types:[{description:'Excel workbook',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}}]});
+        const w=await fh.createWritable();await w.write(bytes);await w.close();return{name:fh.name,where:'the place you chose'};
+      }
+      if(st.saveMode==='folder'){
+        if(!expDir)throw new Error('no export folder chosen yet');
+        let p=await expDir.queryPermission({mode:'readwrite'});if(p!=='granted')p=await expDir.requestPermission({mode:'readwrite'});
+        if(p!=='granted')throw new Error('permission for the folder was not given');
+        const fh=await expDir.getFileHandle(name,{create:true});const w=await fh.createWritable();await w.write(bytes);await w.close();return{name,where:'the folder “'+expDir.name+'”'};
+      }
+    }catch(e){if(e&&e.name==='AbortError')return{cancelled:true};why=' ('+(e.message||e.name)+' — so it went to Downloads instead)';}
+    browserDownload(name,bytes);return{name,where:'the browser Downloads folder'+why,blocked:EMBEDDED};
+  }
+  $('xlsx').onclick=async()=>{
+    if(isCnt(st.mode))return exportCountPhone();
+    if(isWo(st.mode))return exportWoPhone();
+    if(!list().length){msg('err','The list is empty.');return;}
+    const cfg=EXPORT[st.mode],who0=(st.who||'').trim(),typeName=st.mode==='OUT'?'STOCK OUT':'STOCK IN',nowD=new Date();
+    const meta={who:who0,created:nowD,title:typeName,infoName:'Info',info:st.infoSheet?[
+      ['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],
+      ['Type',typeName],...(UNIT_NAME?[['Unit',UNIT_NAME]]:[]),['Lines',list().length],['Total units',list().reduce((a,x)=>a+x.qty,0)],['Tool','CCS Scan Helper'],
+      ['Note','Information only. The data to import is on the first sheet (inventory list).']]:null};
+    const bytes=buildXlsx(cfg.sheet,cfg.cols,buildRows(list(),items,$('allItems').checked),meta);
+    const who=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),name=cfg.file+'_'+stamp()+(who?'_'+who:'')+'.xlsx';
+    const r=await saveExport(name,bytes);
+    if(r.cancelled){msg('warn','Save cancelled - nothing was saved.');return;}
+    let opened=null;
+    if(!r.blocked&&r.where!=='the share sheet'&&st.autoOpen&&shareUrl()){try{opened=window.open(shareUrl(),'_blank');if(opened){try{opened.opener=null;}catch(e2){}}}catch(e){opened=null;}}
+    let extra='';
+    if(ready()&&st.copyShared){try{await writeFile('Exports',name,bytes);extra=' A copy was saved in the shared folder (Exports).';lastSave={t:new Date(),what:'Exports/'+name};renderFolder();}catch(e){extra=' Could not save the copy in the shared folder: '+(e.message||e.name);}}
+    const needUpload=shareUrl()&&r.where!=='the share sheet'?(opened?' The shared folder was opened in a new tab: add “'+r.name+'” there (it is in your Downloads).':' Now upload it to the shared folder: tap “📂 Open shared folder”.'):'';
+    const noName=who0?'':'  ⚠ “Prepared by” is empty, so the file does not say who saved it.';
+    if(r.blocked){msg('err','The file was probably NOT saved: this page is open inside the SharePoint/OneDrive preview and the phone blocks downloads there. Open the page directly (see the red note at the top), or tap “Copy for Excel”.');beep(false);return;}
+    msg(r.where.includes('instead')||!who0?'warn':'ok','Saved '+r.name+' in '+r.where+'.'+extra+needUpload+' Import it in CCS, then press “Clear list”.'+noName);
+  };
+  $('infoSheet').onchange=()=>{st.infoSheet=$('infoSheet').checked;save();};
+  // ---------------------------------------------------------------- shared folder link (open it to upload the file)
+  function shareUrl(){return (st.shareLink||defaultLink()||'').trim();}
+  function renderLink(){$('shareLink').value=st.shareLink||defaultLink();$('shareLink').title=st.shareLink?'Your own link (clear the box to go back to the default)':'Default link from this file';$('openShared').style.display=shareUrl()?'':'none';$('autoRow').style.display=shareUrl()?'':'none';$('autoOpen').checked=st.autoOpen;}
+  $('shareLink').addEventListener('change',()=>{const v=$('shareLink').value.trim();
+    if(v&&!/^https:\/\//i.test(v)){msg('err','Paste the full link, starting with https://');renderLink();return;}
+    st.shareLink=(v===defaultLink())?'':v;save();renderLink();msg('ok',!v?(defaultLink()?'Back to the default link.':'Link removed.'):'Link saved on this device.');});
+  $('openShared').onclick=()=>{const u=shareUrl();if(u)window.open(u,'_blank','noopener');};
+  $('autoOpen').onchange=()=>{st.autoOpen=$('autoOpen').checked;save();};
+  renderLink();$('ver').textContent='build '+VERSION+(PWA?' (app)':'');renderCat();renderInstall();if(!items.length)msg('warn','No item list yet. Tap “Import item list…” and choose the Excel list or the setup file from your team.');if(EMBEDDED){$('embedWarn').style.display='block';$('copy').style.display='';}
+  $('copy').onclick=()=>{
+    const cfg=EXPORT[st.mode],rows=buildRows(list(),items,$('allItems').checked);if(!list().length){msg('err','The list is empty.');return;}
+    const tsv=[cfg.cols.map(c=>c[0]).join('\t')].concat(rows.map(r=>cfg.cols.map(c=>c[2]==='d'&&r[c[1]]?r[c[1]].split('-').reverse().join('/'):(r[c[1]]==null?'':r[c[1]])).join('\t'))).join('\n');
+    const done=()=>{$('copyBox').style.display='none';msg('ok','Copied - paste into Excel (Ctrl+V).');};
+    const manual=why=>{const b=$('copyBox');b.value=tsv;b.style.display='block';b.focus();b.select();msg('warn',why+' The text is shown below: touch and hold it → Select all → Copy, then paste it into Excel.');};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tsv).then(done,()=>manual('The browser blocked automatic copying.'));
+    else manual('Automatic copying is not available here.');
+  };
+  $('undo').onclick=()=>{const s=st.hist.pop(),hs=shHist.pop();if(!s){msg('warn','Nothing to undo.');return;}shRestoreSessions(hs);const before=JSON.stringify(st.lists);st.lists=Object.assign({OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[],WO1:[],WO2:[],WO3:[],WO4:[],WO5:[]},JSON.parse(s));lastTouched=null;
+    const ch=ALLM.filter(m=>JSON.stringify(JSON.parse(before)[m])!==JSON.stringify(st.lists[m]));touched(ch.length?ch:[st.mode]);render();msg('warn','Last change undone.');focusScan();};
+  $('clear').onclick=()=>{if(!list().length)return;if(confirm('Clear the whole '+(st.mode==='OUT'?'STOCK OUT':isWo(st.mode)?'WRITE OFF ('+woName(st.mode)+')':isCnt(st.mode)?'COUNT ('+roomName(st.mode)+')':'STOCK IN')+' list? Make sure you downloaded it first.')){snapshot();shNewSession(st.mode);st.lists[st.mode]=[];lastTouched=null;touched([st.mode]);render();msg('warn','List cleared (Undo brings it back). Lines already sent to the shared list stay there.');focusScan();}};
+  $('nAdd').onclick=async()=>{const ir=$('nIr').value.trim(),nm=$('nName').value.trim(),un=$('nUnit').value.trim();
+    if(!/^\d{6,12}$/.test(ir)||!nm){msg('err','Enter the IR number (digits) and the item name.');return;}
+    if(englishOnly(nm,false).removed||englishOnly(un,false).removed){msg('err','Item name and unit must be in English letters only (the CCS list is English).');return;}
+    if(map.has(ir)){msg('err','That IR number is already in the list.');return;}
+    st.extra.push([ir,nm,un]);save();rebuild();if(ready()){try{await syncExtra();}catch(e){}}
+    $('nIr').value=$('nName').value=$('nUnit').value='';msg('ok','Item saved: '+nm+'. You can scan it now.');focusScan();};
+  window.addEventListener('load',()=>focusScan());
+
+  // ---------------------------------------------------------------- item list: import / reset
+  function renderCat(){
+    const el=$('catInfo');
+    if(catalog){el.textContent=catalog.items.length+' items — imported from '+catalog.source+' ('+new Date(catalog.at).toLocaleDateString()+')';el.style.color='';}
+    else if(ITEMS.length){el.textContent=ITEMS.length+' items (built into this file)';el.style.color='';}
+    else{el.textContent='none yet — import the Excel list or the setup file';el.style.color='var(--out)';}
+    $('catReset').style.display=(catalog&&ITEMS.length)?'':'none';
+  }
+  $('catImport').onclick=()=>{$('catFile').value='';$('catFile').click();};
+  $('catFile').onchange=async()=>{
+    const f=$('catFile').files&&$('catFile').files[0];if(!f)return;msg('warn','Reading '+f.name+'…');
+    try{
+      let res,isJson=false;
+      if(/\.json$/i.test(f.name)||f.type==='application/json'){res=parseSetupJson(await f.text());isJson=true;}
+      else{if(typeof DecompressionStream!=='function')throw new Error('this browser is too old to read Excel files - use the setup file (.json)');const r=await parseXlsxCatalog(await f.arrayBuffer());res={items:r.items,uploadLink:''};}
+      if(!res.items.length)throw new Error('no items with a 10-digit ir_number were found');
+      const oldLink=(catalog&&catalog.uploadLink)||'';
+      const c={items:res.items,source:f.name,at:Date.now(),uploadLink:isJson?res.uploadLink:oldLink};
+      try{localStorage.setItem(CAT_KEY,JSON.stringify(c));}catch(e){throw new Error('could not store the list on this phone (storage full?)');}
+      catalog=c;rebuild();renderCat();renderLink();
+      let shNote='';if(isJson&&res.syncUrl){shApplySetup(res.syncUrl,res.scanCode);shNote=' Shared list connected.';}
+      if(isJson&&res.photos)phImport(res.photos).then(n=>{if(n){msg('ok','Item list loaded: '+c.items.length+' items, '+n+' item photos.'+shNote);render();}});
+      msg('ok','Item list loaded: '+c.items.length+' items.'+(isJson&&res.uploadLink?' Shared folder link set.':(isJson&&oldLink?' The old shared folder link was removed.':''))+shNote);beep(true);
+    }catch(e){msg('err','Could not read that file: '+(e.message||e.name));beep(false);}
+  };
+  $('catReset').onclick=()=>{try{localStorage.removeItem(CAT_KEY);}catch(e){}catalog=null;rebuild();renderCat();renderLink();msg('ok','Using the list built into this file.');};
+
+  // ---------------------------------------------------------------- install as an app (PWA)
+  function renderInstall(){
+    const c=$('installCard');if(!PWA||STANDALONE){c.style.display='none';return;}
+    if(deferredInstall){$('installTxt').textContent='Install this as an app on your phone:';$('installBtn').style.display='';c.style.display='block';}
+    else if(IS_IOS){$('installTxt').textContent='To install on iPhone: tap the Share button in Safari, then “Add to Home Screen”.';$('installBtn').style.display='none';c.style.display='block';}
+    else c.style.display='none';
+  }
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;renderInstall();});
+  window.addEventListener('appinstalled',()=>{deferredInstall=null;renderInstall();});
+  $('installBtn').onclick=async()=>{if(!deferredInstall)return;deferredInstall.prompt();try{await deferredInstall.userChoice;}catch(e){}deferredInstall=null;renderInstall();};
+  if(PWA&&'serviceWorker' in navigator&&/^https?:$/.test(location.protocol))window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});});
+
+  // ---------------------------------------------------------------- phone / laptop camera
+  let camStream=null,camTimer=null,camBusy=false,camHits=new Map(),camLast={v:'',seen:0},camCanvas=null,camCtx=null,camDetector=null,camTorchOn=false,camMsgTimer=null;
+  function camSay(t){$('camMsg').textContent=t;}
+  async function camOpen(){
+    if(!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia)){
+      msg('warn','Live camera is not possible in this page (it needs https). Opening the phone camera instead: take a clear photo of the barcode.');
+      $('photoBtn').click();return;}
+    msg('warn','Asking the browser for the camera… tap Allow if a question appears.');
+    let timedOut=false,gum;
+    try{
+      gum=navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});
+      camStream=await Promise.race([gum,new Promise((_,rej)=>setTimeout(()=>{timedOut=true;rej(Object.assign(new Error('no answer'),{name:'Timeout'}));},8000))]);
+    }catch(e){
+      if(gum)gum.then(st2=>{if(timedOut)st2.getTracks().forEach(t=>t.stop());}).catch(()=>{});
+      msg('err',e.name==='Timeout'?'The browser gave no answer. If this page is open inside another app (Outlook, WhatsApp, Gmail, Files preview…) open it in Chrome itself. Or tap “📸 Photo”.'
+        :(e.name==='NotAllowedError'&&!(location.protocol==='https:'||location.hostname==='localhost'))?'The browser does not allow the live camera for a page opened from a file or from another app, and it cannot even ask you for permission here. Tap “📸 Photo” instead (it opens the phone camera and works), or open the page from an https:// address.'
+        :'Could not start the camera: '+(e.name==='NotAllowedError'?'camera permission was refused (allow it in the browser address bar, or in Android Settings > Apps > Chrome > Permissions > Camera).':e.name==='NotFoundError'?'no camera found.':(e.message||e.name))+' You can still tap “📸 Photo”.');
+      return;}
+    $('cam').style.display='block';camSay('Put ONE barcode inside the frame - everything outside it is ignored');camHits=new Map();camLast={v:'',seen:0};camTorchOn=false;
+    const v=$('camVideo');v.srcObject=camStream;try{await v.play();}catch(e){}
+    try{const tr=camStream.getVideoTracks()[0],caps=tr.getCapabilities?tr.getCapabilities():{};$('camTorch').style.display=caps.torch?'':'none';}catch(e){}
+    camDetector=null;try{if('BarcodeDetector' in window){const f=await BarcodeDetector.getSupportedFormats();if(f.includes('code_128'))camDetector=new BarcodeDetector({formats:['code_128']});}}catch(e){camDetector=null;}
+    camLoop();
+  }
+  function camClose(){clearTimeout(camTimer);camTimer=null;if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null;}$('cam').style.display='none';$('camVideo').srcObject=null;}
+  function camRoi(){          // the area inside the white frame, in video pixels (the video is shown with object-fit: cover)
+    const v=$('camVideo'),g=$('camGuide'),vr=v.getBoundingClientRect(),gr=g.getBoundingClientRect(),vw=v.videoWidth,vh=v.videoHeight;
+    if(!vw||!vr.width)return null;
+    const scale=Math.max(vr.width/vw,vr.height/vh),offX=(vr.width-vw*scale)/2,offY=(vr.height-vh*scale)/2,inset=4;
+    let sx=(gr.left+inset-vr.left-offX)/scale,sy=(gr.top+inset-vr.top-offY)/scale,sw=(gr.width-2*inset)/scale,sh=(gr.height-2*inset)/scale;
+    sx=Math.max(0,sx);sy=Math.max(0,sy);sw=Math.min(vw-sx,sw);sh=Math.min(vh-sy,sh);
+    return(sw>24&&sh>24)?{sx,sy,sw,sh}:null;
+  }
+  async function camFrame(){
+    const v=$('camVideo'),roi=camRoi();if(!roi)return null;
+    const sc=Math.min(1,1280/roi.sw),w=Math.max(16,Math.round(roi.sw*sc)),h=Math.max(16,Math.round(roi.sh*sc));
+    if(!camCanvas){camCanvas=document.createElement('canvas');camCtx=camCanvas.getContext('2d',{willReadFrequently:true});}
+    if(camCanvas.width!==w||camCanvas.height!==h){camCanvas.width=w;camCanvas.height=h;}
+    camCtx.drawImage(v,roi.sx,roi.sy,roi.sw,roi.sh,0,0,w,h);                       // only this small area is looked at
+    if(camDetector){try{const r=await camDetector.detect(camCanvas);if(r.length&&r[0].rawValue)return r[0].rawValue;}catch(e){}}
+    const d=camCtx.getImageData(0,0,w,h).data,g=new Uint8Array(w*h);
+    for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(d[j]*77+d[j+1]*150+d[j+2]*29)>>8;
+    const now=Date.now();let found=null;
+    for(const [val,c] of c128Scan(g,w,h,24)){const a=(camHits.get(val)||[]).filter(t=>now-t<1500);for(let k=0;k<c;k++)a.push(now);camHits.set(val,a);if(a.length>=2)found=val;}
+    return found;
+  }
+  async function camLoop(){
+    if(!camStream)return;
+    if(!camBusy){camBusy=true;try{const code=await camFrame();if(code)camGot(code);}catch(e){}camBusy=false;}
+    if(camStream)camTimer=setTimeout(camLoop,80);
+  }
+  function camGot(code){
+    const now=Date.now();
+    if(code===camLast.v&&now-camLast.seen<900){camLast.seen=now;return;}   // same barcode still in view: count it once
+    camLast={v:code,seen:now};
+    try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
+    const stay=st.mode==='OUT'&&!st.askExp;                               // fast mode: keep scanning
+    if(!stay)camClose();
+    $('scan').value=code;submitScan();
+    if(stay){camSay($('msg').textContent||code);}
+  }
+
+  // ---------------------------------------------------------------- photo of the barcode (phone camera app)
+  function loadImage(file){return new Promise((res,rej)=>{const url=URL.createObjectURL(file),im=new Image();im.onload=()=>{res({im,url});};im.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('not an image'));};im.src=url;});}
+  async function decodePhoto(file){
+    const {im,url}=await loadImage(file);
+    try{
+      const W0=im.naturalWidth||im.width,H0=im.naturalHeight||im.height,seen=new Set(),cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
+      for(const tw of [1600,1000,2400,700,3200,99999]){            // last one = full resolution, for small/far barcodes
+        const w=Math.min(tw,W0);if(seen.has(w))continue;seen.add(w);const h=Math.round(H0*w/W0);cv.width=w;cv.height=h;cx.drawImage(im,0,0,w,h);
+        const d=cx.getImageData(0,0,w,h).data,g=new Uint8Array(w*h);for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(d[j]*77+d[j+1]*150+d[j+2]*29)>>8;
+        let best=null,bc=0;for(const [v,c] of c128Scan(g,w,h,60)){if(c>bc){best=v;bc=c;}}
+        if(best)return best;
+      }
+      return null;
+    }finally{URL.revokeObjectURL(url);}
+  }
+  $('photoBtn').onclick=()=>{$('photoIn').value='';$('photoIn').click();};
+  $('photoIn').onchange=async()=>{
+    const f=$('photoIn').files&&$('photoIn').files[0];if(!f)return;msg('warn','Reading the photo…');
+    try{const code=await decodePhoto(f);
+      if(!code){msg('err','No barcode found in the photo. Take it again: closer, in good light, the whole barcode in the picture and in focus.');beep(false);return;}
+      try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
+      $('scan').value=code;submitScan();
+    }catch(e){msg('err','Could not read that photo: '+(e.message||e.name));}
+  };
+
+  // ---------------------------------------------------------------- video of the barcodes (phone camera app)
+  function waitSeek(v,t){return new Promise(res=>{let done=false;const f=()=>{if(!done){done=true;v.removeEventListener('seeked',f);res();}};v.addEventListener('seeked',f);setTimeout(f,2500);v.currentTime=t;});}
+  async function decodeVideo(file,progress){
+    const url=URL.createObjectURL(file),v=document.createElement('video');v.muted=true;v.playsInline=true;v.preload='auto';v.src=url;
+    try{
+      await new Promise((res,rej)=>{v.onloadedmetadata=res;v.onerror=()=>rej(new Error('this video cannot be read'));setTimeout(()=>rej(new Error('the video took too long to load')),20000);});
+      const dur=Math.min(v.duration,90);if(!isFinite(dur)||dur<=0)throw new Error('the video is empty');
+      const sc=Math.min(1,1280/v.videoWidth),w=Math.round(v.videoWidth*sc),h=Math.round(v.videoHeight*sc);
+      const cv=document.createElement('canvas');cv.width=w;cv.height=h;const cx=cv.getContext('2d',{willReadFrequently:true}),g=new Uint8Array(w*h);
+      const step=dur>40?0.3:0.2,dets=[];
+      for(let t=0.02;t<dur;t+=step){
+        await waitSeek(v,t);cx.drawImage(v,0,0,w,h);const d=cx.getImageData(0,0,w,h).data;
+        for(let i=0,j=0;i<g.length;i++,j+=4)g[i]=(d[j]*77+d[j+1]*150+d[j+2]*29)>>8;
+        let best=null,bc=0;for(const [val,c] of c128Scan(g,w,h,30)){if(c>bc){best=val;bc=c;}}
+        if(best)dets.push({t,code:best,c:bc});
+        if(progress)progress(Math.min(99,Math.round(t/dur*100)),dets.length);
+      }
+      return groupDetections(dets);
+    }finally{URL.revokeObjectURL(url);v.removeAttribute('src');try{v.load();}catch(e){}}
+  }
+  $('videoBtn').onclick=()=>{$('videoIn').value='';$('videoIn').click();};
+  $('videoIn').onchange=async()=>{
+    const f=$('videoIn').files&&$('videoIn').files[0];if(!f)return;msg('warn','Reading the video… 0%');
+    try{
+      const res=await decodeVideo(f,(p,n)=>msg('warn','Reading the video… '+p+'%  ('+n+' frames with a barcode)'));
+      if(!res.length){msg('err','No barcode found in the video. Record again: hold each barcode about 2 seconds, close enough, steady, in good light.');beep(false);return;}
+      const known=[],unknown=[];res.forEach(r=>{const it=lookupItem(map,r.code);if(it)known.push({item:it,qty:r.qty});else unknown.push(r.code);});
+      qNote=unknown.length?'  Not in the item list: '+unknown.join(', ')+'.':'';
+      if(!known.length){msg('err','Barcodes were read but none is in the item list:'+qNote);beep(false);return;}
+      queue=known;qTotal=known.length;try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}
+      nextFromQueue();
+      if(qTotal>0&&qNote)$('msg').textContent+=qNote;
+    }catch(e){msg('err','Could not read the video: '+(e.message||e.name));}
+  };
+  $('camBtn').onclick=camOpen;$('camClose').onclick=()=>{camClose();focusScan();};
+  $('camTorch').onclick=async()=>{try{camTorchOn=!camTorchOn;await camStream.getVideoTracks()[0].applyConstraints({advanced:[{torch:camTorchOn}]});}catch(e){camSay('The light is not available on this camera.');}};
+
+  // ================================================================ SHARED LIST: several phones -> ONE list for the charge nurse
+  // ==AGG START==
+  function whoLabel(b){return (b.by&&String(b.by).trim())||('Phone '+String(b.device||'').slice(-4));}
+  function aggregateBatches(batches){
+    const m=new Map();
+    (batches||[]).forEach(b=>(b.lines||[]).forEach(l=>{
+      const exp=l.expiry||'',mk=(b.mode&&/^(CNT[1-3]|WO[1-5])$/.test(b.mode))?b.mode:'',k=l.ir+'|'+exp+'|'+mk;let a=m.get(k);
+      if(!a){a={ir:l.ir,name:l.name||'',expiry:exp,mode:mk,qty:0,from:[],src:[]};m.set(k,a);}
+      const q=+l.qty||0;a.qty+=q;if(!a.name&&l.name)a.name=l.name;
+      const w=whoLabel(b);if(a.from.indexOf(w)<0)a.from.push(w);
+      if(b.key)a.src.push({key:b.key,qty:q});
+    }));
+    return [...m.values()].sort((x,y)=>(x.mode||'').localeCompare(y.mode||'')||(x.name||'').localeCompare(y.name||'')||x.expiry.localeCompare(y.expiry));
+  }
+  // files: every file holds a phone's WHOLE list for one session; for the same phone+session the newest file wins
+  function latestFileBatches(files,mode){
+    const by=new Map();
+    (files||[]).forEach(f=>{if(!f||!(mode==='COUNT'?/^CNT[1-3]$/.test(f.mode):mode==='WO'?/^WO[1-5]$/.test(f.mode):f.mode===mode))return;const k=f.device+'|'+f.mode+'|'+f.session,o=by.get(k);if(!o||String(f.createdAt)>String(o.createdAt))by.set(k,f);});
+    return [...by.values()].map(f=>({key:'',device:f.device,by:f.by,mode:f.mode,session:f.session,updated:f.createdAt,lines:f.lines}));
+  }
+  // ==AGG END==
+  let view='scan';
+  const SH_KEY='ccsShared.v1'+PROFILE;
+  let sh={v:2,defs:{},defPend:{},url:'',urlDefault:'',scanCode:'',chargeCode:'',device:'',enabled:true,sess:{OUT:1,IN:1},pend:{},sent:{},lastOk:0,lastErr:'',files:[]};
+  try{const o=JSON.parse(localStorage.getItem(SH_KEY)||'null');if(o&&typeof o==='object'){sh=Object.assign(sh,o);sh.sess=Object.assign({OUT:1,IN:1},o.sess||{});sh.pend=o.pend||{};sh.sent=o.sent||{};sh.files=Array.isArray(o.files)?o.files:[];sh.defs=(o.defs&&typeof o.defs==='object')?o.defs:{};sh.defPend=(o.defPend&&typeof o.defPend==='object')?o.defPend:{};
+    if(!o.v){sh.enabled=(!o.url&&!o.scanCode&&!o.chargeCode)?true:!!o.enabled;sh.v=2;}}}catch(e){}
+  if(!/^[0-9a-f]{16}$/.test(sh.device||'')){try{sh.device=Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>('0'+b.toString(16)).slice(-2)).join('');}catch(e){sh.device=(Math.random().toString(16)+'0000000000000000').slice(2,18);}}
+  function shSave(){try{localStorage.setItem(SH_KEY,JSON.stringify(sh));}catch(e){}}
+  shSave();
+  const shHist=[];
+  function shRestoreSessions(s){if(!s)return;try{sh.sess=Object.assign({OUT:1,IN:1},JSON.parse(s));shSave();}catch(e){}}
+  function shNewSession(m){sh.sess[m]=(sh.sess[m]||1)+1;shSave();}
+  const okUrl=u=>/^https:\/\//i.test(u)||/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(u);
+  const shReady=()=>!!(sh.enabled&&okUrl(sh.url||'')&&(sh.scanCode||sh.chargeCode));
+  const hm=t=>{const d=new Date(t);return pad2(d.getHours())+':'+pad2(d.getMinutes());};
+  function shPayload(m){return{action:'push',code:sh.scanCode||sh.chargeCode,device:sh.device,by:(st.who||'').trim(),mode:m,session:sh.sess[m]||1,ack:((sh.ack||{})[m+':'+(sh.sess[m]||1)]||[]).slice(),lines:st.lists[m].map(l=>({ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty}))};}
+  let shTimer=null,shBusy=false,shRetry=0;
+  function shQueue(modes){
+    if(!shReady())return;
+    modes.forEach(m=>{const p=shPayload(m),k=m+':'+p.session;if(!p.lines.length&&!sh.sent[k]&&!sh.pend[k])return;sh.pend[k]=JSON.stringify(p);});
+    shSave();shBadge();clearTimeout(shTimer);shTimer=setTimeout(shFlush,700);
+  }
+  async function shPost(action,extra,timeoutMs){
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),timeoutMs||20000);
+    try{
+      const res=await fetch(sh.url,{method:'POST',body:JSON.stringify(Object.assign({},extra||{},{action})),redirect:'follow',signal:ctl.signal});
+      let j;try{j=await res.json();}catch(e){throw new Error('the link did not answer correctly - check the web app link');}
+      if(!j||j.ok!==true)throw new Error((j&&j.error)||'the shared list refused the request');
+      return j;
+    }catch(e){if(e&&e.name==='AbortError')throw new Error('no answer (timeout)');if(e&&e.name==='TypeError')throw new Error('cannot reach the shared list (internet or link?)');throw e;}
+    finally{clearTimeout(to);}
+  }
+  async function shFlush(){
+    if(shBusy||!shReady())return;
+    const keys=Object.keys(sh.pend);if(!keys.length&&!Object.keys(sh.defPend).length){shBadge();return;}
+    if(navigator.onLine===false){shBadge();return;}
+    shBusy=true;let failed=false;
+    try{
+      for(const k of keys){
+        const body=sh.pend[k],p=JSON.parse(body);p.code=sh.scanCode||sh.chargeCode;
+        const pj=await shPost('push',p);
+        if(sh.pend[k]===body)delete sh.pend[k];
+        sh.sent[k]=true;sh.lastOk=Date.now();sh.lastErr='';
+        if(p.ack&&p.ack.length&&sh.ack&&sh.ack[k]){sh.ack[k]=sh.ack[k].filter(id=>p.ack.indexOf(id)<0);if(!sh.ack[k].length)delete sh.ack[k];}
+        shSave();if(p.session===(sh.sess[p.mode]||1))shApplyDone(pj.done);
+      }
+      const dk=Object.keys(sh.defPend);
+      if(dk.length){const snap=Object.assign({},sh.defPend);await shPost('setDefaults',{code:sh.scanCode||sh.chargeCode,by:(st.who||'').trim(),items:dk.map(ir=>({ir,expiry:snap[ir]}))});dk.forEach(ir=>{if(sh.defPend[ir]===snap[ir])delete sh.defPend[ir];});sh.lastOk=Date.now();sh.lastErr='';shSave();}
+      shRetry=0;
+    }catch(e){failed=true;sh.lastErr=e.message||String(e);shSave();gateOnError(e);shRetry=Math.min(shRetry+1,5);clearTimeout(shTimer);shTimer=setTimeout(shFlush,Math.min(20000*Math.pow(2,shRetry-1),300000));}
+    finally{shBusy=false;shBadge();if(!failed&&Object.keys(sh.pend).length){clearTimeout(shTimer);shTimer=setTimeout(shFlush,300);}}
+  }
+  // The charge nurse pressed "Mark as imported" (or discarded lines): those lines are taken off THIS phone's list too.
+  function shApplyDone(done){
+    const ch=new Set();let n=0;if(!sh.ack||typeof sh.ack!=='object')sh.ack={};
+    (done||[]).forEach(d=>{const m=d&&d.mode;if(!m||!st.lists[m]||!d.id)return;const k=m+':'+(sh.sess[m]||1),a=sh.ack[k]||(sh.ack[k]=[]);if(a.indexOf(d.id)>=0)return;a.push(d.id);
+      const l=st.lists[m],i=l.findIndex(x=>x.ir===d.ir&&(x.expiry||'')===(d.expiry||''));if(i>=0){l[i].qty-=(+d.qty||0);if(l[i].qty<=0)l.splice(i,1);n++;}ch.add(m);});
+    if(ch.size){lastTouched=null;save();[...ch].forEach(m=>{const p=shPayload(m);sh.pend[m+':'+p.session]=JSON.stringify(p);});shSave();render();
+      if(n)msg('ok','The charge nurse has imported your list: '+n+' line'+(n===1?' was':'s were')+' cleared from this phone.');clearTimeout(shTimer);shTimer=setTimeout(shFlush,400);}
+    return ch;
+  }
+  let shSyncBusy=false;
+  async function shSync(){
+    if(shSyncBusy||shBusy||!shReady()||navigator.onLine===false||needLogin())return;
+    const sess={};let any=false;ALLM.forEach(m=>{if(st.lists[m].length){sess[m]=sh.sess[m]||1;any=true;}});if(!any)return;
+    shSyncBusy=true;
+    try{const j=await shPost('sync',{code:sh.scanCode||sh.chargeCode,device:sh.device,sess},15000);shApplyDone((j.done||[]).filter(d=>sess[d.mode]===(sh.sess[d.mode]||1)));}catch(e){}
+    finally{shSyncBusy=false;}
+  }
+  setInterval(shSync,45000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)shSync();});
+  function shBadge(){
+    const n=Object.keys(sh.pend).length+Object.keys(sh.defPend).length;let t='';
+    if(shReady()){if(n)t=(navigator.onLine===false)?'📴 offline - '+n+' waiting, will be sent when the internet is back':(sh.lastErr?'⚠ shared list: '+n+' waiting ('+sh.lastErr+')':'⏳ shared list: sending…');else if(sh.lastOk)t='✓ shared list '+hm(sh.lastOk);else t='shared list: on';}
+    else if(sh.enabled&&okUrl(sh.url||'')&&!sh.scanCode&&!sh.chargeCode)t='shared list: type the unit code (SHARED tab)';
+    $('shBadge').textContent=t;$('shBadge').style.color=(n&&sh.lastErr)?'var(--out)':'';
+    $('shStatus').textContent=shReady()?t:(sh.url?((sh.scanCode||sh.chargeCode)?'Not sending: tick “Send my scans”.':'Type the unit code to start sending.'):'Not connected');
+  }
+  window.addEventListener('online',()=>{shRetry=0;shFlush();});window.addEventListener('offline',shBadge);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)shFlush();});
+  setInterval(shFlush,60000);
+
+  // ---- connection card
+  function renderConn(){$('shUrl').value=sh.url;$('shUrlNote').textContent=(sh.url&&sh.url===sh.urlDefault)?'✓ This link was filled in automatically for your unit.':'';$('shScanCode').value=sh.scanCode;$('shScanCode').readOnly=!!sh.codeFromCfg;$('shScanCode').title=sh.codeFromCfg?'Set automatically for your unit':'';$('shChargeCode').value=sh.chargeCode;$('shOn').checked=!!sh.enabled;shBadge();}
+  function shApplySetup(url,code){sh.url=url;if(code)sh.scanCode=String(code).toUpperCase();sh.enabled=true;shSave();renderConn();shQueue(ALLM);}
+  function shConnChanged(){
+    sh.url=$('shUrl').value.trim();sh.scanCode=$('shScanCode').value.trim().replace(/\s+/g,'').toUpperCase();sh.chargeCode=$('shChargeCode').value.trim().replace(/\s+/g,'').toUpperCase();$('shScanCode').value=sh.scanCode;$('shChargeCode').value=sh.chargeCode;sh.enabled=$('shOn').checked;shSave();
+    if(sh.url&&!okUrl(sh.url))shMsg('err','The link must start with https://');
+    shRetry=0;if(shReady()){const m=[];ALLM.forEach(x=>{if(st.lists[x].length)m.push(x);});if(m.length)shQueue(m);else shFlush();}shBadge();
+  }
+  ['shUrl','shScanCode','shChargeCode'].forEach(id=>$(id).addEventListener('change',shConnChanged));$('shOn').addEventListener('change',shConnChanged);
+  $('shTest').onclick=async()=>{
+    shConnChanged();if(!okUrl(sh.url)){shMsg('err','Type the web app link first (https://…).');return;}
+    shMsg('warn','Testing…');
+    try{const j=await shPost('whoami',{code:sh.chargeCode||sh.scanCode},12000);shMsg('ok','Connected ✓  Your code works as: '+(j.role==='charge'?'charge nurse (can open the combined list)':'scanner (sends scans)')+'.');}
+    catch(e){shMsg('err','Not connected: '+(e.message||e.name));}
+  };
+
+  // ---- the combined list (charge nurse)
+  let shRows=[],shLoaded=null,shEdited=false;
+  function shMode(){const r=document.querySelector('input[name=shMode]:checked');return r?r.value:'OUT';}
+  function shMsg(kind,text){const m=$('shMsg');m.className='msg '+kind;m.textContent=text;}
+  function shRender(){
+    const live=$('shSource').value==='live';
+    const rec=!!(shLoaded&&shLoaded.recovered);$('shMark').style.display=(live&&!rec)?'':'none';$('shDiscard').style.display=(live&&!rec)?'':'none';$('shRecover').style.display=live?'':'none';
+    if(!shRows.length){$('shList').innerHTML='<div class="empty">'+(shLoaded?'Nothing waiting in this list.':'Press Refresh.')+'</div>';$('shTot').textContent='';return;}
+    const isC=shLoaded&&shLoaded.mode==='COUNT',isW=shLoaded&&shLoaded.mode==='WO';$('shMark').textContent=isC?'Mark as done':'Mark as imported';
+    const anyExp=isC||shRows.some(r=>r.expiry);
+    let h='<table><thead><tr><th></th><th>Item</th>'+(anyExp?'<th>Expiry</th>':'')+'<th>Qty</th></tr></thead><tbody>';
+    shRows.forEach((r,i)=>{h+='<tr class="'+(r.include?'':'off')+'" data-ir="'+xmlEsc(r.ir)+'" data-from="'+xmlEsc(r.from.join(', '))+'"><td><input type="checkbox" data-a="c" data-i="'+i+'"'+(r.include?' checked':'')+'></td><td>'+thumb(r.ir,56)+xmlEsc(r.name)+'<div class="from">'+(isC?'<b>'+xmlEsc(roomName(r.mode))+'</b> · ':'')+(isW?'<b>'+xmlEsc(woName(r.mode))+'</b> · ':'')+xmlEsc(r.ir)+' · from '+xmlEsc(r.from.join(', '))+'</div></td>'+(anyExp?'<td>'+(r.expiry?dmy(r.expiry):'')+(isC?expBadge(r.expiry):'')+'</td>':'')+
+      '<td><input class="sq" type="number" min="1" value="'+r.qty+'" data-a="q" data-i="'+i+'">'+unitBadge(unitOf(r.ir))+(r.qty!==r.orig?'<div class="from">was '+r.orig+'</div>':'')+'</td></tr>';});
+    $('shList').innerHTML=h+'</tbody></table>';
+    const inc=shRows.filter(r=>r.include);$('shTot').textContent=inc.length+' line'+(inc.length===1?'':'s')+' · '+inc.reduce((a,r)=>a+r.qty,0)+' units';
+  }
+  $('shList').addEventListener('change',e=>{const t=e.target,i=+t.dataset.i,r=shRows[i];if(!r)return;shEdited=true;if(t.dataset.a==='c')r.include=t.checked;else if(t.dataset.a==='q'){const v=Math.floor(+t.value);r.qty=v>=1?v:1;}setTimeout(shRender,0);});
+  async function shRefresh(force,keepMsg){
+    const mode=shMode(),live=$('shSource').value==='live';
+    if(shEdited&&!force&&shRows.length&&!confirm('You changed some quantities / checkboxes. Refreshing will drop those changes. Continue?'))return;
+    let batches;
+    if(live){
+      if(!okUrl(sh.url)||!sh.chargeCode){$('shInfo').textContent='Open “Connection” below and fill in the web app link and the charge nurse code.';shRows=[];shLoaded=null;shRender();$('shConn').open=true;return;}
+      $('shInfo').textContent='Loading…';
+      try{const j=await shPost('list',{code:sh.chargeCode,mode:mode==='COUNT'?'CNT':mode});batches=j.batches||[];$('shInfo').textContent='Live list, '+batches.length+' phone list'+(batches.length===1?'':'s')+' · updated '+hm(Date.now());}
+      catch(e){shRows=[];shLoaded=null;shRender();$('shInfo').textContent='';shMsg('err','Could not load the shared list: '+(e.message||e.name));return;}
+    }else{
+      batches=latestFileBatches(sh.files,mode);$('shInfo').textContent=batches.length?'From '+batches.length+' phone list'+(batches.length===1?'':'s')+' in the merged files (newest file per phone). Use “Merge files…” to add more.':'No files merged yet for this list. Use “Merge files…”.';
+    }
+    shRows=aggregateBatches(batches).map(a=>Object.assign(a,{include:true,orig:a.qty}));shLoaded={mode,live,batches};shEdited=false;shRender();if(!keepMsg)$('shMsg').className='msg';
+  }
+  $('tabSH').onclick=()=>{view='shared';render();renderConn();if(!shLoaded||shLoaded.mode!==shMode())shRefresh(true);};
+  document.querySelectorAll('input[name=shMode]').forEach(r=>r.addEventListener('change',()=>shRefresh(true)));
+  $('shSource').onchange=()=>shRefresh(true);$('shRefresh').onclick=()=>shRefresh(false);
+  $('shSave').onclick=async()=>{
+    const inc=shRows.filter(r=>r.include);if(!inc.length){shMsg('err','Nothing selected to save.');return;}
+    const mode=shLoaded?shLoaded.mode:shMode(),cfg=EXPORT[mode],who0=(st.who||'').trim(),typeName=mode==='OUT'?'STOCK OUT':mode==='WO'?'WRITE OFF':'STOCK IN',nowD=new Date();
+    const lines=inc.map(r=>({ir:r.ir,name:r.name,expiry:r.expiry,qty:r.qty})),names=[];inc.forEach(r=>r.from.forEach(f=>{if(names.indexOf(f)<0)names.push(f);}));
+    if(mode==='COUNT'){
+      const cl=inc.map(r=>({mode:r.mode,ir:r.ir,name:r.name,expiry:r.expiry,qty:r.qty})),bytes=countBook(cl,{who:who0,created:nowD,title:'STOCK COUNT',infoName:'Info',info:st.infoSheet?countInfo(cl,who0,nowD,names.join(', '),$('shSource').value==='live'?'Shared list (live)':'Merged files'):null});
+      const wn=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),cn='CCS_StockCount_ALL_'+stamp()+(wn?'_'+wn:'')+'.xlsx',rr=await saveExport(cn,bytes);
+      if(rr.cancelled){shMsg('warn','Save cancelled - nothing was saved.');return;}
+      shMsg(who0?'ok':'warn','Saved '+rr.name+' in '+rr.where+'. When the count is finished press “Mark as done”.'+(who0?'':'  ⚠ “Prepared by” is empty.'));return;
+    }
+    if(mode==='WO'){
+      const wl=inc.map(r=>({mode:r.mode,ir:r.ir,name:r.name,expiry:r.expiry,qty:r.qty})),bytes=woBook(wl,who0,nowD,names.join(', '));
+      const wn=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),rr=await saveExport('CCS_WriteOff_ALL_'+stamp()+(wn?'_'+wn:'')+'.xlsx',bytes);
+      if(rr.cancelled){shMsg('warn','Save cancelled - nothing was saved.');return;}
+      shMsg(who0?'ok':'warn','Saved '+rr.name+' in '+rr.where+'.'+(who0?'':'  ⚠ “Prepared by” is empty.'));await shAskClear(inc);return;
+    }
+    const meta={who:who0,created:nowD,title:typeName,infoName:'Info',info:st.infoSheet?[
+      ['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],
+      ['Type',typeName],...(UNIT_NAME?[['Unit',UNIT_NAME]]:[]),['Lines',lines.length],['Total units',lines.reduce((a,x)=>a+x.qty,0)],['Combined from',names.join(', ')],['Source',$('shSource').value==='live'?'Shared list (live)':'Merged files'],['Tool','CCS Scan Helper'],
+      ['Note','Information only. The data to import is on the first sheet (inventory list).']]:null};
+    const bytes=buildXlsx(cfg.sheet,cfg.cols,buildRows(lines,items,false),meta);
+    const who=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),name=cfg.file+'_ALL_'+stamp()+(who?'_'+who:'')+'.xlsx';
+    const r=await saveExport(name,bytes);
+    if(r.cancelled){shMsg('warn','Save cancelled - nothing was saved.');return;}
+    shMsg(who0?'ok':'warn','Saved '+r.name+' in '+r.where+'. Import it in CCS, then press “Mark as imported”.'+(who0?'':'  ⚠ “Prepared by” is empty (type your name at the top).'));
+    await shAskClear(inc);
+  };
+  // after a successful save: offer to clear the list right away (= Mark as imported)
+  async function shAskClear(inc){
+    if($('shSource').value!=='live'||(shLoaded&&shLoaded.recovered)||!inc.length)return;
+    if(!confirm('The Excel file is saved.\n\nDo you want to CLEAR the list now?\n(= Mark as imported: these '+inc.length+' lines disappear here and on the phones of the staff.)\n\nOK = clear the list.     Cancel = keep the list.'))return;
+    await shMark('EXPORTED',inc,'Marked as imported - the list is cleared');
+  }
+  $('shRecover').onclick=async()=>{
+    const mode=shMode();
+    if(!okUrl(sh.url)||!sh.chargeCode){shMsg('err','Only the charge nurse can recover a list (sign in with the charge nurse password).');return;}
+    if(shEdited&&shRows.length&&!confirm('You changed some quantities / checkboxes. Recovering will drop those changes. Continue?'))return;
+    shMsg('warn','Looking for the last imported list…');
+    try{const j=await shPost('lastExport',{code:sh.chargeCode,mode:mode==='COUNT'?'CNT':mode});
+      if(!j.exportId||!(j.batches||[]).length){shMsg('warn','Nothing has been marked as imported yet for this list.');return;}
+      shRows=aggregateBatches(j.batches).map(a=>Object.assign(a,{include:true,orig:a.qty}));shLoaded={mode,live:true,batches:j.batches,recovered:true};shEdited=false;
+      $('shInfo').textContent='RECOVERED LIST - marked as imported on '+String(j.at||'').slice(0,16)+'. Save the Excel again if you need it. Press Refresh to go back to the live list.';shRender();
+      shMsg('ok','Recovered the last imported list: '+shRows.length+' line'+(shRows.length===1?'':'s')+'. Nothing was changed for the staff.');}
+    catch(e){shMsg('err',/unknown action/i.test(e.message||'')?'The Google Sheet script is an old version: paste the new SharedList_Code and deploy a new version.':'Could not recover the list: '+(e.message||e.name));}
+  };
+  function shMarkItems(rows){const out=[];rows.forEach(r=>r.src.forEach(s=>out.push({key:s.key,ir:r.ir,expiry:r.expiry,qty:s.qty})));return out;}
+  async function shMark(status,rows,okText){
+    if(!rows.length){shMsg('err','Nothing to do.');return;}
+    try{const j=await shPost('mark',{code:sh.chargeCode,status,exportId:'EXP-'+stamp()+(st.who?'-'+st.who.replace(/\W+/g,''):''),items:shMarkItems(rows)});shEdited=false;await shRefresh(true,true);shMsg('ok',okText+': '+rows.length+' line'+(rows.length===1?'':'s')+'.');}
+    catch(e){shMsg('err','Could not update the shared list: '+(e.message||e.name));}
+  }
+  $('shMark').onclick=()=>{const inc=shRows.filter(r=>r.include);if(!inc.length){shMsg('err','Nothing selected.');return;}
+    if(!confirm((shLoaded&&shLoaded.mode==='COUNT')?'Mark these '+inc.length+' lines as done? Do it after you saved the count Excel. They will disappear from this list.':'Mark these '+inc.length+' lines as imported? Do it after you saved the Excel and imported it in CCS. They will disappear from this list AND from the phones of the staff.'))return;
+    if($('shSource').value==='files'){return;}shMark('EXPORTED',inc,(shLoaded&&shLoaded.mode==='COUNT')?'Marked as done':'Marked as imported');};
+  $('shDiscard').onclick=()=>{const off=shRows.filter(r=>!r.include);if(!off.length){shMsg('err','No unchecked lines to discard.');return;}
+    if(!confirm('Throw away the '+off.length+' unchecked lines? They will not appear again.'))return;shMark('DISCARDED',off,'Discarded');};
+
+  // ---- backup without internet: a phone sends a small file, the charge nurse merges files
+  async function saveText(name,text){
+    const file=new File([text],name,{type:'application/json'});
+    if(typeof navigator.share==='function'&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name});return{where:'the share sheet'};}catch(e){if(e&&e.name==='AbortError')return{cancelled:true};}}
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    return{where:'the browser Downloads folder'};
+  }
+  $('sendFile').onclick=async()=>{
+    const batches=[];ALLM.forEach(m=>{if(st.lists[m].length)batches.push({mode:m,session:sh.sess[m]||1,lines:st.lists[m].map(l=>({ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty}))});});
+    if(!batches.length){msg('err','Both lists are empty - nothing to send.');return;}
+    const who0=(st.who||'').trim(),who=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,'');
+    const text=JSON.stringify({format:'ccs-batch-1',device:sh.device,by:who0,createdAt:new Date().toISOString(),batches});
+    const r=await saveText('CCS_batch_'+stamp()+(who?'_'+who:'')+'.json',text);
+    if(r.cancelled){msg('warn','Cancelled - nothing was sent.');return;}
+    msg(who0?'ok':'warn','File ready in '+r.where+'. Send it to the charge nurse (Teams / WhatsApp). The charge nurse opens SHARED > Merge files…'+(who0?'':'  ⚠ “Prepared by” is empty.'));
+  };
+  $('shFilesBtn').onclick=()=>{$('shFiles').value='';$('shFiles').click();};
+  $('shFiles').onchange=async()=>{
+    const fs=Array.from($('shFiles').files||[]);if(!fs.length)return;let added=0,bad=[];
+    for(const f of fs){
+      try{
+        const o=JSON.parse(await f.text());if(!o||o.format!=='ccs-batch-1'||!Array.isArray(o.batches))throw new Error('not a batch file');
+        const dev=String(o.device||'').replace(/[^0-9a-z]/gi,'').slice(0,32);if(!dev)throw new Error('no device id');
+        o.batches.forEach(b=>{if(!/^(OUT|IN|CNT[1-3]|WO[1-5])$/.test(b.mode))return;const lines=(Array.isArray(b.lines)?b.lines:[]).map(l=>({ir:String(l.ir||'').trim(),name:String(l.name||'').slice(0,150),expiry:/^\d{4}-\d{2}-\d{2}$/.test(l.expiry||'')?l.expiry:'',qty:Math.floor(+l.qty)})).filter(l=>l.ir&&l.qty>=1);
+          sh.files.push({device:dev,by:String(o.by||'').slice(0,40),mode:b.mode,session:Math.floor(+b.session)||1,createdAt:String(o.createdAt||''),lines});added++;});
+      }catch(e){bad.push(f.name+' ('+(e.message||e.name)+')');}
+    }
+    const keep=new Map();sh.files.forEach(f=>{const k=f.device+'|'+f.mode+'|'+f.session,o=keep.get(k);if(!o||String(f.createdAt)>=String(o.createdAt))keep.set(k,f);});sh.files=[...keep.values()].slice(-300);shSave();
+    $('shSource').value='files';await shRefresh(true);
+    shMsg(bad.length?'warn':'ok','Merged '+fs.length+' file'+(fs.length===1?'':'s')+' ('+added+' list'+(added===1?'':'s')+').'+(bad.length?'  Could not read: '+bad.join('; '):''));
+  };
+  $('shExportSetup').onclick=async()=>{
+    const base=(catalog&&catalog.items.length)?catalog.items:ITEMS;
+    const o={format:'ccs-setup-1',unit:UNIT_NAME||'',photos:phExport(base),builtAt:VERSION,uploadLink:defaultLink()||'',syncUrl:okUrl(sh.url)?sh.url:'',scanCode:sh.scanCode||'',items:base};
+    const r=await saveText('ccs_setup_'+stamp()+'.json',JSON.stringify(o));
+    if(r.cancelled)return;shMsg('ok','Setup file saved in '+r.where+'. It has the item list ('+Object.keys(o.photos).length+' photos), the shared folder link and the shared-list link + unit code (NOT the charge nurse code). Share it only inside the hospital.');
+  };
+  // The unit's default link: a tiny file "config.json" next to index.html (edit it on GitHub, no need to touch the app).
+  // Never overwrites a link the person typed by hand.
+  function showUnit(){const el=$('unitTag');if(UNIT_NAME){el.textContent=UNIT_NAME;el.style.display='';document.title='CCS Scan Helper - '+UNIT_NAME;}}
+  showUnit();
+  async function shLoadConfig(){
+    try{
+      const r=await fetch('config.json?'+Date.now(),{cache:'no-store'});if(!r.ok)return;
+      const c=await r.json();
+      if(typeof c.master==='string'&&/^[\w.\/-]+\.xlsx$/.test(c.master))MASTER_URL=c.master;
+      if(typeof c.photos==='string'&&/^[\w.\/-]*\/$/.test(c.photos))PHOTOS_BASE=c.photos;
+      {const lo=c.locations!==false;if(lo!==USE_LOC){USE_LOC=lo;try{localStorage.setItem('ccsUnitLoc.v1'+PROFILE,lo?'1':'0');}catch(e){}rebuild();render();}}
+      if(typeof c.unit==='string'){const nm=c.unit.replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,30);if(nm&&nm!==UNIT_NAME){UNIT_NAME=nm;try{localStorage.setItem('ccsUnit.v1'+PROFILE,nm);}catch(e){}showUnit();}}
+      const u=(typeof c.syncUrl==='string')?c.syncUrl.trim():'';if(!u||!okUrl(u))return;
+      const code=(typeof c.scanCode==='string')?c.scanCode.replace(/[^A-Za-z0-9]/g,'').toUpperCase():'';
+      let changed=false;
+      if(!sh.url||sh.url===sh.urlDefault){if(sh.url!==u){sh.url=u;changed=true;}}
+      sh.urlDefault=u;
+      if(code&&sh.scanCode!==code){sh.scanCode=code;changed=true;}if(sh.codeFromCfg!==!!code){sh.codeFromCfg=!!code;changed=true;}
+      shSave();if(changed){renderConn();shRetry=0;const m=ALLM.filter(x=>st.lists[x].length);if(shReady()&&m.length)shQueue(m);else shFlush();}else renderConn();
+    }catch(e){}
+  }
+  // ---- default expiry dates (shared by the unit through the Google Sheet; kept on the phone too)
+  function defOf(item){const d=sh.defs[item.ir];if(d&&d.e)return d.e;const today=new Date().toISOString().slice(0,10),ex=(item.exps||[]).filter(e=>e>=today);return ex.length?ex[0]:'';}
+  function defInfo(item){const d=sh.defs[item.ir];if(d&&d.e)return 'Default: '+dmy(d.e)+(d.by?'  (set by '+d.by+(d.at?', '+String(d.at).slice(0,10):'')+')':'');const e=defOf(item);return e?'Default: '+dmy(e)+'  (from the item list)':'No default expiry date yet for this item.';}
+  function setDef(ir,e){sh.defs[ir]={e,by:(st.who||'').trim(),at:new Date().toISOString().slice(0,16).replace('T',' ')};sh.defPend[ir]=e;shSave();shBadge();if(shReady()){clearTimeout(shTimer);shTimer=setTimeout(shFlush,700);}}
+  let shDefAt=0;
+  async function shLoadDefaults(){
+    if(!shReady()||navigator.onLine===false)return;
+    try{const j=await shPost('defaults',{code:sh.scanCode||sh.chargeCode},15000).catch(e=>{gateOnError(e);throw e;});const d=j.defaults||{};Object.keys(d).forEach(ir=>{if(sh.defPend[ir]===undefined&&d[ir]&&d[ir].e)sh.defs[ir]=d[ir];});shDefAt=Date.now();shSave();}catch(e){}
+  }
+  setInterval(shLoadDefaults,180000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-shDefAt>60000)shLoadDefaults();});
+  // ---- the item master list and the item photos, read from the website (GitHub) - nothing to import on the phones
+  let WEBPH=new Set();try{WEBPH=new Set(JSON.parse(localStorage.getItem('ccsWebPhotos.v1')||'[]'));}catch(e){}
+  async function loadMaster(){
+    if(!/^https?:$/.test(location.protocol))return;
+    try{
+      const r=await fetch(MASTER_URL+'?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;
+      if(typeof DecompressionStream!=='function')return;
+      const res=await parseXlsxCatalog(await r.arrayBuffer());if(!res.items.length)return;
+      const c={items:res.items,source:'the master list on the website',at:Date.now(),uploadLink:(catalog&&catalog.uploadLink)||'',master:true};
+      try{localStorage.setItem(CAT_KEY,JSON.stringify(c));}catch(e){}
+      catalog=c;rebuild();renderCat();render();
+    }catch(e){}
+  }
+  async function loadWebPhotos(){
+    if(!/^https?:$/.test(location.protocol))return;
+    try{const r=await fetch(PHOTOS_BASE+'index.json?v='+Date.now(),{cache:'no-store'});if(!r.ok)return;const j=await r.json(),a=Array.isArray(j)?j:(Array.isArray(j.photos)?j.photos:[]);
+      WEBPH=new Set(a.map(String).filter(x=>/^[A-Za-z0-9._-]{3,20}$/.test(x)));try{localStorage.setItem('ccsWebPhotos.v1',JSON.stringify([...WEBPH]));}catch(e){}render();}catch(e){}
+  }
+  // photos you added on this phone -> one zip for the website ("photos" folder on GitHub)
+  $('phZip').onclick=async()=>{
+    const local=[...PH.entries()].filter(([ir,d])=>okPhoto(d));
+    if(!local.length){msg('err','No photos on this phone yet. Add photos with 📷 in the item panel first.');return;}
+    const files=[];local.forEach(([ir,d])=>{const b=atob(d.split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);files.push({name:'photos/'+ir+'.jpg',data:u});});
+    const all=[...new Set([...WEBPH,...local.map(x=>x[0])])].sort();files.push({name:'photos/index.json',data:new TextEncoder().encode(JSON.stringify({photos:all,updated:new Date().toISOString().slice(0,16)}))});
+    const bytes=zipStore(files),name='photos_for_website_'+stamp()+'.zip',file=new File([bytes],name,{type:'application/zip'});
+    let where='the browser Downloads folder';
+    if(typeof navigator.share==='function'&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name});where='the share sheet';}catch(e){if(e&&e.name==='AbortError')return;}}
+    else{const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}
+    msg('ok','Saved '+name+' ('+local.length+' photos) in '+where+'. Unzip it and upload the "photos" folder to GitHub (it replaces the old one).');
+  };
+  // ---- sign-in: needed when the unit has a shared list (Google Sheet). Staff password = ScanCode, charge nurse password = ChargeCode.
+  if(sh.loggedIn===undefined){sh.loggedIn=!!(sh.scanCode||sh.chargeCode);shSave();}       // phones that already had a code stay signed in
+  const needLogin=()=>okUrl(sh.url||'')&&!sh.codeFromCfg&&!sh.loggedIn;
+  function gateRender(){const lock=needLogin();document.body.classList.toggle('locked',lock);$('gate').style.display=lock?'':'none';$('gateUnit').textContent=(UNIT_NAME?UNIT_NAME+' - ':'')+'CCS Scan Helper';if(lock)setTimeout(()=>$('gatePw').focus(),50);}
+  function gateMsg(k,t){const m=$('gateMsg');m.className='msg '+k;m.textContent=t;}
+  async function gateSignIn(){
+    const pw=$('gatePw').value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();if(!pw){gateMsg('err','Type the password.');return;}
+    if(navigator.onLine===false){gateMsg('err','No internet. Connect to Wi-Fi or mobile data the first time.');return;}
+    $('gateBtn').disabled=true;gateMsg('warn','Checking…');
+    try{const j=await shPost('whoami',{code:pw},15000);sh.scanCode=pw;if(j.role==='charge')sh.chargeCode=pw;sh.loggedIn=true;sh.enabled=true;sh.lastErr='';shSave();
+      $('gatePw').value='';gateMsg('ok','');gateRender();renderConn();shLoadDefaults();const m=ALLM.filter(x=>st.lists[x].length);if(m.length)shQueue(m);shSync();phSync();
+      msg('ok','Signed in'+(UNIT_NAME?' to '+UNIT_NAME:'')+(j.role==='charge'?' as charge nurse':'')+'.');focusScan();}
+    catch(e){gateMsg('err',/wrong code|cannot open/i.test(e.message||'')?'Wrong password.':(/too many/i.test(e.message||'')?e.message:'Could not check the password: '+(e.message||e.name)));}
+    finally{$('gateBtn').disabled=false;}
+  }
+  $('gateBtn').onclick=gateSignIn;$('gatePw').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();gateSignIn();}});
+  $('shSignOut').onclick=()=>{if(!confirm('Sign out of this unit on this phone? Scans that are not sent yet stay on the phone.'))return;sh.loggedIn=false;sh.scanCode='';sh.chargeCode='';shSave();renderConn();gateRender();};
+  // the password was changed in the Sheet -> sign in again
+  function gateOnError(e){if(sh.loggedIn&&!sh.codeFromCfg&&/^wrong code/i.test((e&&e.message)||'')){sh.loggedIn=false;shSave();gateRender();gateMsg('warn','The unit password has changed. Please sign in again.');}}
+  shBadge();renderConn();$('shConn').open=!shReady();gateRender();shLoadConfig().finally(()=>{gateRender();loadMaster();loadWebPhotos();shLoadDefaults();});
+
+  // ================================================================ STOCK COUNT: 3 store rooms, every line with an expiry date
+  function addDaysIso(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+  function expStatus(exp){
+    if(!exp)return{t:'NO EXPIRY DATE',c:'warn'};const today=new Date().toISOString().slice(0,10);
+    if(exp<today)return{t:'EXPIRED',c:'bad'};if(exp<=addDaysIso(90))return{t:'< 3 MONTHS',c:'bad2'};if(exp<=addDaysIso(180))return{t:'< 6 MONTHS',c:'warn'};return{t:'OK',c:'ok'};
+  }
+  function totalNote(ir){const ls=list().filter(x=>x.ir===ir),n=ls.length,t=ls.reduce((a,x)=>a+x.qty,0);return '  → this expiry: '+(lastTouched?lastTouched.qty:'')+' · item total here: '+t+' ('+n+' expiry date'+(n===1?'':'s')+')';}
+  function expBadge(exp){const x=expStatus(exp);return x.c==='ok'?'':'<div class="st '+x.c+'">'+x.t+'</div>';}
+  function renderRoomBar(){
+    const bar=$('roomBar');if(!isCnt(st.mode)){bar.style.display='none';return;}
+    bar.style.display='flex';
+    bar.innerHTML=['CNT1','CNT2','CNT3'].map(m=>{const l=st.lists[m];return '<button type="button" class="room'+(m===st.mode?' on':'')+'" data-m="'+m+'">'+xmlEsc(roomName(m))+'<small>'+l.length+' · '+l.reduce((a,x)=>a+x.qty,0)+'</small></button>';}).join('')+'<button type="button" class="room" data-m="rename" title="Rename this store room">✎</button>';
+  }
+  $('roomBar').addEventListener('click',e=>{
+    const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.m==='rename'){const v=prompt('Name of this store room (English, max 20 characters):',roomName(st.mode));if(v===null)return;const nm=v.replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,20);if(!nm){msg('err','The name is empty.');return;}st.rooms[+st.mode.slice(3)-1]=nm;save();render();return;}
+    setMode(b.dataset.m);
+  });
+  function renderWoBar(){
+    const bar=$('woBar');if(!isWo(st.mode)){bar.style.display='none';return;}
+    bar.style.display='flex';
+    bar.innerHTML=WOM.map((m,i)=>{const l=st.lists[m];return '<button type="button" class="room'+(m===st.mode?' on':'')+'" data-m="'+m+'">'+(i+1)+'. '+xmlEsc(woName(m))+'<small>'+l.length+' · '+l.reduce((a,x)=>a+x.qty,0)+'</small></button>';}).join('');
+  }
+  $('woBar').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&isWo(b.dataset.m))setMode(b.dataset.m);});
+  // one Excel for all write-off reasons: the CCS columns + "Reason"
+  const WO_COLS=TEMPLATE_COLS.concat([['Reason','reason','s',30]]);
+  function woBook(lines,who0,nowD,combined){
+    const rows=[];WOM.forEach(m=>{buildRows(lines.filter(l=>l.mode===m),items,false).forEach(r=>{r.reason=woName(m);rows.push(r);});});
+    const meta={who:who0,created:nowD,title:'WRITE OFF',infoName:'Info',info:st.infoSheet?[
+      ['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],
+      ['Type','WRITE OFF'],...(UNIT_NAME?[['Unit',UNIT_NAME]]:[]),['Lines',rows.length],['Total units',rows.reduce((a,x)=>a+(+x.qty||0),0)],
+      ...WOM.map(m=>[woName(m),lines.filter(l=>l.mode===m).reduce((a,x)=>a+x.qty,0)]),...(combined?[['Combined from',combined]]:[]),['Tool','CCS Scan Helper'],
+      ['Note','Information only. The data is on the first sheet (inventory list). The last column is the write-off reason.']]:null};
+    return buildXlsx('inventory list',WO_COLS,rows,meta);
+  }
+  async function exportWoPhone(){
+    const lines=[];WOM.forEach(m=>st.lists[m].forEach(l=>lines.push({mode:m,ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty})));
+    if(!lines.length){msg('err','The write-off lists are empty.');return;}
+    const who0=(st.who||'').trim(),who=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),r=await saveExport('CCS_WriteOff_'+stamp()+(who?'_'+who:'')+'.xlsx',woBook(lines,who0,new Date(),''));
+    if(r.cancelled){msg('warn','Save cancelled - nothing was saved.');return;}
+    if(r.blocked){msg('err','The file was probably NOT saved (downloads are blocked in this preview).');beep(false);return;}
+    msg(who0?'ok':'warn','Saved '+r.name+' in '+r.where+' (all write-off reasons, '+lines.length+' lines).'+(who0?'':'  ⚠ “Prepared by” is empty.'));
+  }
+  const COUNT_COLS=[['Room','room','s',14],['ir_number','ir','s',14],['item name','name','s',70],['Expiry','expiry','d',13],['Qty','qty','n',8],['Qty_type','unit','s',10],['Status','status','s',18],['Location','loc','s',40]];
+  const BYITEM_COLS=[['ir_number','ir','s',14],['item name','name','s',70],['Expiry','expiry','d',13],['Total qty','qty','n',10],['Qty_type','unit','s',10],['Status','status','s',18],['Rooms','rooms','s',46]];
+  function countInfo(lines,who0,nowD,combined,source){
+    const sum=f=>{const a=lines.filter(f);return a.length+' lines · '+a.reduce((t,x)=>t+x.qty,0)+' units';};
+    const rows=[['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],['Type','STOCK COUNT']];
+    if(UNIT_NAME)rows.push(['Unit',UNIT_NAME]);
+    ['CNT1','CNT2','CNT3'].forEach(m=>rows.push([roomName(m),sum(x=>x.mode===m)]));
+    rows.push(['All rooms',sum(()=>true)],['EXPIRED',sum(x=>expStatus(x.expiry).t==='EXPIRED')],['Expire in < 3 months',sum(x=>expStatus(x.expiry).t==='< 3 MONTHS')],['Expire in < 6 months',sum(x=>expStatus(x.expiry).t==='< 6 MONTHS')],['No expiry date',sum(x=>!x.expiry)]);
+    if(combined)rows.push(['Combined from',combined]);if(source)rows.push(['Source',source]);
+    rows.push(['Tool','CCS Scan Helper'],['Note','Sheet "count" = every room, every expiry date. Sheet "By item (all rooms)" = totals per item and expiry date. This file is a COUNT, not a CCS import file.']);return rows;
+  }
+  function countBook(lines,meta0){
+    const info=new Map(items.map(i=>[i.ir,i]));
+    const rows=lines.map(l=>{const it=info.get(l.ir)||{};return{room:roomName(l.mode),idx:+l.mode.slice(3),ir:l.ir,name:l.name||it.name||'',expiry:l.expiry||'',qty:l.qty,unit:it.unit||'',status:expStatus(l.expiry).t,loc:it.loc||''};})
+      .sort((a,b)=>a.idx-b.idx||a.name.localeCompare(b.name)||(a.expiry||'9999').localeCompare(b.expiry||'9999'));
+    const by=new Map();rows.forEach(r=>{const k=r.ir+'|'+r.expiry;let a=by.get(k);if(!a){a={ir:r.ir,name:r.name,expiry:r.expiry,qty:0,unit:r.unit,status:r.status,rm:new Map()};by.set(k,a);}a.qty+=r.qty;a.rm.set(r.room,(a.rm.get(r.room)||0)+r.qty);});
+    const byRows=[...by.values()].map(a=>Object.assign(a,{rooms:[...a.rm.entries()].map(e=>e[0]+': '+e[1]).join('; ')})).sort((a,b)=>a.name.localeCompare(b.name)||(a.expiry||'9999').localeCompare(b.expiry||'9999'));
+    return buildXlsx('count',COUNT_COLS,rows,Object.assign({},meta0,{extra:[{name:'By item (all rooms)',cols:BYITEM_COLS,rows:byRows}]}));
+  }
+  async function exportCountPhone(){
+    const lines=[];['CNT1','CNT2','CNT3'].forEach(m=>st.lists[m].forEach(l=>lines.push({mode:m,ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty})));
+    if(!lines.length){msg('err','Nothing counted yet (all store rooms are empty).');return;}
+    const who0=(st.who||'').trim(),nowD=new Date();
+    const bytes=countBook(lines,{who:who0,created:nowD,title:'STOCK COUNT',infoName:'Info',info:st.infoSheet?countInfo(lines,who0,nowD,'',''):null});
+    const who=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),name='CCS_StockCount_'+stamp()+(who?'_'+who:'')+'.xlsx',r=await saveExport(name,bytes);
+    if(r.cancelled){msg('warn','Save cancelled - nothing was saved.');return;}
+    const noExp=lines.filter(x=>!x.expiry).length,exp=lines.filter(x=>expStatus(x.expiry).t==='EXPIRED').length;
+    msg(r.where.includes('instead')||!who0?'warn':'ok','Saved '+r.name+' in '+r.where+' (all '+lines.length+' lines of the store rooms in one file).'+(exp?'  ⚠ '+exp+' expired line'+(exp===1?'':'s')+'.':'')+(noExp?'  ⚠ '+noExp+' line'+(noExp===1?'':'s')+' without an expiry date.':'')+(who0?'':'  ⚠ “Prepared by” is empty.'));
+  }
+
+  // ================================================================ ITEM PHOTOS (a small picture next to each item)
+  // Kept on this phone (IndexedDB) AND sent to the unit's Google Sheet, so every phone of the unit gets the same photos automatically.
+  const PH=new Map(),PHOTO_DB='ccsPhotos.v1';
+  function phDb(){return new Promise((res,rej)=>{const q=indexedDB.open(PHOTO_DB,1);q.onupgradeneeded=()=>q.result.createObjectStore('p');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
+  async function phLoadAll(){
+    try{const db=await phDb();await new Promise((res,rej)=>{const rq=db.transaction('p').objectStore('p').openCursor();rq.onsuccess=()=>{const c=rq.result;if(c){PH.set(String(c.key),c.value);c.continue();}else res();};rq.onerror=()=>rej(rq.error);});}catch(e){}
+    render();
+  }
+  async function phWrite(entries){            // [[ir,dataUrl|null],...] in one transaction
+    try{const db=await phDb();await new Promise((res,rej)=>{const tx=db.transaction('p','readwrite'),os=tx.objectStore('p');entries.forEach(([ir,d])=>{if(d)os.put(d,ir);else os.delete(ir);});tx.oncomplete=res;tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);});}
+    catch(e){msg('err','Could not keep the photo on this phone: '+((e&&e.message)||'storage error'));return false;}
+    entries.forEach(([ir,d])=>{if(d)PH.set(ir,d);else PH.delete(ir);});return true;
+  }
+  const okPhoto=d=>typeof d==='string'&&/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+\/=]+$/.test(d)&&d.length<200000;
+  function thumb(ir,size){const d=PH.get(ir)||(WEBPH.has(ir)?PHOTOS_BASE+ir+'.jpg':'');return d?'<img class="thumb" src="'+d+'" width="'+size+'" height="'+size+'" alt="" loading="lazy" onerror="this.remove()">':'';}
+  function phExport(base){const o={},irs=new Set((base||[]).map(i=>Array.isArray(i)?String(i[0]):String(i.ir)));PH.forEach((d,ir)=>{if(irs.has(ir)&&okPhoto(d))o[ir]=d;});return o;}
+  async function phImport(obj){const e=Object.entries(obj||{}).filter(([ir,d])=>/^[A-Za-z0-9._-]{3,20}$/.test(ir)&&okPhoto(d));if(!e.length)return 0;return (await phWrite(e))?e.length:0;}
+  // the photo the person picks (camera or gallery) is made small: 160 x 160, JPEG
+  function makeThumb(file){
+    return new Promise((res,rej)=>{
+      const url=URL.createObjectURL(file),img=new Image();
+      img.onload=()=>{try{const S=160,c=document.createElement('canvas');c.width=S;c.height=S;const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,S,S);
+        const k=Math.max(S/img.width,S/img.height),w=img.width*k,h=img.height*k;g.drawImage(img,(S-w)/2,(S-h)/2,w,h);URL.revokeObjectURL(url);res(c.toDataURL('image/jpeg',0.72));}catch(e){rej(e);}};
+      img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('this picture cannot be opened'));};img.src=url;
+    });
+  }
+  function renderRecvPhoto(item){
+    if(!item)return;const loc=PH.get(item.ir),d=loc||(WEBPH.has(item.ir)?PHOTOS_BASE+item.ir+'.jpg':'');
+    $('rPhoto').innerHTML=d?'<img class="thumb" src="'+d+'" width="72" height="72" alt="" style="margin:0">':'<div class="noph">no photo</div>';
+    $('rPhotoBtn').textContent=d?'📷 Change photo':'📷 Add photo';$('rPhotoDel').style.display=loc?'':'none';
+    $('rPhotoSearch').href='https://www.google.com/search?tbm=isch&q='+encodeURIComponent(item.name);
+  }
+  $('rPhotoBtn').onclick=()=>{$('rPhotoFile').value='';$('rPhotoFile').click();};
+  $('rPhotoFile').onchange=async()=>{
+    const f=$('rPhotoFile').files&&$('rPhotoFile').files[0],it=pendingItem;if(!f||!it)return;
+    try{const d=await makeThumb(f);if(await phWrite([[it.ir,d]])){sh.phPend[it.ir]='set';shSave();renderRecvPhoto(it);render();msg('ok','Photo saved for '+it.name+(shReady()?'. Everybody in the unit will see it.':'.'));phSync();}}
+    catch(e){msg('err','Could not use this picture: '+(e.message||e.name));}
+  };
+  $('rPhotoDel').onclick=async()=>{const it=pendingItem;if(!it||!confirm('Remove the photo of '+it.name+'?'))return;if(await phWrite([[it.ir,null]])){if(sh.phTs[it.ir]||sh.phPend[it.ir]==='set'){sh.phPend[it.ir]='del';shSave();}renderRecvPhoto(it);render();phSync();}};
+  // ---- photo sync with the unit's Google Sheet
+  if(!sh.phTs||typeof sh.phTs!=='object')sh.phTs={};if(!sh.phPend||typeof sh.phPend!=='object')sh.phPend={};
+  let phBusy=false,phAt=0,phReady=false;
+  async function phSync(pass){
+    if(phBusy||!phReady||!shReady()||navigator.onLine===false||needLogin())return;phBusy=true;let again=false;
+    try{
+      const code=sh.scanCode||sh.chargeCode;
+      for(const ir of Object.keys(sh.phPend)){                                   // 1) send my new / removed photos
+        const del=sh.phPend[ir]==='del',d=del?'':(PH.get(ir)||'');
+        if(!del&&(!okPhoto(d)||d.length>48000)){delete sh.phPend[ir];continue;}
+        const j=await shPost('photoSet',{code,ir,data:d,by:(st.who||'').trim()},30000);
+        if(d)sh.phTs[ir]=j.at;else delete sh.phTs[ir];delete sh.phPend[ir];shSave();
+      }
+      const srv=(await shPost('photoList',{code},20000)).photos||{};                // 2) what the unit has
+      const need=Object.keys(srv).filter(ir=>sh.phTs[ir]!==srv[ir]&&!sh.phPend[ir]);
+      for(let i=0;i<need.length;i+=20){
+        const g=await shPost('photoGet',{code,irs:need.slice(i,i+20)},40000),ent=[];
+        Object.keys(g.photos||{}).forEach(ir=>{const p=g.photos[ir];if(p&&okPhoto(p.d)){ent.push([ir,p.d]);sh.phTs[ir]=p.at||srv[ir];}});
+        if(ent.length&&await phWrite(ent)){shSave();render();if(pendingItem)renderRecvPhoto(pendingItem);}
+      }
+      const gone=Object.keys(sh.phTs).filter(ir=>!(ir in srv)&&!sh.phPend[ir]);    // 3) removed by a colleague
+      if(gone.length&&await phWrite(gone.map(ir=>[ir,null]))){gone.forEach(ir=>delete sh.phTs[ir]);shSave();render();}
+      if(!pass){PH.forEach((d,ir)=>{if(!(ir in srv)&&!sh.phTs[ir]&&!sh.phPend[ir]&&okPhoto(d)&&d.length<=48000){sh.phPend[ir]='set';again=true;}});if(again)shSave();}   // 4) photos that were only on this phone
+      phAt=Date.now();
+    }catch(e){}
+    finally{phBusy=false;}
+    if(again)return phSync(1);
+  }
+  setInterval(phSync,300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-phAt>120000)phSync();});
+  phLoadAll().then(()=>{phReady=true;phSync();shSync();});
+
+  render();renderConflicts();if(FOLDER_FEATURE)initFolder();loadExpDir();if(shReady()&&Object.keys(sh.pend).length)shFlush();
+})();
+</script>
+</body>
+</html>
