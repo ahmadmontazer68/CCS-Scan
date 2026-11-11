@@ -1,6 +1,6 @@
 {
   "unit": "PED INP",
-  "syncUrl": "",
+  "syncUrl": "https://script.google.com/macros/s/AKfycbyS79mQUeRydpIYy56b9EbM5xyGix6rmtlwKYKaK8w0sG7rFOWyOtYsXnUhhDSIBh0S/exec",
   "scanCode": "",
   "master": "../master_list.xlsx",
   "photos": "../photos/",
