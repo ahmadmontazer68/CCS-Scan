@@ -142,6 +142,17 @@ td{padding:5px 6px}
 .u.odd{color:var(--warn);background:var(--warnbg);border-radius:4px;padding:1px 5px}
 #camGuide{left:10%;right:10%;top:36%;height:22%;box-shadow:0 0 0 9999px rgba(0,0,0,.84)}
 #camGuide::after{content:'';position:absolute;left:5%;right:5%;top:50%;height:2px;background:rgba(255,70,70,.85)}
+/* v7 */
+#catalogCard{display:none!important}
+label[for=shUrl],#shUrl,#shUrlNote{display:none!important}
+#listWrap input.exp{width:150px}
+#rExp{width:100%;min-width:180px;font-size:18px;padding:9px 10px;font-variant-numeric:tabular-nums}
+@media(max-width:700px){#listWrap input.exp{width:132px;font-size:14px}#recv .grid{grid-template-columns:104px 1fr}#recv .grid>div:last-child{grid-column:1/-1}.tab{font-size:12.5px;padding:10px 1px}.tab small{font-size:10px}}
+.tab.on.wo{border-color:#8e44ad;background:rgba(142,68,173,.14);color:#8e44ad}
+#woBar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+#woBar .room{font-size:13px;padding:7px 10px;text-align:left}
+#woBar .room.on{border-color:#8e44ad;background:rgba(142,68,173,.16);color:#8e44ad}
+#recv.wo{border-color:#8e44ad;background:rgba(142,68,173,.10)}
 </style>
 </head>
 <body>
@@ -153,7 +164,7 @@ td{padding:5px 6px}
   <h2>Sign in</h2>
   <div class="note" id="gateUnit" style="margin-bottom:12px"></div>
   <label for="gatePw" style="font-weight:600">Unit password</label>
-  <input id="gatePw" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. PLTCU1">
+  <input id="gatePw" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false">
   <button class="btn" id="gateBtn" type="button">Sign in</button>
   <div class="msg" id="gateMsg"></div>
   <div class="note" style="margin-top:12px">Ask your charge nurse for the password. You sign in once on this phone. Needs internet the first time.</div>
@@ -187,12 +198,14 @@ td{padding:5px 6px}
     <button class="tab out" id="tabOUT" type="button">STOCK OUT <small id="cOUT">0 lines</small></button>
     <button class="tab in" id="tabIN" type="button">STOCK IN <small id="cIN">0 lines</small></button>
     <button class="tab cnt" id="tabCNT" type="button">COUNT <small id="cCNT">0 lines</small></button>
+    <button class="tab wo" id="tabWO" type="button">WRITE OFF <small id="cWO">0 lines</small></button>
     <button class="tab sh" id="tabSH" type="button">SHARED <small>all phones</small></button>
   </div>
   <div id="scanView">
 
   <div class="card">
     <div id="roomBar" style="display:none"></div>
+    <div id="woBar" style="display:none"></div>
     <label for="scan" id="scanLabel">Scan barcode (or type part of the item name)</label>
     <div class="scanline">
       <div id="qtyBox"><input id="qty" type="number" min="1" value="1" aria-label="Quantity per scan" title="Quantity per scan"></div>
@@ -266,6 +279,7 @@ td{padding:5px 6px}
         <b>Combined list from all phones</b>
         <label class="chk" style="margin:0 0 0 6px"><input type="radio" name="shMode" value="OUT" checked> STOCK OUT</label>
         <label class="chk" style="margin:0"><input type="radio" name="shMode" value="IN"> STOCK IN</label>
+        <label class="chk" style="margin:0"><input type="radio" name="shMode" value="WO"> WRITE OFF</label>
         <select id="shSource" style="padding:8px;border-radius:8px;border:2px solid var(--line);background:var(--card);color:var(--ink);font-size:15px">
           <option value="live">Live (shared list)</option><option value="files">From files</option></select>
         <button class="btn alt" id="shRefresh" type="button" style="padding:8px 14px">&#8635; Refresh</button>
@@ -276,12 +290,13 @@ td{padding:5px 6px}
         <button class="btn" id="shSave" type="button">&#11015; Save Excel (.xlsx)</button>
         <button class="btn alt" id="shMark" type="button">Mark as imported</button>
         <button class="btn danger" id="shDiscard" type="button" title="Unchecked lines are thrown away (they will not show again)">Discard unchecked</button>
+        <button class="btn alt" id="shRecover" type="button" title="Shows again the list that was last marked as imported, so you can save the Excel file again">&#8634; Recover the last list</button>
         <button class="btn alt" id="shFilesBtn" type="button">Merge files…</button>
         <input id="shFiles" type="file" accept=".json,application/json" multiple style="display:none">
         <span class="tot" id="shTot"></span>
       </div>
       <div class="msg" id="shMsg"></div>
-      <div class="note">Charge nurse: check the lines, fix a quantity if needed, <b>Save Excel</b>, import it in CCS, then press <b>Mark as imported</b> so these lines do not appear again.</div>
+      <div class="note">Charge nurse: check the lines, fix a quantity if needed, <b>Save Excel</b>, import it in CCS, then press <b>Mark as imported</b>: the lines disappear here and on the phones of the staff. Cleared by mistake? Press <b>Recover the last list</b>.</div>
     </div>
     <div class="card shbox">
       <details id="shConn"><summary><b>Connection to the shared list</b> <span class="note" id="shStatus" style="display:inline;margin-left:8px"></span></summary>
@@ -337,7 +352,7 @@ const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['E
 // DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
 // the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
 const UPLOAD_LINK = '';
-const VERSION = '2026-11-10.3';
+const VERSION = '2026-11-11.1';
 const FOLDER_FEATURE = false;          // shared-folder sync is switched off (not usable on the hospital PCs); the code is kept          // shown in the page header, so you can see which copy of the file you are running
 const EXPORT = {
   OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
@@ -657,13 +672,16 @@ function c128Scan(gray, w, h, K) {
   const PROFILE=new URLSearchParams(location.search).get('profile')||APP_ID;   // lets two copies run side by side for testing
   let UNIT_NAME='';try{UNIT_NAME=localStorage.getItem('ccsUnit.v1'+PROFILE)||'';}catch(e){}
   const LS='ccsScanHelper.v2'+PROFILE;
-  let st={mode:'OUT',askExp:true,saveMode:'downloads',copyShared:true,shareLink:'',infoSheet:true,autoOpen:false,lists:{OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[]},rooms:['Store 1','Store 2','Store 3'],cnt:'CNT1',who:'',extra:[],hist:[],sync:{OUT:'',IN:''},dirty:{OUT:false,IN:false},conflicts:{OUT:null,IN:null}};
+  let st={mode:'OUT',askExp:true,saveMode:'downloads',copyShared:true,shareLink:'',infoSheet:true,autoOpen:false,lists:{OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[],WO1:[],WO2:[],WO3:[],WO4:[],WO5:[]},rooms:['Store 1','Store 2','Store 3'],cnt:'CNT1',who:'',extra:[],hist:[],sync:{OUT:'',IN:''},dirty:{OUT:false,IN:false},conflicts:{OUT:null,IN:null}};
+  const ALLM=['OUT','IN','CNT1','CNT2','CNT3','WO1','WO2','WO3','WO4','WO5'],WOM=['WO1','WO2','WO3','WO4','WO5'];
+  const WO_REASONS=['Expired without use','Near expiry distributed','Distributed to other unit','Damaged','Lost'];
+  const isWo=m=>/^WO[1-5]$/.test(m),woName=m=>WO_REASONS[+String(m).slice(2)-1]||'';st.wo='WO1';
   const isCnt=m=>/^CNT[1-3]$/.test(m);const roomName=m=>st.rooms[+String(m).slice(3)-1]||('Store '+String(m).slice(3));
   let hadSaved=false;
-  try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){hadSaved=true;st.lists=Object.assign({OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[]},s.lists||{});if(Array.isArray(s.rooms)&&s.rooms.length===3)st.rooms=s.rooms.map((x,i)=>String(x).replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,20)||('Store '+(i+1)));if(/^CNT[1-3]$/.test(s.cnt))st.cnt=s.cnt;st.who=s.who||'';st.extra=s.extra||[];st.mode=/^(OUT|IN)$/.test(s.mode)?s.mode:'OUT';st.askExp=true;st.saveMode=['downloads','ask','folder'].includes(s.saveMode)?s.saveMode:'downloads';st.copyShared=s.copyShared!==false;st.shareLink=s.shareLink||'';st.infoSheet=s.infoSheet!==false;st.autoOpen=(s.ao2===true)?s.autoOpen===true:false;
+  try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){hadSaved=true;st.lists=Object.assign({OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[],WO1:[],WO2:[],WO3:[],WO4:[],WO5:[]},s.lists||{});if(Array.isArray(s.rooms)&&s.rooms.length===3)st.rooms=s.rooms.map((x,i)=>String(x).replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,20)||('Store '+(i+1)));if(/^CNT[1-3]$/.test(s.cnt))st.cnt=s.cnt;st.who=s.who||'';st.extra=s.extra||[];st.mode=/^(OUT|IN|WO[1-5])$/.test(s.mode)?s.mode:'OUT';if(/^WO[1-5]$/.test(s.wo))st.wo=s.wo;st.askExp=true;st.saveMode=['downloads','ask','folder'].includes(s.saveMode)?s.saveMode:'downloads';st.copyShared=s.copyShared!==false;st.shareLink=s.shareLink||'';st.infoSheet=s.infoSheet!==false;st.autoOpen=(s.ao2===true)?s.autoOpen===true:false;
     st.sync=Object.assign({OUT:'',IN:''},s.sync||{});st.dirty=Object.assign({OUT:false,IN:false},s.dirty||{});}}catch(e){}
   if(!hadSaved&&IS_IOS&&typeof navigator.share==='function')st.saveMode='share';   // iPhone apps cannot download files nicely: use the share sheet (Save to Files, OneDrive, Teams)
-  function save(){try{localStorage.setItem(LS,JSON.stringify({lists:st.lists,rooms:st.rooms,cnt:st.cnt,who:st.who,extra:st.extra,mode:st.mode,askExp:st.askExp,saveMode:st.saveMode,copyShared:st.copyShared,shareLink:st.shareLink,infoSheet:st.infoSheet,autoOpen:st.autoOpen,ao2:true,sync:st.sync,dirty:st.dirty}));}catch(e){}}
+  function save(){try{localStorage.setItem(LS,JSON.stringify({lists:st.lists,rooms:st.rooms,cnt:st.cnt,wo:st.wo,who:st.who,extra:st.extra,mode:st.mode,askExp:st.askExp,saveMode:st.saveMode,copyShared:st.copyShared,shareLink:st.shareLink,infoSheet:st.infoSheet,autoOpen:st.autoOpen,ao2:true,sync:st.sync,dirty:st.dirty}));}catch(e){}}
   const CAT_KEY='ccsScanHelper.catalog.v1'+PROFILE;
   function loadCatalog(){try{const c=JSON.parse(localStorage.getItem(CAT_KEY)||'null');if(c&&Array.isArray(c.items)&&c.items.length)return c;}catch(e){}return null;}
   let USE_LOC=true;try{USE_LOC=localStorage.getItem('ccsUnitLoc.v1'+PROFILE)!=='0';}catch(e){}
@@ -790,12 +808,13 @@ function c128Scan(gray, w, h, K) {
   // ---------------------------------------------------------------- list
   function render(){
     const sv=view==='shared';$('scanView').style.display=sv?'none':'';$('sharedView').style.display=sv?'':'none';$('tabSH').classList.toggle('on',sv);
-    $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);$('tabCNT').classList.toggle('on',isCnt(st.mode)&&!sv);
+    $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);$('tabCNT').classList.toggle('on',isCnt(st.mode)&&!sv);$('tabWO').classList.toggle('on',isWo(st.mode)&&!sv);
+    {const ls=WOM.map(m=>st.lists[m]),n=ls.reduce((a,l)=>a+l.length,0),u=ls.reduce((a,l)=>a+l.reduce((b,x)=>b+x.qty,0),0);$('cWO').textContent=n+' line'+(n===1?'':'s')+' · '+u+' units';}
     ['OUT','IN'].forEach(m=>{const l=st.lists[m];$('c'+m).textContent=l.length+' line'+(l.length===1?'':'s')+' · '+l.reduce((a,x)=>a+x.qty,0)+' units';});
     {const ls=['CNT1','CNT2','CNT3'].map(m=>st.lists[m]),n=ls.reduce((a,l)=>a+l.length,0),u=ls.reduce((a,l)=>a+l.reduce((b,x)=>b+x.qty,0),0);$('cCNT').textContent=n+' line'+(n===1?'':'s')+' · '+u+' units';}
     $('askExp').checked=st.askExp;$('qtyBox').style.display=(st.mode==='OUT'&&!st.askExp)?'':'none';
-    $('scanLabel').textContent=isCnt(st.mode)?('COUNTING in '+roomName(st.mode)+': scan the item (or type the last 4 digits / part of the name), then the quantity and the EXPIRY date'):st.mode==='OUT'?'Scan barcode of the item you TAKE (or type the last 4 digits / part of the name)':'Scan barcode of the item you RECEIVE (or type the last 4 digits / part of the name)';
-    renderRoomBar();$('xlsx').textContent=isCnt(st.mode)?'⬇ Save count Excel (all rooms)':'⬇ Save Excel (.xlsx)';
+    $('scanLabel').textContent=isWo(st.mode)?('WRITE OFF - '+woName(st.mode)+': scan the item (or type the last 4 digits / part of the name)'):isCnt(st.mode)?('COUNTING in '+roomName(st.mode)+': scan the item (or type the last 4 digits / part of the name), then the quantity and the EXPIRY date'):st.mode==='OUT'?'Scan barcode of the item you TAKE (or type the last 4 digits / part of the name)':'Scan barcode of the item you RECEIVE (or type the last 4 digits / part of the name)';
+    renderRoomBar();renderWoBar();$('xlsx').textContent=isCnt(st.mode)?'⬇ Save count Excel (all rooms)':isWo(st.mode)?'⬇ Save write-off Excel (all reasons)':'⬇ Save Excel (.xlsx)';
     const l=list();
     if(!l.length){$('listWrap').innerHTML='<div class="empty">Nothing scanned yet.</div>';$('tot').textContent='';return;}
     const IN=st.mode==='IN';
@@ -803,12 +822,12 @@ function c128Scan(gray, w, h, K) {
     let h='<table><thead><tr><th>#</th><th>IR number</th><th>Item</th>'+(showExp?'<th>Expiry</th>':'')+'<th>Qty</th><th></th></tr></thead><tbody>';
     const grp=isCnt(st.mode);let prevIr='';const gTot={},gN={};if(grp)l.forEach(y=>{gTot[y.ir]=(gTot[y.ir]||0)+y.qty;gN[y.ir]=(gN[y.ir]||0)+1;});
     (grp?l.map((x,i)=>i).sort((a,b)=>l[a].name.localeCompare(l[b].name)||(l[a].expiry||'9999').localeCompare(l[b].expiry||'9999')):l.map((x,i)=>i).reverse()).forEach(i=>{const x=l[i];const first=grp&&x.ir!==prevIr;prevIr=x.ir;
-      h+='<tr class="'+(x===lastTouched?'new':'')+'"><td class="num">'+(i+1)+'</td><td class="num">'+x.ir+'</td><td>'+thumb(x.ir,40)+xmlEsc(x.name)+(first&&gN[x.ir]>1?'<div class="from">item total here: '+gTot[x.ir]+' ('+gN[x.ir]+' expiry dates)</div>':'')+'</td>'+
+      h+='<tr class="'+(x===lastTouched?'new':'')+'"><td class="num">'+(i+1)+'</td><td class="num">'+x.ir+'</td><td>'+thumb(x.ir,56)+xmlEsc(x.name)+(first&&gN[x.ir]>1?'<div class="from">item total here: '+gTot[x.ir]+' ('+gN[x.ir]+' expiry dates)</div>':'')+'</td>'+
         (showExp?'<td><input class="exp" type="text" inputmode="text" autocomplete="off" placeholder="no expiry" title="Edit the expiry date: 31/12/2030 or 12/2030. Empty = no expiry" value="'+(x.expiry?dmy(x.expiry):'')+'" data-a="e" data-i="'+i+'">'+(isCnt(st.mode)?expBadge(x.expiry):'')+'</td>':'')+
         '<td><div class="q"><button data-a="m" data-i="'+i+'">−</button><input type="number" min="1" value="'+x.qty+'" data-a="q" data-i="'+i+'"><button data-a="p" data-i="'+i+'">+</button>'+unitBadge(unitOf(x.ir))+'</div></td>'+
         '<td><button class="x" title="Remove" data-a="d" data-i="'+i+'">✕</button></td></tr>';});
     $('listWrap').innerHTML=h+'</tbody></table>';
-    $('tot').textContent=l.length+' lines · '+l.reduce((a,x)=>a+x.qty,0)+' units'+(isCnt(st.mode)?' · '+roomName(st.mode):'');
+    $('tot').textContent=l.length+' lines · '+l.reduce((a,x)=>a+x.qty,0)+' units'+(isCnt(st.mode)?' · '+roomName(st.mode):'')+(isWo(st.mode)?' · '+woName(st.mode):'');
   }
   $('listWrap').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i,l=list();snapshot();
     if(b.dataset.a==='p')l[i].qty++;else if(b.dataset.a==='m')l[i].qty=Math.max(1,l[i].qty-1);else if(b.dataset.a==='d')l.splice(i,1);
@@ -840,12 +859,12 @@ function c128Scan(gray, w, h, K) {
       msg('ok','OUT  '+item.name+'  ×'+q+(item.unit?' '+item.unit:'')+(de?'  exp '+dmy(de):'  (no default expiry date yet)')+'  → total '+lastTouched.qty+(item.loc?'   ('+shortLoc(item.loc)+')':''));beep(true);
       $('qty').value=1;$('scan').value='';focusScan();return;
     }
-    const out=st.mode==='OUT';
-    pendingItem=item;$('recv').className=out?'out':'';$('recv').style.display='block';
-    $('recvName').textContent=(tag||'')+(out?'OUT: ':(isCnt(st.mode)?'COUNT '+roomName(st.mode)+': ':'IN: '))+item.name+'  ('+item.ir+')'+(item.loc?'  ·  '+shortLoc(item.loc):'');
-    const un=item.unit||'';$('rQtyLbl').textContent=(out?'Qty taken':(isCnt(st.mode)?'Qty counted':'Qty received'))+(un?' ('+un+')':'');$('rSave').className='btn'+(out?'':' in');
+    const wo=isWo(st.mode),out=st.mode==='OUT'||wo;
+    pendingItem=item;$('recv').className=wo?'out wo':out?'out':'';$('recv').style.display='block';
+    $('recvName').textContent=(tag||'')+(wo?'WRITE OFF - '+woName(st.mode)+': ':out?'OUT: ':(isCnt(st.mode)?'COUNT '+roomName(st.mode)+': ':'IN: '))+item.name+'  ('+item.ir+')'+(item.loc?'  ·  '+shortLoc(item.loc):'');
+    const un=item.unit||'';$('rQtyLbl').textContent=(wo?'Qty written off':out?'Qty taken':(isCnt(st.mode)?'Qty counted':'Qty received'))+(un?' ('+un+')':'');$('rSave').className='btn'+(out?'':' in');
     $('rUnit').textContent=un;$('rUnit').className='u'+(un&&un!=='EAC'?' odd':'');$('rUnit').style.fontSize='15px';
-    $('rUnitNote').textContent=(un&&un!=='EAC')?'This item is counted in '+un+' - not in single pieces.':'';$('rMore').style.display=(isCnt(st.mode)||st.mode==='IN')?'':'none';renderRecvPhoto(item);$('rSetDef').checked=true;$('rDefInfo').textContent=defInfo(item);
+    $('rUnitNote').textContent=(un&&un!=='EAC')?'This item is counted in '+un+' - not in single pieces.':'';$('rMore').style.display=(isCnt(st.mode)||st.mode==='IN')?'':'none';renderRecvPhoto(item);$('rSetDef').checked=!wo;$('rSetDef').parentElement.style.display=wo?'none':'';$('rDefInfo').style.display=wo?'none':'';$('rDefInfo').textContent=defInfo(item);
     const prev=list().filter(x=>x.ir===item.ir).pop();
     let pre=isCnt(st.mode)?'':(defOf(item)||(prev&&prev.expiry?prev.expiry:''));
     $('rQty').value=isCnt(st.mode)?'':(qtyHint||1);$('rExp').value=dmy(pre);$('rNoExp').checked=false;$('rExp').disabled=false;
@@ -865,14 +884,14 @@ function c128Scan(gray, w, h, K) {
       if(raw){exp=parseExpiry(raw);
         if(!exp){msg('err','Expiry date not understood. Use 31/12/2030 or 12/2030.');beep(false);$('rExp').focus();return;}
         if(mode==='IN'&&exp<today){msg('err','That expiry date is already in the past - check the box.');beep(false);$('rExp').focus();return;}
-        if((mode==='OUT'||isCnt(mode))&&exp<today)note='  ⚠ EXPIRED item';}
+        if((mode==='OUT'||isCnt(mode)||isWo(mode))&&exp<today)note=isWo(mode)?'  (expired)':'  ⚠ EXPIRED item';}
       else if(mode==='IN'||isCnt(mode)){msg('err','Enter the expiry date, or tick “No expiry date”.');beep(false);$('rExp').focus();return;}
       else note='  (no expiry date saved)';}
     if(isCnt(mode)){const ex=list().find(x=>x.ir===pendingItem.ir&&(x.expiry||'')===exp);if(ex&&!confirm('Already counted in '+roomName(mode)+': '+ex.qty+(exp?' with expiry '+dmy(exp):' without an expiry date')+'.\nOK = ADD these '+q+' (total '+(ex.qty+q)+').\nCancel = do not add.'))return;}
     snapshot();lastTouched=addLine(list(),mode,pendingItem,q,exp);touched([mode]);
     let defNote='';if($('rSetDef').checked&&exp&&!isCnt(mode)){const cur=sh.defs[pendingItem.ir];if(!cur||cur.e!==exp){setDef(pendingItem.ir,exp);defNote='  · saved as the new default expiry';}}
-    const smsg=(isCnt(mode)?roomName(mode):mode)+'  '+pendingItem.name+'  ×'+q+(pendingItem.unit?' '+pendingItem.unit:'')+(exp?'  exp '+dmy(exp):'')+note+defNote+(isCnt(mode)?totalNote(pendingItem.ir):'');
-    const mk2=note?'warn':'ok';msg(mk2,smsg);beep(!note);
+    const smsg=(isCnt(mode)?roomName(mode):isWo(mode)?'WRITE OFF ('+woName(mode)+')':mode)+'  '+pendingItem.name+'  ×'+q+(pendingItem.unit?' '+pendingItem.unit:'')+(exp?'  exp '+dmy(exp):'')+note+defNote+(isCnt(mode)?totalNote(pendingItem.ir):'');
+    const mk2=(note&&!isWo(mode))?'warn':'ok';msg(mk2,smsg);beep(mk2==='ok');
     if(keep===true){const it=pendingItem;pendingItem=null;$('recv').style.display='none';render();pick(it,0,'');msg(mk2,smsg);return;}
     pendingItem=null;$('recv').style.display='none';render();focusScan();nextFromQueue();
   }
@@ -914,8 +933,8 @@ function c128Scan(gray, w, h, K) {
   ['rQty','rExp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(isCnt(st.mode)&&id==='rQty'&&!$('rExp').value.trim()&&!$('rNoExp').checked){$('rExp').focus();return;}saveRecv(false);}if(e.key==='Escape')cancelRecv(true);}));
   $('rNoExp').addEventListener('change',()=>{$('rExp').disabled=$('rNoExp').checked;});
   $('askExp').addEventListener('change',()=>{st.askExp=$('askExp').checked;save();render();focusScan();});
-  function setMode(m){view='scan';if(isCnt(m))st.cnt=m;st.mode=m;cancelRecv();$('sugg').style.display='none';save();render();focusScan();}
-  $('tabOUT').onclick=()=>setMode('OUT');$('tabIN').onclick=()=>setMode('IN');$('tabCNT').onclick=()=>setMode(isCnt(st.cnt)?st.cnt:'CNT1');
+  function setMode(m){view='scan';if(isCnt(m))st.cnt=m;if(isWo(m))st.wo=m;st.mode=m;cancelRecv();$('sugg').style.display='none';save();render();focusScan();}
+  $('tabOUT').onclick=()=>setMode('OUT');$('tabIN').onclick=()=>setMode('IN');$('tabCNT').onclick=()=>setMode(isCnt(st.cnt)?st.cnt:'CNT1');$('tabWO').onclick=()=>setMode(isWo(st.wo)?st.wo:'WO1');
   st.who=englishOnly(st.who,true).text;$('who').value=st.who;
   $('who').addEventListener('input',()=>{const r=englishOnly($('who').value,true);if(r.removed){$('who').value=r.text;msg('warn','“Prepared by”: English letters only (A-Z, 0-9). Please type your name in English.');}st.who=$('who').value;save();});
 
@@ -968,6 +987,7 @@ function c128Scan(gray, w, h, K) {
   }
   $('xlsx').onclick=async()=>{
     if(isCnt(st.mode))return exportCountPhone();
+    if(isWo(st.mode))return exportWoPhone();
     if(!list().length){msg('err','The list is empty.');return;}
     const cfg=EXPORT[st.mode],who0=(st.who||'').trim(),typeName=st.mode==='OUT'?'STOCK OUT':'STOCK IN',nowD=new Date();
     const meta={who:who0,created:nowD,title:typeName,infoName:'Info',info:st.infoSheet?[
@@ -1005,9 +1025,9 @@ function c128Scan(gray, w, h, K) {
     if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(tsv).then(done,()=>manual('The browser blocked automatic copying.'));
     else manual('Automatic copying is not available here.');
   };
-  $('undo').onclick=()=>{const s=st.hist.pop(),hs=shHist.pop();if(!s){msg('warn','Nothing to undo.');return;}shRestoreSessions(hs);const before=JSON.stringify(st.lists);st.lists=Object.assign({OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[]},JSON.parse(s));lastTouched=null;
-    const ch=['OUT','IN','CNT1','CNT2','CNT3'].filter(m=>JSON.stringify(JSON.parse(before)[m])!==JSON.stringify(st.lists[m]));touched(ch.length?ch:[st.mode]);render();msg('warn','Last change undone.');focusScan();};
-  $('clear').onclick=()=>{if(!list().length)return;if(confirm('Clear the whole '+(st.mode==='OUT'?'STOCK OUT':isCnt(st.mode)?'COUNT ('+roomName(st.mode)+')':'STOCK IN')+' list? Make sure you downloaded it first.')){snapshot();shNewSession(st.mode);st.lists[st.mode]=[];lastTouched=null;touched([st.mode]);render();msg('warn','List cleared (Undo brings it back). Lines already sent to the shared list stay there.');focusScan();}};
+  $('undo').onclick=()=>{const s=st.hist.pop(),hs=shHist.pop();if(!s){msg('warn','Nothing to undo.');return;}shRestoreSessions(hs);const before=JSON.stringify(st.lists);st.lists=Object.assign({OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[],WO1:[],WO2:[],WO3:[],WO4:[],WO5:[]},JSON.parse(s));lastTouched=null;
+    const ch=ALLM.filter(m=>JSON.stringify(JSON.parse(before)[m])!==JSON.stringify(st.lists[m]));touched(ch.length?ch:[st.mode]);render();msg('warn','Last change undone.');focusScan();};
+  $('clear').onclick=()=>{if(!list().length)return;if(confirm('Clear the whole '+(st.mode==='OUT'?'STOCK OUT':isWo(st.mode)?'WRITE OFF ('+woName(st.mode)+')':isCnt(st.mode)?'COUNT ('+roomName(st.mode)+')':'STOCK IN')+' list? Make sure you downloaded it first.')){snapshot();shNewSession(st.mode);st.lists[st.mode]=[];lastTouched=null;touched([st.mode]);render();msg('warn','List cleared (Undo brings it back). Lines already sent to the shared list stay there.');focusScan();}};
   $('nAdd').onclick=async()=>{const ir=$('nIr').value.trim(),nm=$('nName').value.trim(),un=$('nUnit').value.trim();
     if(!/^\d{6,12}$/.test(ir)||!nm){msg('err','Enter the IR number (digits) and the item name.');return;}
     if(englishOnly(nm,false).removed||englishOnly(un,false).removed){msg('err','Item name and unit must be in English letters only (the CCS list is English).');return;}
@@ -1185,7 +1205,7 @@ function c128Scan(gray, w, h, K) {
   function aggregateBatches(batches){
     const m=new Map();
     (batches||[]).forEach(b=>(b.lines||[]).forEach(l=>{
-      const exp=l.expiry||'',mk=(b.mode&&/^CNT[1-3]$/.test(b.mode))?b.mode:'',k=l.ir+'|'+exp+'|'+mk;let a=m.get(k);
+      const exp=l.expiry||'',mk=(b.mode&&/^(CNT[1-3]|WO[1-5])$/.test(b.mode))?b.mode:'',k=l.ir+'|'+exp+'|'+mk;let a=m.get(k);
       if(!a){a={ir:l.ir,name:l.name||'',expiry:exp,mode:mk,qty:0,from:[],src:[]};m.set(k,a);}
       const q=+l.qty||0;a.qty+=q;if(!a.name&&l.name)a.name=l.name;
       const w=whoLabel(b);if(a.from.indexOf(w)<0)a.from.push(w);
@@ -1196,7 +1216,7 @@ function c128Scan(gray, w, h, K) {
   // files: every file holds a phone's WHOLE list for one session; for the same phone+session the newest file wins
   function latestFileBatches(files,mode){
     const by=new Map();
-    (files||[]).forEach(f=>{if(!f||!(mode==='COUNT'?/^CNT[1-3]$/.test(f.mode):f.mode===mode))return;const k=f.device+'|'+f.mode+'|'+f.session,o=by.get(k);if(!o||String(f.createdAt)>String(o.createdAt))by.set(k,f);});
+    (files||[]).forEach(f=>{if(!f||!(mode==='COUNT'?/^CNT[1-3]$/.test(f.mode):mode==='WO'?/^WO[1-5]$/.test(f.mode):f.mode===mode))return;const k=f.device+'|'+f.mode+'|'+f.session,o=by.get(k);if(!o||String(f.createdAt)>String(o.createdAt))by.set(k,f);});
     return [...by.values()].map(f=>({key:'',device:f.device,by:f.by,mode:f.mode,session:f.session,updated:f.createdAt,lines:f.lines}));
   }
   // ==AGG END==
@@ -1214,7 +1234,7 @@ function c128Scan(gray, w, h, K) {
   const okUrl=u=>/^https:\/\//i.test(u)||/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(u);
   const shReady=()=>!!(sh.enabled&&okUrl(sh.url||'')&&(sh.scanCode||sh.chargeCode));
   const hm=t=>{const d=new Date(t);return pad2(d.getHours())+':'+pad2(d.getMinutes());};
-  function shPayload(m){return{action:'push',code:sh.scanCode||sh.chargeCode,device:sh.device,by:(st.who||'').trim(),mode:m,session:sh.sess[m]||1,lines:st.lists[m].map(l=>({ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty}))};}
+  function shPayload(m){return{action:'push',code:sh.scanCode||sh.chargeCode,device:sh.device,by:(st.who||'').trim(),mode:m,session:sh.sess[m]||1,ack:((sh.ack||{})[m+':'+(sh.sess[m]||1)]||[]).slice(),lines:st.lists[m].map(l=>({ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty}))};}
   let shTimer=null,shBusy=false,shRetry=0;
   function shQueue(modes){
     if(!shReady())return;
@@ -1239,9 +1259,11 @@ function c128Scan(gray, w, h, K) {
     try{
       for(const k of keys){
         const body=sh.pend[k],p=JSON.parse(body);p.code=sh.scanCode||sh.chargeCode;
-        await shPost('push',p);
+        const pj=await shPost('push',p);
         if(sh.pend[k]===body)delete sh.pend[k];
-        sh.sent[k]=true;sh.lastOk=Date.now();sh.lastErr='';shSave();
+        sh.sent[k]=true;sh.lastOk=Date.now();sh.lastErr='';
+        if(p.ack&&p.ack.length&&sh.ack&&sh.ack[k]){sh.ack[k]=sh.ack[k].filter(id=>p.ack.indexOf(id)<0);if(!sh.ack[k].length)delete sh.ack[k];}
+        shSave();if(p.session===(sh.sess[p.mode]||1))shApplyDone(pj.done);
       }
       const dk=Object.keys(sh.defPend);
       if(dk.length){const snap=Object.assign({},sh.defPend);await shPost('setDefaults',{code:sh.scanCode||sh.chargeCode,by:(st.who||'').trim(),items:dk.map(ir=>({ir,expiry:snap[ir]}))});dk.forEach(ir=>{if(sh.defPend[ir]===snap[ir])delete sh.defPend[ir];});sh.lastOk=Date.now();sh.lastErr='';shSave();}
@@ -1249,6 +1271,24 @@ function c128Scan(gray, w, h, K) {
     }catch(e){failed=true;sh.lastErr=e.message||String(e);shSave();gateOnError(e);shRetry=Math.min(shRetry+1,5);clearTimeout(shTimer);shTimer=setTimeout(shFlush,Math.min(20000*Math.pow(2,shRetry-1),300000));}
     finally{shBusy=false;shBadge();if(!failed&&Object.keys(sh.pend).length){clearTimeout(shTimer);shTimer=setTimeout(shFlush,300);}}
   }
+  // The charge nurse pressed "Mark as imported" (or discarded lines): those lines are taken off THIS phone's list too.
+  function shApplyDone(done){
+    const ch=new Set();let n=0;if(!sh.ack||typeof sh.ack!=='object')sh.ack={};
+    (done||[]).forEach(d=>{const m=d&&d.mode;if(!m||!st.lists[m]||!d.id)return;const k=m+':'+(sh.sess[m]||1),a=sh.ack[k]||(sh.ack[k]=[]);if(a.indexOf(d.id)>=0)return;a.push(d.id);
+      const l=st.lists[m],i=l.findIndex(x=>x.ir===d.ir&&(x.expiry||'')===(d.expiry||''));if(i>=0){l[i].qty-=(+d.qty||0);if(l[i].qty<=0)l.splice(i,1);n++;}ch.add(m);});
+    if(ch.size){lastTouched=null;save();[...ch].forEach(m=>{const p=shPayload(m);sh.pend[m+':'+p.session]=JSON.stringify(p);});shSave();render();
+      if(n)msg('ok','The charge nurse has imported your list: '+n+' line'+(n===1?' was':'s were')+' cleared from this phone.');clearTimeout(shTimer);shTimer=setTimeout(shFlush,400);}
+    return ch;
+  }
+  let shSyncBusy=false;
+  async function shSync(){
+    if(shSyncBusy||shBusy||!shReady()||navigator.onLine===false||needLogin())return;
+    const sess={};let any=false;ALLM.forEach(m=>{if(st.lists[m].length){sess[m]=sh.sess[m]||1;any=true;}});if(!any)return;
+    shSyncBusy=true;
+    try{const j=await shPost('sync',{code:sh.scanCode||sh.chargeCode,device:sh.device,sess},15000);shApplyDone((j.done||[]).filter(d=>sess[d.mode]===(sh.sess[d.mode]||1)));}catch(e){}
+    finally{shSyncBusy=false;}
+  }
+  setInterval(shSync,45000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)shSync();});
   function shBadge(){
     const n=Object.keys(sh.pend).length+Object.keys(sh.defPend).length;let t='';
     if(shReady()){if(n)t=(navigator.onLine===false)?'📴 offline - '+n+' waiting, will be sent when the internet is back':(sh.lastErr?'⚠ shared list: '+n+' waiting ('+sh.lastErr+')':'⏳ shared list: sending…');else if(sh.lastOk)t='✓ shared list '+hm(sh.lastOk);else t='shared list: on';}
@@ -1262,11 +1302,11 @@ function c128Scan(gray, w, h, K) {
 
   // ---- connection card
   function renderConn(){$('shUrl').value=sh.url;$('shUrlNote').textContent=(sh.url&&sh.url===sh.urlDefault)?'✓ This link was filled in automatically for your unit.':'';$('shScanCode').value=sh.scanCode;$('shScanCode').readOnly=!!sh.codeFromCfg;$('shScanCode').title=sh.codeFromCfg?'Set automatically for your unit':'';$('shChargeCode').value=sh.chargeCode;$('shOn').checked=!!sh.enabled;shBadge();}
-  function shApplySetup(url,code){sh.url=url;if(code)sh.scanCode=String(code).toUpperCase();sh.enabled=true;shSave();renderConn();shQueue(['OUT','IN','CNT1','CNT2','CNT3']);}
+  function shApplySetup(url,code){sh.url=url;if(code)sh.scanCode=String(code).toUpperCase();sh.enabled=true;shSave();renderConn();shQueue(ALLM);}
   function shConnChanged(){
     sh.url=$('shUrl').value.trim();sh.scanCode=$('shScanCode').value.trim().replace(/\s+/g,'').toUpperCase();sh.chargeCode=$('shChargeCode').value.trim().replace(/\s+/g,'').toUpperCase();$('shScanCode').value=sh.scanCode;$('shChargeCode').value=sh.chargeCode;sh.enabled=$('shOn').checked;shSave();
     if(sh.url&&!okUrl(sh.url))shMsg('err','The link must start with https://');
-    shRetry=0;if(shReady()){const m=[];['OUT','IN','CNT1','CNT2','CNT3'].forEach(x=>{if(st.lists[x].length)m.push(x);});if(m.length)shQueue(m);else shFlush();}shBadge();
+    shRetry=0;if(shReady()){const m=[];ALLM.forEach(x=>{if(st.lists[x].length)m.push(x);});if(m.length)shQueue(m);else shFlush();}shBadge();
   }
   ['shUrl','shScanCode','shChargeCode'].forEach(id=>$(id).addEventListener('change',shConnChanged));$('shOn').addEventListener('change',shConnChanged);
   $('shTest').onclick=async()=>{
@@ -1282,12 +1322,12 @@ function c128Scan(gray, w, h, K) {
   function shMsg(kind,text){const m=$('shMsg');m.className='msg '+kind;m.textContent=text;}
   function shRender(){
     const live=$('shSource').value==='live';
-    $('shMark').style.display=live?'':'none';$('shDiscard').style.display=live?'':'none';
+    const rec=!!(shLoaded&&shLoaded.recovered);$('shMark').style.display=(live&&!rec)?'':'none';$('shDiscard').style.display=(live&&!rec)?'':'none';$('shRecover').style.display=live?'':'none';
     if(!shRows.length){$('shList').innerHTML='<div class="empty">'+(shLoaded?'Nothing waiting in this list.':'Press Refresh.')+'</div>';$('shTot').textContent='';return;}
-    const isC=shLoaded&&shLoaded.mode==='COUNT';$('shMark').textContent=isC?'Mark as done':'Mark as imported';
+    const isC=shLoaded&&shLoaded.mode==='COUNT',isW=shLoaded&&shLoaded.mode==='WO';$('shMark').textContent=isC?'Mark as done':'Mark as imported';
     const anyExp=isC||shRows.some(r=>r.expiry);
     let h='<table><thead><tr><th></th><th>Item</th>'+(anyExp?'<th>Expiry</th>':'')+'<th>Qty</th></tr></thead><tbody>';
-    shRows.forEach((r,i)=>{h+='<tr class="'+(r.include?'':'off')+'" data-ir="'+xmlEsc(r.ir)+'" data-from="'+xmlEsc(r.from.join(', '))+'"><td><input type="checkbox" data-a="c" data-i="'+i+'"'+(r.include?' checked':'')+'></td><td>'+thumb(r.ir,40)+xmlEsc(r.name)+'<div class="from">'+(isC?'<b>'+xmlEsc(roomName(r.mode))+'</b> · ':'')+xmlEsc(r.ir)+' · from '+xmlEsc(r.from.join(', '))+'</div></td>'+(anyExp?'<td>'+(r.expiry?dmy(r.expiry):'')+(isC?expBadge(r.expiry):'')+'</td>':'')+
+    shRows.forEach((r,i)=>{h+='<tr class="'+(r.include?'':'off')+'" data-ir="'+xmlEsc(r.ir)+'" data-from="'+xmlEsc(r.from.join(', '))+'"><td><input type="checkbox" data-a="c" data-i="'+i+'"'+(r.include?' checked':'')+'></td><td>'+thumb(r.ir,56)+xmlEsc(r.name)+'<div class="from">'+(isC?'<b>'+xmlEsc(roomName(r.mode))+'</b> · ':'')+(isW?'<b>'+xmlEsc(woName(r.mode))+'</b> · ':'')+xmlEsc(r.ir)+' · from '+xmlEsc(r.from.join(', '))+'</div></td>'+(anyExp?'<td>'+(r.expiry?dmy(r.expiry):'')+(isC?expBadge(r.expiry):'')+'</td>':'')+
       '<td><input class="sq" type="number" min="1" value="'+r.qty+'" data-a="q" data-i="'+i+'">'+unitBadge(unitOf(r.ir))+(r.qty!==r.orig?'<div class="from">was '+r.orig+'</div>':'')+'</td></tr>';});
     $('shList').innerHTML=h+'</tbody></table>';
     const inc=shRows.filter(r=>r.include);$('shTot').textContent=inc.length+' line'+(inc.length===1?'':'s')+' · '+inc.reduce((a,r)=>a+r.qty,0)+' units';
@@ -1312,13 +1352,19 @@ function c128Scan(gray, w, h, K) {
   $('shSource').onchange=()=>shRefresh(true);$('shRefresh').onclick=()=>shRefresh(false);
   $('shSave').onclick=async()=>{
     const inc=shRows.filter(r=>r.include);if(!inc.length){shMsg('err','Nothing selected to save.');return;}
-    const mode=shLoaded?shLoaded.mode:shMode(),cfg=EXPORT[mode],who0=(st.who||'').trim(),typeName=mode==='OUT'?'STOCK OUT':'STOCK IN',nowD=new Date();
+    const mode=shLoaded?shLoaded.mode:shMode(),cfg=EXPORT[mode],who0=(st.who||'').trim(),typeName=mode==='OUT'?'STOCK OUT':mode==='WO'?'WRITE OFF':'STOCK IN',nowD=new Date();
     const lines=inc.map(r=>({ir:r.ir,name:r.name,expiry:r.expiry,qty:r.qty})),names=[];inc.forEach(r=>r.from.forEach(f=>{if(names.indexOf(f)<0)names.push(f);}));
     if(mode==='COUNT'){
       const cl=inc.map(r=>({mode:r.mode,ir:r.ir,name:r.name,expiry:r.expiry,qty:r.qty})),bytes=countBook(cl,{who:who0,created:nowD,title:'STOCK COUNT',infoName:'Info',info:st.infoSheet?countInfo(cl,who0,nowD,names.join(', '),$('shSource').value==='live'?'Shared list (live)':'Merged files'):null});
       const wn=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),cn='CCS_StockCount_ALL_'+stamp()+(wn?'_'+wn:'')+'.xlsx',rr=await saveExport(cn,bytes);
       if(rr.cancelled){shMsg('warn','Save cancelled - nothing was saved.');return;}
       shMsg(who0?'ok':'warn','Saved '+rr.name+' in '+rr.where+'. When the count is finished press “Mark as done”.'+(who0?'':'  ⚠ “Prepared by” is empty.'));return;
+    }
+    if(mode==='WO'){
+      const wl=inc.map(r=>({mode:r.mode,ir:r.ir,name:r.name,expiry:r.expiry,qty:r.qty})),bytes=woBook(wl,who0,nowD,names.join(', '));
+      const wn=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),rr=await saveExport('CCS_WriteOff_ALL_'+stamp()+(wn?'_'+wn:'')+'.xlsx',bytes);
+      if(rr.cancelled){shMsg('warn','Save cancelled - nothing was saved.');return;}
+      shMsg(who0?'ok':'warn','Saved '+rr.name+' in '+rr.where+'.'+(who0?'':'  ⚠ “Prepared by” is empty.'));await shAskClear(inc);return;
     }
     const meta={who:who0,created:nowD,title:typeName,infoName:'Info',info:st.infoSheet?[
       ['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],
@@ -1329,6 +1375,25 @@ function c128Scan(gray, w, h, K) {
     const r=await saveExport(name,bytes);
     if(r.cancelled){shMsg('warn','Save cancelled - nothing was saved.');return;}
     shMsg(who0?'ok':'warn','Saved '+r.name+' in '+r.where+'. Import it in CCS, then press “Mark as imported”.'+(who0?'':'  ⚠ “Prepared by” is empty (type your name at the top).'));
+    await shAskClear(inc);
+  };
+  // after a successful save: offer to clear the list right away (= Mark as imported)
+  async function shAskClear(inc){
+    if($('shSource').value!=='live'||(shLoaded&&shLoaded.recovered)||!inc.length)return;
+    if(!confirm('The Excel file is saved.\n\nDo you want to CLEAR the list now?\n(= Mark as imported: these '+inc.length+' lines disappear here and on the phones of the staff.)\n\nOK = clear the list.     Cancel = keep the list.'))return;
+    await shMark('EXPORTED',inc,'Marked as imported - the list is cleared');
+  }
+  $('shRecover').onclick=async()=>{
+    const mode=shMode();
+    if(!okUrl(sh.url)||!sh.chargeCode){shMsg('err','Only the charge nurse can recover a list (sign in with the charge nurse password).');return;}
+    if(shEdited&&shRows.length&&!confirm('You changed some quantities / checkboxes. Recovering will drop those changes. Continue?'))return;
+    shMsg('warn','Looking for the last imported list…');
+    try{const j=await shPost('lastExport',{code:sh.chargeCode,mode:mode==='COUNT'?'CNT':mode});
+      if(!j.exportId||!(j.batches||[]).length){shMsg('warn','Nothing has been marked as imported yet for this list.');return;}
+      shRows=aggregateBatches(j.batches).map(a=>Object.assign(a,{include:true,orig:a.qty}));shLoaded={mode,live:true,batches:j.batches,recovered:true};shEdited=false;
+      $('shInfo').textContent='RECOVERED LIST - marked as imported on '+String(j.at||'').slice(0,16)+'. Save the Excel again if you need it. Press Refresh to go back to the live list.';shRender();
+      shMsg('ok','Recovered the last imported list: '+shRows.length+' line'+(shRows.length===1?'':'s')+'. Nothing was changed for the staff.');}
+    catch(e){shMsg('err',/unknown action/i.test(e.message||'')?'The Google Sheet script is an old version: paste the new SharedList_Code and deploy a new version.':'Could not recover the list: '+(e.message||e.name));}
   };
   function shMarkItems(rows){const out=[];rows.forEach(r=>r.src.forEach(s=>out.push({key:s.key,ir:r.ir,expiry:r.expiry,qty:s.qty})));return out;}
   async function shMark(status,rows,okText){
@@ -1337,7 +1402,7 @@ function c128Scan(gray, w, h, K) {
     catch(e){shMsg('err','Could not update the shared list: '+(e.message||e.name));}
   }
   $('shMark').onclick=()=>{const inc=shRows.filter(r=>r.include);if(!inc.length){shMsg('err','Nothing selected.');return;}
-    if(!confirm((shLoaded&&shLoaded.mode==='COUNT')?'Mark these '+inc.length+' lines as done? Do it after you saved the count Excel. They will disappear from this list.':'Mark these '+inc.length+' lines as imported? Do it after you saved the Excel and imported it in CCS. They will disappear from this list.'))return;
+    if(!confirm((shLoaded&&shLoaded.mode==='COUNT')?'Mark these '+inc.length+' lines as done? Do it after you saved the count Excel. They will disappear from this list.':'Mark these '+inc.length+' lines as imported? Do it after you saved the Excel and imported it in CCS. They will disappear from this list AND from the phones of the staff.'))return;
     if($('shSource').value==='files'){return;}shMark('EXPORTED',inc,(shLoaded&&shLoaded.mode==='COUNT')?'Marked as done':'Marked as imported');};
   $('shDiscard').onclick=()=>{const off=shRows.filter(r=>!r.include);if(!off.length){shMsg('err','No unchecked lines to discard.');return;}
     if(!confirm('Throw away the '+off.length+' unchecked lines? They will not appear again.'))return;shMark('DISCARDED',off,'Discarded');};
@@ -1350,7 +1415,7 @@ function c128Scan(gray, w, h, K) {
     return{where:'the browser Downloads folder'};
   }
   $('sendFile').onclick=async()=>{
-    const batches=[];['OUT','IN','CNT1','CNT2','CNT3'].forEach(m=>{if(st.lists[m].length)batches.push({mode:m,session:sh.sess[m]||1,lines:st.lists[m].map(l=>({ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty}))});});
+    const batches=[];ALLM.forEach(m=>{if(st.lists[m].length)batches.push({mode:m,session:sh.sess[m]||1,lines:st.lists[m].map(l=>({ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty}))});});
     if(!batches.length){msg('err','Both lists are empty - nothing to send.');return;}
     const who0=(st.who||'').trim(),who=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,'');
     const text=JSON.stringify({format:'ccs-batch-1',device:sh.device,by:who0,createdAt:new Date().toISOString(),batches});
@@ -1365,7 +1430,7 @@ function c128Scan(gray, w, h, K) {
       try{
         const o=JSON.parse(await f.text());if(!o||o.format!=='ccs-batch-1'||!Array.isArray(o.batches))throw new Error('not a batch file');
         const dev=String(o.device||'').replace(/[^0-9a-z]/gi,'').slice(0,32);if(!dev)throw new Error('no device id');
-        o.batches.forEach(b=>{if(!/^(OUT|IN|CNT[1-3])$/.test(b.mode))return;const lines=(Array.isArray(b.lines)?b.lines:[]).map(l=>({ir:String(l.ir||'').trim(),name:String(l.name||'').slice(0,150),expiry:/^\d{4}-\d{2}-\d{2}$/.test(l.expiry||'')?l.expiry:'',qty:Math.floor(+l.qty)})).filter(l=>l.ir&&l.qty>=1);
+        o.batches.forEach(b=>{if(!/^(OUT|IN|CNT[1-3]|WO[1-5])$/.test(b.mode))return;const lines=(Array.isArray(b.lines)?b.lines:[]).map(l=>({ir:String(l.ir||'').trim(),name:String(l.name||'').slice(0,150),expiry:/^\d{4}-\d{2}-\d{2}$/.test(l.expiry||'')?l.expiry:'',qty:Math.floor(+l.qty)})).filter(l=>l.ir&&l.qty>=1);
           sh.files.push({device:dev,by:String(o.by||'').slice(0,40),mode:b.mode,session:Math.floor(+b.session)||1,createdAt:String(o.createdAt||''),lines});added++;});
       }catch(e){bad.push(f.name+' ('+(e.message||e.name)+')');}
     }
@@ -1397,7 +1462,7 @@ function c128Scan(gray, w, h, K) {
       if(!sh.url||sh.url===sh.urlDefault){if(sh.url!==u){sh.url=u;changed=true;}}
       sh.urlDefault=u;
       if(code&&sh.scanCode!==code){sh.scanCode=code;changed=true;}if(sh.codeFromCfg!==!!code){sh.codeFromCfg=!!code;changed=true;}
-      shSave();if(changed){renderConn();shRetry=0;const m=['OUT','IN','CNT1','CNT2','CNT3'].filter(x=>st.lists[x].length);if(shReady()&&m.length)shQueue(m);else shFlush();}else renderConn();
+      shSave();if(changed){renderConn();shRetry=0;const m=ALLM.filter(x=>st.lists[x].length);if(shReady()&&m.length)shQueue(m);else shFlush();}else renderConn();
     }catch(e){}
   }
   // ---- default expiry dates (shared by the unit through the Google Sheet; kept on the phone too)
@@ -1451,7 +1516,7 @@ function c128Scan(gray, w, h, K) {
     if(navigator.onLine===false){gateMsg('err','No internet. Connect to Wi-Fi or mobile data the first time.');return;}
     $('gateBtn').disabled=true;gateMsg('warn','Checking…');
     try{const j=await shPost('whoami',{code:pw},15000);sh.scanCode=pw;if(j.role==='charge')sh.chargeCode=pw;sh.loggedIn=true;sh.enabled=true;sh.lastErr='';shSave();
-      $('gatePw').value='';gateMsg('ok','');gateRender();renderConn();shLoadDefaults();const m=['OUT','IN'].filter(x=>st.lists[x].length);if(m.length)shQueue(m);
+      $('gatePw').value='';gateMsg('ok','');gateRender();renderConn();shLoadDefaults();const m=ALLM.filter(x=>st.lists[x].length);if(m.length)shQueue(m);shSync();phSync();
       msg('ok','Signed in'+(UNIT_NAME?' to '+UNIT_NAME:'')+(j.role==='charge'?' as charge nurse':'')+'.');focusScan();}
     catch(e){gateMsg('err',/wrong code|cannot open/i.test(e.message||'')?'Wrong password.':(/too many/i.test(e.message||'')?e.message:'Could not check the password: '+(e.message||e.name)));}
     finally{$('gateBtn').disabled=false;}
@@ -1480,6 +1545,31 @@ function c128Scan(gray, w, h, K) {
     if(b.dataset.m==='rename'){const v=prompt('Name of this store room (English, max 20 characters):',roomName(st.mode));if(v===null)return;const nm=v.replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,20);if(!nm){msg('err','The name is empty.');return;}st.rooms[+st.mode.slice(3)-1]=nm;save();render();return;}
     setMode(b.dataset.m);
   });
+  function renderWoBar(){
+    const bar=$('woBar');if(!isWo(st.mode)){bar.style.display='none';return;}
+    bar.style.display='flex';
+    bar.innerHTML=WOM.map((m,i)=>{const l=st.lists[m];return '<button type="button" class="room'+(m===st.mode?' on':'')+'" data-m="'+m+'">'+(i+1)+'. '+xmlEsc(woName(m))+'<small>'+l.length+' · '+l.reduce((a,x)=>a+x.qty,0)+'</small></button>';}).join('');
+  }
+  $('woBar').addEventListener('click',e=>{const b=e.target.closest('button');if(b&&isWo(b.dataset.m))setMode(b.dataset.m);});
+  // one Excel for all write-off reasons: the CCS columns + "Reason"
+  const WO_COLS=TEMPLATE_COLS.concat([['Reason','reason','s',30]]);
+  function woBook(lines,who0,nowD,combined){
+    const rows=[];WOM.forEach(m=>{buildRows(lines.filter(l=>l.mode===m),items,false).forEach(r=>{r.reason=woName(m);rows.push(r);});});
+    const meta={who:who0,created:nowD,title:'WRITE OFF',infoName:'Info',info:st.infoSheet?[
+      ['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],
+      ['Type','WRITE OFF'],...(UNIT_NAME?[['Unit',UNIT_NAME]]:[]),['Lines',rows.length],['Total units',rows.reduce((a,x)=>a+(+x.qty||0),0)],
+      ...WOM.map(m=>[woName(m),lines.filter(l=>l.mode===m).reduce((a,x)=>a+x.qty,0)]),...(combined?[['Combined from',combined]]:[]),['Tool','CCS Scan Helper'],
+      ['Note','Information only. The data is on the first sheet (inventory list). The last column is the write-off reason.']]:null};
+    return buildXlsx('inventory list',WO_COLS,rows,meta);
+  }
+  async function exportWoPhone(){
+    const lines=[];WOM.forEach(m=>st.lists[m].forEach(l=>lines.push({mode:m,ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty})));
+    if(!lines.length){msg('err','The write-off lists are empty.');return;}
+    const who0=(st.who||'').trim(),who=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),r=await saveExport('CCS_WriteOff_'+stamp()+(who?'_'+who:'')+'.xlsx',woBook(lines,who0,new Date(),''));
+    if(r.cancelled){msg('warn','Save cancelled - nothing was saved.');return;}
+    if(r.blocked){msg('err','The file was probably NOT saved (downloads are blocked in this preview).');beep(false);return;}
+    msg(who0?'ok':'warn','Saved '+r.name+' in '+r.where+' (all write-off reasons, '+lines.length+' lines).'+(who0?'':'  ⚠ “Prepared by” is empty.'));
+  }
   const COUNT_COLS=[['Room','room','s',14],['ir_number','ir','s',14],['item name','name','s',70],['Expiry','expiry','d',13],['Qty','qty','n',8],['Qty_type','unit','s',10],['Status','status','s',18],['Location','loc','s',40]];
   const BYITEM_COLS=[['ir_number','ir','s',14],['item name','name','s',70],['Expiry','expiry','d',13],['Total qty','qty','n',10],['Qty_type','unit','s',10],['Status','status','s',18],['Rooms','rooms','s',46]];
   function countInfo(lines,who0,nowD,combined,source){
@@ -1511,7 +1601,7 @@ function c128Scan(gray, w, h, K) {
   }
 
   // ================================================================ ITEM PHOTOS (a small picture next to each item)
-  // Kept on this phone (IndexedDB, shared by all unit copies of the app on this site). Shared with colleagues through the setup file.
+  // Kept on this phone (IndexedDB) AND sent to the unit's Google Sheet, so every phone of the unit gets the same photos automatically.
   const PH=new Map(),PHOTO_DB='ccsPhotos.v1';
   function phDb(){return new Promise((res,rej)=>{const q=indexedDB.open(PHOTO_DB,1);q.onupgradeneeded=()=>q.result.createObjectStore('p');q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);});}
   async function phLoadAll(){
@@ -1545,11 +1635,40 @@ function c128Scan(gray, w, h, K) {
   $('rPhotoBtn').onclick=()=>{$('rPhotoFile').value='';$('rPhotoFile').click();};
   $('rPhotoFile').onchange=async()=>{
     const f=$('rPhotoFile').files&&$('rPhotoFile').files[0],it=pendingItem;if(!f||!it)return;
-    try{const d=await makeThumb(f);if(await phWrite([[it.ir,d]])){renderRecvPhoto(it);render();msg('ok','Photo saved for '+it.name+'. Colleagues get it with the setup file (SHARED > Connection > Export setup file).');}}
+    try{const d=await makeThumb(f);if(await phWrite([[it.ir,d]])){sh.phPend[it.ir]='set';shSave();renderRecvPhoto(it);render();msg('ok','Photo saved for '+it.name+(shReady()?'. Everybody in the unit will see it.':'.'));phSync();}}
     catch(e){msg('err','Could not use this picture: '+(e.message||e.name));}
   };
-  $('rPhotoDel').onclick=async()=>{const it=pendingItem;if(!it||!confirm('Remove the photo of '+it.name+'?'))return;if(await phWrite([[it.ir,null]])){renderRecvPhoto(it);render();}};
-  phLoadAll();
+  $('rPhotoDel').onclick=async()=>{const it=pendingItem;if(!it||!confirm('Remove the photo of '+it.name+'?'))return;if(await phWrite([[it.ir,null]])){if(sh.phTs[it.ir]||sh.phPend[it.ir]==='set'){sh.phPend[it.ir]='del';shSave();}renderRecvPhoto(it);render();phSync();}};
+  // ---- photo sync with the unit's Google Sheet
+  if(!sh.phTs||typeof sh.phTs!=='object')sh.phTs={};if(!sh.phPend||typeof sh.phPend!=='object')sh.phPend={};
+  let phBusy=false,phAt=0,phReady=false;
+  async function phSync(pass){
+    if(phBusy||!phReady||!shReady()||navigator.onLine===false||needLogin())return;phBusy=true;let again=false;
+    try{
+      const code=sh.scanCode||sh.chargeCode;
+      for(const ir of Object.keys(sh.phPend)){                                   // 1) send my new / removed photos
+        const del=sh.phPend[ir]==='del',d=del?'':(PH.get(ir)||'');
+        if(!del&&(!okPhoto(d)||d.length>48000)){delete sh.phPend[ir];continue;}
+        const j=await shPost('photoSet',{code,ir,data:d,by:(st.who||'').trim()},30000);
+        if(d)sh.phTs[ir]=j.at;else delete sh.phTs[ir];delete sh.phPend[ir];shSave();
+      }
+      const srv=(await shPost('photoList',{code},20000)).photos||{};                // 2) what the unit has
+      const need=Object.keys(srv).filter(ir=>sh.phTs[ir]!==srv[ir]&&!sh.phPend[ir]);
+      for(let i=0;i<need.length;i+=20){
+        const g=await shPost('photoGet',{code,irs:need.slice(i,i+20)},40000),ent=[];
+        Object.keys(g.photos||{}).forEach(ir=>{const p=g.photos[ir];if(p&&okPhoto(p.d)){ent.push([ir,p.d]);sh.phTs[ir]=p.at||srv[ir];}});
+        if(ent.length&&await phWrite(ent)){shSave();render();if(pendingItem)renderRecvPhoto(pendingItem);}
+      }
+      const gone=Object.keys(sh.phTs).filter(ir=>!(ir in srv)&&!sh.phPend[ir]);    // 3) removed by a colleague
+      if(gone.length&&await phWrite(gone.map(ir=>[ir,null]))){gone.forEach(ir=>delete sh.phTs[ir]);shSave();render();}
+      if(!pass){PH.forEach((d,ir)=>{if(!(ir in srv)&&!sh.phTs[ir]&&!sh.phPend[ir]&&okPhoto(d)&&d.length<=48000){sh.phPend[ir]='set';again=true;}});if(again)shSave();}   // 4) photos that were only on this phone
+      phAt=Date.now();
+    }catch(e){}
+    finally{phBusy=false;}
+    if(again)return phSync(1);
+  }
+  setInterval(phSync,300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-phAt>120000)phSync();});
+  phLoadAll().then(()=>{phReady=true;phSync();shSync();});
 
   render();renderConflicts();if(FOLDER_FEATURE)initFolder();loadExpDir();if(shReady()&&Object.keys(sh.pend).length)shFlush();
 })();
