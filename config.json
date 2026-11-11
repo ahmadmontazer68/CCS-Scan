@@ -1,8 +1,5 @@
 {
-  "unit": "PED INP",
-  "syncUrl": "https://script.google.com/macros/s/AKfycbyS79mQUeRydpIYy56b9EbM5xyGix6rmtlwKYKaK8w0sG7rFOWyOtYsXnUhhDSIBh0S/exec",
-  "scanCode": "",
-  "master": "../master_list.xlsx",
-  "photos": "../photos/",
-  "locations": false
+  "unit": "PLTCU-1",
+  "syncUrl": "https://script.google.com/macros/s/AKfycbyfNnGdiFSu1A2er_i1oW7pgBZJpDxycLhHrfAjQgGzb7X6b6cCHxQrMKBzfBx414FYjg/exec",
+  "scanCode": ""
 }
