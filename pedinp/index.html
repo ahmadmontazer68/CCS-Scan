@@ -261,6 +261,7 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
     <div class="note" id="icStat" style="margin:0"></div>
     <div id="icPanel" style="display:none">
       <div class="name" id="icName"></div>
+      <div class="phbox"><div id="icPhoto"></div><div><button class="btn alt" id="icPhotoBtn" type="button">📷 Add photo</button><button class="btn alt" id="icPhotoDel" type="button" style="display:none">Remove photo</button><br><a id="icPhotoSearch" href="#" target="_blank" rel="noopener">🔎 Find a picture on the internet</a></div></div>
       <div class="note" id="icLast"></div>
       <div class="note" style="margin:0 0 4px">Quantity · Expiry date (31/12/2030 or 12/2030, empty = no expiry) · tick = default expiry date</div>
       <div id="icRows"></div>
@@ -405,7 +406,7 @@ const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['E
 // DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
 // the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
 const UPLOAD_LINK = '';
-const VERSION = '2026-11-11.2';
+const VERSION = '2026-11-11.3';
 const FOLDER_FEATURE = false;          // shared-folder sync is switched off (not usable on the hospital PCs); the code is kept          // shown in the page header, so you can see which copy of the file you are running
 const EXPORT = {
   OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
@@ -866,6 +867,8 @@ function c128Scan(gray, w, h, K) {
   function touched(modes){modes.forEach(m=>{st.dirty[m]=true;});save();schedulePush(modes);shQueue(modes);}
 
   // ---------------------------------------------------------------- list
+  let needRender=false;          // a background update (photos, shared list) waits while somebody is typing in the list
+  function bgRender(){const a=document.activeElement;if(a&&a.closest&&a.closest('#listWrap')&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){needRender=true;return;}render();}
   function render(){
     const sv=view==='shared';$('scanView').style.display=sv?'none':'';$('sharedView').style.display=sv?'':'none';$('tabSH').classList.toggle('on',sv);
     $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);$('tabCNT').classList.toggle('on',isCnt(st.mode)&&!sv);{const icm=st.mode==='IC';$('tabIC').classList.toggle('on',icm&&!sv);$('icCard').style.display=icm?'':'none';$('listCard').style.display=icm?'none':'';$('cIC').textContent=icTodayTxt();}$('tabWO').classList.toggle('on',isWo(st.mode)&&!sv);
@@ -1338,7 +1341,7 @@ function c128Scan(gray, w, h, K) {
     const ch=new Set();let n=0;if(!sh.ack||typeof sh.ack!=='object')sh.ack={};
     (done||[]).forEach(d=>{const m=d&&d.mode;if(!m||!st.lists[m]||!d.id)return;const k=m+':'+(sh.sess[m]||1),a=sh.ack[k]||(sh.ack[k]=[]);if(a.indexOf(d.id)>=0)return;a.push(d.id);
       const l=st.lists[m],i=l.findIndex(x=>x.ir===d.ir&&(x.expiry||'')===(d.expiry||''));if(i>=0){l[i].qty-=(+d.qty||0);if(l[i].qty<=0)l.splice(i,1);n++;}ch.add(m);});
-    if(ch.size){lastTouched=null;save();[...ch].forEach(m=>{const p=shPayload(m);sh.pend[m+':'+p.session]=JSON.stringify(p);});shSave();render();
+    if(ch.size){lastTouched=null;save();[...ch].forEach(m=>{const p=shPayload(m);sh.pend[m+':'+p.session]=JSON.stringify(p);});shSave();bgRender();
       if(n)msg('ok','The charge nurse has imported your list: '+n+' line'+(n===1?' was':'s were')+' cleared from this phone.');clearTimeout(shTimer);shTimer=setTimeout(shFlush,400);}
     return ch;
   }
@@ -1694,10 +1697,19 @@ function c128Scan(gray, w, h, K) {
     $('rPhotoBtn').textContent=d?'📷 Change photo':'📷 Add photo';$('rPhotoDel').style.display=loc?'':'none';
     $('rPhotoSearch').href='https://www.google.com/search?tbm=isch&q='+encodeURIComponent(item.name);
   }
-  $('rPhotoBtn').onclick=()=>{$('rPhotoFile').value='';$('rPhotoFile').click();};
+  let phTarget='recv';                                                     // which panel asked for the photo: STOCK IN/OUT panel or INVENTORY COUNT
+  function icRenderPhoto(item){
+    if(!item)return;const loc=PH.get(item.ir),d=loc||(WEBPH.has(item.ir)?PHOTOS_BASE+item.ir+'.jpg':'');
+    $('icPhoto').innerHTML=d?'<img class="thumb" src="'+d+'" width="72" height="72" alt="" style="margin:0">':'<div class="noph">no photo</div>';
+    $('icPhotoBtn').textContent=d?'📷 Change photo':'📷 Add photo';$('icPhotoDel').style.display=loc?'':'none';
+    $('icPhotoSearch').href='https://www.google.com/search?tbm=isch&q='+encodeURIComponent(item.name);
+  }
+  $('rPhotoBtn').onclick=()=>{phTarget='recv';$('rPhotoFile').value='';$('rPhotoFile').click();};
+  $('icPhotoBtn').onclick=()=>{phTarget='ic';$('rPhotoFile').value='';$('rPhotoFile').click();};
+  $('icPhotoDel').onclick=async()=>{const it=icItem;if(!it||!confirm('Remove the photo of '+it.name+'?'))return;if(await phWrite([[it.ir,null]])){if(sh.phTs[it.ir]||sh.phPend[it.ir]==='set'){sh.phPend[it.ir]='del';shSave();}icRenderPhoto(it);render();phSync();}};
   $('rPhotoFile').onchange=async()=>{
-    const f=$('rPhotoFile').files&&$('rPhotoFile').files[0],it=pendingItem;if(!f||!it)return;
-    try{const d=await makeThumb(f);if(await phWrite([[it.ir,d]])){sh.phPend[it.ir]='set';shSave();renderRecvPhoto(it);render();msg('ok','Photo saved for '+it.name+(shReady()?'. Everybody in the unit will see it.':'.'));phSync();}}
+    const f=$('rPhotoFile').files&&$('rPhotoFile').files[0],it=phTarget==='ic'?icItem:pendingItem;if(!f||!it)return;
+    try{const d=await makeThumb(f);if(await phWrite([[it.ir,d]])){sh.phPend[it.ir]='set';shSave();if(phTarget==='ic')icRenderPhoto(it);else renderRecvPhoto(it);bgRender();msg('ok','Photo saved for '+it.name+(shReady()?'. Everybody in the unit will see it.':'.'));phSync();}}
     catch(e){msg('err','Could not use this picture: '+(e.message||e.name));}
   };
   $('rPhotoDel').onclick=async()=>{const it=pendingItem;if(!it||!confirm('Remove the photo of '+it.name+'?'))return;if(await phWrite([[it.ir,null]])){if(sh.phTs[it.ir]||sh.phPend[it.ir]==='set'){sh.phPend[it.ir]='del';shSave();}renderRecvPhoto(it);render();phSync();}};
@@ -1714,12 +1726,12 @@ function c128Scan(gray, w, h, K) {
     if(de)exps.push(de);
     if(c&&c.lots)c.lots.forEach(l=>{if(l.expiry&&l.expiry>=today&&exps.indexOf(l.expiry)<0)exps.push(l.expiry);});
     if(!exps.length)exps.push('');
-    $('icName').innerHTML=thumb(it.ir,72)+xmlEsc(it.name)+'<div class="note" style="margin:2px 0 0;font-weight:400">'+xmlEsc(it.ir)+(it.unit?' · unit '+xmlEsc(it.unit):'')+(it.loc?' · '+xmlEsc(shortLoc(it.loc)):'')+'</div>';
+    icRenderPhoto(it);$('icName').innerHTML=xmlEsc(it.name)+'<div class="note" style="margin:2px 0 0;font-weight:400">'+xmlEsc(it.ir)+(it.unit?' · unit '+xmlEsc(it.unit):'')+(it.loc?' · '+xmlEsc(shortLoc(it.loc)):'')+'</div>';
     $('icLast').innerHTML=icLastTxt(it.ir,it.unit);
     $('icRows').innerHTML=exps.map((e,i)=>icRowHtml('',e?dmy(e):'',!!de&&e===de,i===0)).join('');
     $('icSkip').style.display=ic.mode==='app'?'':'none';$('icCancel').style.display=ic.mode==='app'?'none':'';
     $('icPanel').style.display='';icRenderNext();
-    const q=$('icRows').querySelector('.icq');if(q){q.focus();try{$('icPanel').scrollIntoView({block:'start',behavior:'smooth'});}catch(e){}}
+    const q=$('icRows').querySelector('.icq');if(q&&!uiRestoring){q.focus();try{$('icPanel').scrollIntoView({block:'start',behavior:'smooth'});}catch(e){}}
   }
   function icClose(){icItem=null;$('icPanel').style.display='none';icRenderNext();}
   $('icRows').addEventListener('change',e=>{const t=e.target;if(t.type==='checkbox'&&t.checked)$('icRows').querySelectorAll('.icdef input').forEach(x=>{if(x!==t)x.checked=false;});});
@@ -1830,10 +1842,10 @@ function c128Scan(gray, w, h, K) {
       for(let i=0;i<need.length;i+=20){
         const g=await shPost('photoGet',{code,irs:need.slice(i,i+20)},40000),ent=[];
         Object.keys(g.photos||{}).forEach(ir=>{const p=g.photos[ir];if(p&&okPhoto(p.d)){ent.push([ir,p.d]);sh.phTs[ir]=p.at||srv[ir];}});
-        if(ent.length&&await phWrite(ent)){shSave();render();if(pendingItem)renderRecvPhoto(pendingItem);}
+        if(ent.length&&await phWrite(ent)){shSave();bgRender();if(pendingItem)renderRecvPhoto(pendingItem);if(icItem)icRenderPhoto(icItem);}
       }
       const gone=Object.keys(sh.phTs).filter(ir=>!(ir in srv)&&!sh.phPend[ir]);    // 3) removed by a colleague
-      if(gone.length&&await phWrite(gone.map(ir=>[ir,null]))){gone.forEach(ir=>delete sh.phTs[ir]);shSave();render();}
+      if(gone.length&&await phWrite(gone.map(ir=>[ir,null]))){gone.forEach(ir=>delete sh.phTs[ir]);shSave();bgRender();if(pendingItem)renderRecvPhoto(pendingItem);if(icItem)icRenderPhoto(icItem);}
       if(!pass){PH.forEach((d,ir)=>{if(!(ir in srv)&&!sh.phTs[ir]&&!sh.phPend[ir]&&okPhoto(d)&&d.length<=48000){sh.phPend[ir]='set';again=true;}});if(again)shSave();}   // 4) photos that were only on this phone
       phAt=Date.now();
     }catch(e){}
@@ -1842,6 +1854,38 @@ function c128Scan(gray, w, h, K) {
   }
   setInterval(phSync,300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-phAt>120000)phSync();});
   phLoadAll().then(()=>{phReady=true;phSync();shSync();});
+  $('listWrap').addEventListener('focusout',()=>{if(needRender){needRender=false;setTimeout(render,0);}});
+  const UI_KEY='ccsUi.v1'+PROFILE;
+  try{history.scrollRestoration='manual';}catch(e){}
+  function uiSave(){
+    try{const o={t:Date.now(),view,mode:st.mode,y:window.scrollY||0,scan:$('scan').value||'',shMode:shMode()};
+      if(st.mode==='IC'&&icItem)o.ic={ir:icItem.ir,rows:[...$('icRows').querySelectorAll('.icrow')].map(r=>[r.querySelector('.icq').value,r.querySelector('.ice').value,r.querySelector('.icdef input').checked])};
+      if(pendingItem)o.recv={ir:pendingItem.ir,qty:$('rQty').value,exp:$('rExp').value,noexp:$('rNoExp').checked,def:$('rSetDef').checked};
+      localStorage.setItem(UI_KEY,JSON.stringify(o));}catch(e){}
+  }
+  window.addEventListener('pagehide',uiSave);window.addEventListener('beforeunload',uiSave);document.addEventListener('visibilitychange',()=>{if(document.hidden)uiSave();});
+  var uiRestoring=false;
+  function uiRestore(){
+    let o=null;try{o=JSON.parse(localStorage.getItem(UI_KEY)||'null');}catch(e){}
+    if(!o||Date.now()-(+o.t||0)>12*3600000)return;
+    uiRestoring=true;try{
+      if(o.view==='shared'){const r=document.querySelector('input[name=shMode][value="'+o.shMode+'"]');if(r)r.checked=true;$('tabSH').onclick();}
+      else{
+        if(o.scan)$('scan').value=o.scan;
+        if(st.mode==='IC'){
+          const it=o.ic&&map.get(o.ic.ir);
+          if(it){icOpen(it);if(Array.isArray(o.ic.rows)&&o.ic.rows.length)$('icRows').innerHTML=o.ic.rows.map((r,i)=>icRowHtml(r[0]||'',r[1]||'',!!r[2],i===0)).join('');}
+          else if(ic.mode==='app'&&items.length)icOpenNext();
+        }else if(o.recv&&o.mode===st.mode&&map.get(o.recv.ir)){
+          pick(map.get(o.recv.ir),0,'');
+          if(pendingItem){$('rQty').value=o.recv.qty;$('rExp').value=o.recv.exp;$('rNoExp').checked=!!o.recv.noexp;$('rNoExp').dispatchEvent(new Event('change'));$('rSetDef').checked=!!o.recv.def;}
+        }
+      }
+      const y=+o.y||0;if(y>0){setTimeout(()=>window.scrollTo(0,y),80);setTimeout(()=>window.scrollTo(0,y),500);}
+    }catch(e){}
+    uiRestoring=false;
+  }
+  uiRestore();
 
   render();renderConflicts();if(FOLDER_FEATURE)initFolder();loadExpDir();if(shReady()&&Object.keys(sh.pend).length)shFlush();
 })();
