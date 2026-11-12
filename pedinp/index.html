@@ -183,6 +183,38 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
 #icNext .nx small{display:block;color:var(--muted);font-weight:400}
 #icRecent{font-size:12.5px;color:var(--muted);margin-top:8px}
 #icRecent div{padding:3px 0;border-top:1px solid var(--line)}
+/* v10 */
+.alt2{display:block;font-size:12px;font-style:italic;font-weight:400;color:#0f8a63;margin-top:1px;line-height:1.25}
+@media(prefers-color-scheme:dark){.alt2{color:#5fd3a5}}
+#scan.solo{border-radius:10px!important}
+.snrow{display:flex;gap:6px;margin:6px 0 8px}.snrow input{flex:1;min-width:0;font-size:15px;padding:8px}
+#nrBox label{display:block;font-size:13px;color:var(--muted);margin:8px 0 3px}
+#nrBox input[type=text]{width:100%;font-size:16px;padding:9px;box-sizing:border-box}
+.nrph{display:flex;gap:12px;margin:10px 0}.nrph>div{flex:1;text-align:center}.nrph .ph{height:110px;display:flex;align-items:center;justify-content:center;border:2px dashed var(--line);border-radius:10px;margin-bottom:6px;overflow:hidden}
+.nrph .ph img{max-width:100%;max-height:106px}
+#nrPanel{border-top:1px solid var(--line);margin-top:10px;padding-top:6px}
+#nrList .nri{display:flex;gap:8px;align-items:center;width:100%;text-align:left;margin:6px 0;padding:8px}
+#nrList .nri img{width:46px;height:46px;object-fit:cover;border-radius:6px}
+#nrList .nri .tx{flex:1;min-width:0;font-size:13.5px}#nrList .nri small{display:block;color:var(--muted);font-weight:400}
+/* v11 */
+.tabs.top .tab{font-size:16.5px!important;padding:16px 3px!important}
+.tabs.top .tab small{font-size:11.5px!important}
+.tabs.sub .tab{font-size:11.5px!important;padding:6px 2px!important}
+.tabs.sub .tab small{font-size:9.5px!important}
+.tab.hi{}.tab.on.hi{border-color:#6b4fbb;background:rgba(107,79,187,.14);color:#6b4fbb}
+#historyView .hirow{display:flex;gap:8px;align-items:center;margin:8px 0}
+#historyView .hirow label{width:52px;margin:0;font-weight:700}
+#historyView .hirow input{flex:1;min-width:0;font-size:16px;padding:9px}
+#hiModes{display:flex;gap:6px;margin-bottom:6px}#hiModes .room{flex:1;font-size:13.5px;padding:9px 4px}
+#hiModes .room.on{border-color:#6b4fbb;background:rgba(107,79,187,.16);color:#6b4fbb}
+#hiOut table{width:100%;border-collapse:collapse;font-size:13px}#hiOut td,#hiOut th{border-top:1px solid var(--line);padding:6px 4px;vertical-align:top;text-align:left}
+#hiOut .st{font-size:11px;font-weight:700;border-radius:6px;padding:1px 5px;display:inline-block;margin-top:2px}
+#hiOut .st.imp{background:var(--inbg);color:var(--in)}#hiOut .st.wait{background:var(--warnbg);color:var(--warn)}
+/* v12 */
+#hiView{display:flex;gap:6px;margin:4px 0 8px}#hiView .room{flex:1;font-size:13px;padding:8px 4px}
+#hiView .room.on{border-color:#6b4fbb;background:rgba(107,79,187,.16);color:#6b4fbb}
+#hiOut table{font-size:12px!important}#hiOut td,#hiOut th{padding:4px 3px!important}
+#hiOut .alt2{font-size:11px}
 </style>
 </head>
 <body>
@@ -227,6 +259,7 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
   <div class="tabs top">
     <button class="tab out" id="tabOUT" type="button">STOCK OUT <small id="cOUT">0 lines</small></button>
     <button class="tab sh" id="tabSH" type="button">SHARED <small>all phones</small></button>
+    <button class="tab hi" id="tabHI" type="button">HISTORY <small>by date</small></button>
   </div>
   <div class="tabs sub">
     <button class="tab in" id="tabIN" type="button">STOCK IN <small id="cIN">0 lines</small></button>
@@ -257,10 +290,11 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
   </div>
 
   <div class="card" id="icCard" style="display:none">
-    <div id="icModes"><button type="button" class="room" id="icModeStaff">Staff choice<small>scan what you count</small></button><button type="button" class="room" id="icModeApp">App suggests<small>oldest count first</small></button></div>
+    <div id="icModes"><button type="button" class="room" id="icModeStaff">Staff choice<small>scan what you count</small></button><button type="button" class="room" id="icModeApp">App suggests<small>oldest count first</small></button><button type="button" class="room" id="icModeNoir">No IR items<small>items without a code</small></button></div>
     <div class="note" id="icStat" style="margin:0"></div>
     <div id="icPanel" style="display:none">
       <div class="name" id="icName"></div>
+      <div class="snrow"><input id="icAlt" type="text" autocomplete="off" placeholder="Second name (for easier search, all units)"><button class="btn alt" id="icAltSave" type="button">Save name</button></div>
       <div class="phbox"><div id="icPhoto"></div><div><button class="btn alt" id="icPhotoBtn" type="button">📷 Add photo</button><button class="btn alt" id="icPhotoDel" type="button" style="display:none">Remove photo</button><br><a id="icPhotoSearch" href="#" target="_blank" rel="noopener">🔎 Find a picture on the internet</a></div></div>
       <div class="note" id="icLast"></div>
       <div class="note" style="margin:0 0 4px">Quantity · Expiry date (31/12/2030 or 12/2030, empty = no expiry) · tick = default expiry date</div>
@@ -269,12 +303,27 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
       <div class="bar"><button class="btn in" id="icSave" type="button">Save count</button><button class="btn alt" id="icSkip" type="button">Skip</button><button class="btn alt" id="icCancel" type="button">Cancel</button></div>
     </div>
     <div id="icNext"></div>
-    <div class="bar" style="margin-top:10px">
-      <select id="icRange"><option value="30">Excel: counted in the last 30 days</option><option value="7">Excel: last 7 days</option><option value="1">Excel: today</option><option value="all">Excel: all counted items</option></select>
+    <div class="bar" style="margin-top:10px" id="icXbar">
+      <select id="icRange"><option value="30">Excel: counted in the last 30 days</option><option value="7">Excel: last 7 days</option><option value="1">Excel: today</option><option value="all" selected>Excel: all counted items</option></select>
       <button class="btn" id="icXlsx" type="button">&#11015; Save count Excel</button>
       <button class="btn alt" id="icRefresh" type="button">&#8635; Refresh</button>
     </div>
     <div id="icRecent"></div>
+    <div id="nrBox" style="display:none">
+      <button class="btn in" id="nrNew" type="button" style="width:100%;margin-top:8px">＋ New item without IR</button>
+      <div id="nrPanel" style="display:none">
+        <label for="nrName">Item name (main)</label><input id="nrName" type="text" autocomplete="off" placeholder="Name as written on the package">
+        <label for="nrName2">Second name</label><input id="nrName2" type="text" autocomplete="off" placeholder="Name the staff use (optional)">
+        <div class="nrph"><div><div class="ph" id="nrP1"></div><button class="btn alt" id="nrP1Btn" type="button">📷 Photo front</button></div><div><div class="ph" id="nrP2"></div><button class="btn alt" id="nrP2Btn" type="button">📷 Photo back</button></div></div>
+        <div class="note" style="margin:0 0 4px">Quantity · Expiry date (31/12/2030 or 12/2030, empty = no expiry)</div>
+        <div id="nrRows"></div>
+        <button class="btn alt" id="nrAdd" type="button" style="width:100%;font-size:20px;padding:8px;margin:2px 0 10px">＋</button>
+        <div class="bar"><button class="btn in" id="nrSave" type="button">Save</button><button class="btn alt" id="nrCancel" type="button">Cancel</button><button class="btn danger" id="nrDel" type="button">Delete</button></div>
+      </div>
+      <div id="nrList"></div>
+      <div class="bar" style="margin-top:10px"><button class="btn" id="nrXlsx" type="button">&#11015; Save no-IR report (Excel with photos)</button><button class="btn alt" id="nrRefresh" type="button">&#8635; Refresh</button></div>
+      <input type="file" id="nrFile" accept="image/*" style="display:none">
+    </div>
   </div>
 
   <div class="card" id="recv">
@@ -372,6 +421,19 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
     </div>
   </div>
 
+  <div id="historyView" style="display:none">
+    <div class="card">
+      <div id="hiModes"><button type="button" class="room on" data-m="OUT">STOCK OUT</button><button type="button" class="room" data-m="IN">STOCK IN</button><button type="button" class="room" data-m="WO">WRITE OFF</button></div>
+      <div class="hirow"><label for="hiFrom">From</label><input id="hiFrom" type="datetime-local"></div>
+      <div class="hirow"><label for="hiTo">To</label><input id="hiTo" type="datetime-local"></div>
+      <div id="hiView"><button type="button" class="room on" data-v="total">In total<small style="display:block;font-weight:400;font-size:11px">one line per item</small></button><button type="button" class="room" data-v="detail">Per scan<small style="display:block;font-weight:400;font-size:11px">staff name, date and time</small></button></div>
+      <div class="bar"><button class="btn" id="hiGo" type="button" style="flex:1">Show history</button><button class="btn in" id="hiXlsx" type="button" style="flex:1">&#11015; Save Excel</button></div>
+      <div class="msg" id="hiMsg"></div>
+      <div class="note" id="hiInfo" style="margin-top:8px"></div>
+      <div id="hiOut"></div>
+    </div>
+  </div>
+
   <div class="card" id="catalogCard">
     <div class="bar">
       <b>Item list:</b> <span id="catInfo" style="flex:1;min-width:200px"></span>
@@ -406,7 +468,7 @@ const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['E
 // DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
 // the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
 const UPLOAD_LINK = '';
-const VERSION = '2026-11-11.3';
+const VERSION = '4.2';
 const FOLDER_FEATURE = false;          // shared-folder sync is switched off (not usable on the hospital PCs); the code is kept          // shown in the page header, so you can see which copy of the file you are running
 const EXPORT = {
   OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
@@ -464,7 +526,7 @@ function buildXlsx(sheetName,cols,rows,meta){
   let sd='<row r="1">'+cols.map((c,i)=>'<c r="'+colLetter(i)+'1" t="inlineStr" s="2"><is><t>'+xmlEsc(c[0])+'</t></is></c>').join('')+'</row>';
   rows.forEach((r,ri)=>{
     const rn=ri+2;
-    sd+='<row r="'+rn+'">'+cols.map((c,i)=>{
+    sd+='<row r="'+rn+'"'+((meta&&meta.rowHt&&meta.rowHt[rn])?' ht="'+meta.rowHt[rn]+'" customHeight="1"':'')+'>'+cols.map((c,i)=>{
       const ref=colLetter(i)+rn,v=r[c[1]];
       if(v===undefined||v===null||v==='')return '';
       if(c[2]==='n')return '<c r="'+ref+'"><v>'+Number(v)+'</v></c>';
@@ -507,7 +569,26 @@ function buildXlsx(sheetName,cols,rows,meta){
     P('_rels/.rels')[1]=P('_rels/.rels')[1].replace('</Relationships>','<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>');
     parts.push(['docProps/core.xml',X+'<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>'+xmlEsc(meta.title||sheetName)+'</dc:title><dc:creator>'+who+'</dc:creator><cp:lastModifiedBy>'+who+'</cp:lastModifiedBy><dcterms:created xsi:type="dcterms:W3CDTF">'+iso+'</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">'+iso+'</dcterms:modified></cp:coreProperties>']);
   }
-  return zipStore(parts.map(f=>({name:f[0],data:enc.encode(f[1])})));
+  const bin=[];
+  if(meta&&meta.images&&meta.images.length){                 // pictures in the first sheet (one-cell anchors)
+    const P=n=>parts.find(p=>p[0]===n),EMU=9525,dr='http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing',da='http://schemas.openxmlformats.org/drawingml/2006/main';
+    let d=X+'<xdr:wsDr xmlns:xdr="'+dr+'" xmlns:a="'+da+'" xmlns:r="'+rel+'">',dRel=X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+    meta.images.forEach((im,k)=>{const n=k+1,ext=im.ext==='png'?'png':'jpeg',cx=Math.round(im.w*EMU),cy=Math.round(im.h*EMU);
+      d+='<xdr:oneCellAnchor><xdr:from><xdr:col>'+im.col+'</xdr:col><xdr:colOff>'+(4*EMU)+'</xdr:colOff><xdr:row>'+(im.row-1)+'</xdr:row><xdr:rowOff>'+(4*EMU)+'</xdr:rowOff></xdr:from><xdr:ext cx="'+cx+'" cy="'+cy+'"/>'
+        +'<xdr:pic><xdr:nvPicPr><xdr:cNvPr id="'+(n+1)+'" name="Picture '+n+'"/><xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr></xdr:nvPicPr><xdr:blipFill><a:blip r:embed="rId'+n+'"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill>'
+        +'<xdr:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:oneCellAnchor>';
+      dRel+='<Relationship Id="rId'+n+'" Type="'+rel+'/image" Target="../media/image'+n+'.'+ext+'"/>';bin.push({name:'xl/media/image'+n+'.'+ext,data:im.bytes});});
+    d+='</xdr:wsDr>';dRel+='</Relationships>';
+    parts.push(['xl/drawings/drawing1.xml',d],['xl/drawings/_rels/drawing1.xml.rels',dRel],
+      ['xl/worksheets/_rels/sheet1.xml.rels',X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="'+rel+'/drawing" Target="../drawings/drawing1.xml"/></Relationships>']);
+    const sh1=P('xl/worksheets/sheet1.xml');sh1[1]=sh1[1].replace('<worksheet xmlns="'+ns+'">','<worksheet xmlns="'+ns+'" xmlns:r="'+rel+'">').replace(/<\/worksheet>$/,'<drawing r:id="rId1"/></worksheet>');
+    const ct=P('[Content_Types].xml');ct[1]=ct[1].replace('<Default Extension="xml"','<Default Extension="jpeg" ContentType="image/jpeg"/><Default Extension="png" ContentType="image/png"/><Default Extension="xml"').replace('</Types>','<Override PartName="/xl/drawings/drawing1.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/></Types>');
+  }
+  if(meta&&meta.fitWide){                                     // print: landscape, all columns on one page width
+    const s1=parts.find(p=>p[0]==='xl/worksheets/sheet1.xml');
+    s1[1]=s1[1].replace(/(<worksheet [^>]*>)/,'$1<sheetPr><pageSetUpPr fitToPage="1"/></sheetPr>').replace(/(<drawing r:id="rId1"\/>)?<\/worksheet>$/,'<pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/>$1</worksheet>');
+  }
+  return zipStore(parts.map(f=>({name:f[0],data:enc.encode(f[1])})).concat(bin));
 }
 // -> {ir,name,unit,loc} | null     (items: array of [ir,name,unit,loc])
 function lookupItem(map,code){const c=(code||'').trim();return map.get(c)||null;}
@@ -518,9 +599,10 @@ function searchItems(items,text,limit){
 // add to a list (array of {ir,name,expiry,qty}); merge identical lines. returns the touched line
 function addLine(list,mode,item,qty,expiry){
   let l=list.find(x=>x.ir===item.ir&&(x.expiry||'')===(expiry||''));
-  if(l){l.qty+=qty;}else{l={ir:item.ir,name:item.name,qty:qty,expiry:expiry||''};list.push(l);}
+  if(l){l.qty+=qty;}else{l={ir:item.ir,name:item.name,qty:qty,expiry:expiry||'',t:nowStamp()};list.push(l);}
   return l;
 }
+function nowStamp(){const d=new Date(),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());}
 function dmy(iso){return iso&&/^\d{4}-\d{2}-\d{2}$/.test(iso)?iso.slice(8)+'/'+iso.slice(5,7)+'/'+iso.slice(0,4):(iso||'');}
 // rows for the Excel file. includeAll=false: only scanned lines. true: the whole item list (template style),
 // Qty filled only where something was scanned.
@@ -743,9 +825,11 @@ function c128Scan(gray, w, h, K) {
   let catalog=loadCatalog();
   const defaultLink=()=>(catalog&&catalog.uploadLink)||UPLOAD_LINK;
   let items=[],map=new Map();
+  const SN_KEY='ccsNames.v1'+PROFILE;let SN={},snPend={};
+  try{const o=JSON.parse(localStorage.getItem(SN_KEY)||'null');if(o&&typeof o==='object'){SN=(o.names&&typeof o.names==='object')?o.names:{};snPend=(o.pend&&typeof o.pend==='object')?o.pend:{};}}catch(e){}
   function rebuild(){const base=(catalog&&catalog.items.length)?catalog.items:ITEMS;items=base.map(a=>({ir:a[0],name:a[1],unit:a[2]||'',loc:USE_LOC?(a[3]||''):'',price:a[4],max:a[5],min:a[6],exps:a[7]||[],alias:a[8]||''}))
       .concat(st.extra.map(a=>({ir:a[0],name:a[1],unit:a[2]||'',loc:'',price:null,max:null,min:null,exps:[],extra:true})));
-    map=new Map();items.forEach(i=>{i.key=(i.name+' '+(i.alias||'')).toLowerCase();map.set(i.ir,i);});$('extraInfo').textContent=st.extra.length?st.extra.length+' extra item(s) saved.':'';}
+    map=new Map();items.forEach(i=>{i.key=(i.name+' '+(i.alias||'')+' '+((SN[i.ir]&&SN[i.ir].n)||'')).toLowerCase();map.set(i.ir,i);});$('extraInfo').textContent=st.extra.length?st.extra.length+' extra item(s) saved.':'';}
   rebuild();
   let pendingItem=null,lastTouched=null,audio=null;
   function beep(ok){if(!$('snd').checked)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);o.frequency.value=ok?880:220;g.gain.value=.08;o.start();o.stop(audio.currentTime+(ok?.07:.3));}catch(e){}}
@@ -754,7 +838,7 @@ function c128Scan(gray, w, h, K) {
   const list=()=>st.lists[st.mode]||[];
   const IC_KEY='ccsCount.v1'+PROFILE;
   let ic={mode:'staff',counts:{},pend:{},at:0},icItem=null,icSkip=[],icBusy=false,icLoading=false;
-  try{const o=JSON.parse(localStorage.getItem(IC_KEY)||'null');if(o&&typeof o==='object'){ic.mode=o.mode==='app'?'app':'staff';ic.counts=(o.counts&&typeof o.counts==='object')?o.counts:{};ic.pend=(o.pend&&typeof o.pend==='object')?o.pend:{};ic.at=+o.at||0;}}catch(e){}
+  try{const o=JSON.parse(localStorage.getItem(IC_KEY)||'null');if(o&&typeof o==='object'){ic.mode=(o.mode==='app'||o.mode==='noir')?o.mode:'staff';ic.counts=(o.counts&&typeof o.counts==='object')?o.counts:{};ic.pend=(o.pend&&typeof o.pend==='object')?o.pend:{};ic.at=+o.at||0;}}catch(e){}
   function icStore(){try{localStorage.setItem(IC_KEY,JSON.stringify(ic));}catch(e){}}
   const icNow=()=>{const d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds());};
   const icDay=n=>{const d=new Date(Date.now()-(n||0)*86400000);return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());};
@@ -869,14 +953,18 @@ function c128Scan(gray, w, h, K) {
   // ---------------------------------------------------------------- list
   let needRender=false;          // a background update (photos, shared list) waits while somebody is typing in the list
   function bgRender(){const a=document.activeElement;if(a&&a.closest&&a.closest('#listWrap')&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)){needRender=true;return;}render();}
+  // second names: the shared one (Names sheet) first, then the "Other names" of the master list
+  function altTxt(ir){const s=SN[ir]&&SN[ir].n,it=map.get(ir),a=(it&&it.alias)?String(it.alias).split(';').map(x=>x.trim()).filter(Boolean):[],out=[];
+    [s].concat(a).forEach(x=>{if(x&&out.every(y=>y.toLowerCase()!==x.toLowerCase()))out.push(x);});return out.join(' · ');}
+  function altHtml(ir){const t=altTxt(ir);return t?'<span class="alt2">'+xmlEsc(t)+'</span>':'';}
   function render(){
-    const sv=view==='shared';$('scanView').style.display=sv?'none':'';$('sharedView').style.display=sv?'':'none';$('tabSH').classList.toggle('on',sv);
-    $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);$('tabCNT').classList.toggle('on',isCnt(st.mode)&&!sv);{const icm=st.mode==='IC';$('tabIC').classList.toggle('on',icm&&!sv);$('icCard').style.display=icm?'':'none';$('listCard').style.display=icm?'none':'';$('cIC').textContent=icTodayTxt();}$('tabWO').classList.toggle('on',isWo(st.mode)&&!sv);
+    const hv=view==='history',sv=view==='shared'||hv;$('scanView').style.display=sv?'none':'';$('sharedView').style.display=view==='shared'?'':'none';$('historyView').style.display=hv?'':'none';$('tabSH').classList.toggle('on',view==='shared');$('tabHI').classList.toggle('on',hv);
+    $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);$('tabCNT').classList.toggle('on',isCnt(st.mode)&&!sv);{const icm=st.mode==='IC',nrm=icm&&ic.mode==='noir';$('addBtn').style.display=icm?'none':'';$('scan').classList.toggle('solo',icm);document.querySelector('.scanline').style.display=nrm?'none':'';document.querySelector('.camrow').style.display=nrm?'none':'';$('tabIC').classList.toggle('on',icm&&!sv);$('icCard').style.display=icm?'':'none';$('listCard').style.display=icm?'none':'';$('cIC').textContent=icTodayTxt();}$('tabWO').classList.toggle('on',isWo(st.mode)&&!sv);
     {const ls=WOM.map(m=>st.lists[m]),n=ls.reduce((a,l)=>a+l.length,0),u=ls.reduce((a,l)=>a+l.reduce((b,x)=>b+x.qty,0),0);$('cWO').textContent=n+' line'+(n===1?'':'s')+' · '+u+' units';}
     ['OUT','IN'].forEach(m=>{const l=st.lists[m];$('c'+m).textContent=l.length+' line'+(l.length===1?'':'s')+' · '+l.reduce((a,x)=>a+x.qty,0)+' units';});
     {const ls=['CNT1','CNT2','CNT3'].map(m=>st.lists[m]),n=ls.reduce((a,l)=>a+l.length,0),u=ls.reduce((a,l)=>a+l.reduce((b,x)=>b+x.qty,0),0);$('cCNT').textContent=n+' line'+(n===1?'':'s')+' · '+u+' units';}
     $('askExp').checked=st.askExp;$('qtyBox').style.display=(st.mode==='OUT'&&!st.askExp)?'':'none';
-    $('scanLabel').textContent=st.mode==='IC'?(ic.mode==='app'?'INVENTORY COUNT: count the suggested item below, or scan another item':'INVENTORY COUNT: scan the item you count (or type the last 4 digits / part of the name)'):isWo(st.mode)?('WRITE OFF - '+woName(st.mode)+': scan the item (or type the last 4 digits / part of the name)'):isCnt(st.mode)?('COUNTING in '+roomName(st.mode)+': scan the item (or type the last 4 digits / part of the name), then the quantity and the EXPIRY date'):st.mode==='OUT'?'Scan barcode of the item you TAKE (or type the last 4 digits / part of the name)':'Scan barcode of the item you RECEIVE (or type the last 4 digits / part of the name)';
+    $('scanLabel').textContent=st.mode==='IC'?(ic.mode==='noir'?'ITEMS WITHOUT AN IR NUMBER: add or count them below (name, 2 photos, quantity)':ic.mode==='app'?'INVENTORY COUNT: count the suggested item below, or scan another item':'INVENTORY COUNT: scan the item you count (or type the last 4 digits / part of the name)'):isWo(st.mode)?('WRITE OFF - '+woName(st.mode)+': scan the item (or type the last 4 digits / part of the name)'):isCnt(st.mode)?('COUNTING in '+roomName(st.mode)+': scan the item (or type the last 4 digits / part of the name), then the quantity and the EXPIRY date'):st.mode==='OUT'?'Scan barcode of the item you TAKE (or type the last 4 digits / part of the name)':'Scan barcode of the item you RECEIVE (or type the last 4 digits / part of the name)';
     renderRoomBar();renderWoBar();$('xlsx').textContent=isCnt(st.mode)?'⬇ Save count Excel (all rooms)':isWo(st.mode)?'⬇ Save write-off Excel (all reasons)':'⬇ Save Excel (.xlsx)';
     if(st.mode==='IC'){icRenderInfo();return;}
     const l=list();
@@ -886,7 +974,7 @@ function c128Scan(gray, w, h, K) {
     let h='<table><thead><tr><th>#</th><th>IR number</th><th>Item</th>'+(showExp?'<th>Expiry</th>':'')+'<th>Qty</th><th></th></tr></thead><tbody>';
     const grp=isCnt(st.mode);let prevIr='';const gTot={},gN={};if(grp)l.forEach(y=>{gTot[y.ir]=(gTot[y.ir]||0)+y.qty;gN[y.ir]=(gN[y.ir]||0)+1;});
     (grp?l.map((x,i)=>i).sort((a,b)=>l[a].name.localeCompare(l[b].name)||(l[a].expiry||'9999').localeCompare(l[b].expiry||'9999')):l.map((x,i)=>i).reverse()).forEach(i=>{const x=l[i];const first=grp&&x.ir!==prevIr;prevIr=x.ir;
-      h+='<tr class="'+(x===lastTouched?'new':'')+'"><td class="num">'+(i+1)+'</td><td class="num">'+x.ir+'</td><td>'+thumb(x.ir,56)+xmlEsc(x.name)+(first&&gN[x.ir]>1?'<div class="from">item total here: '+gTot[x.ir]+' ('+gN[x.ir]+' expiry dates)</div>':'')+'</td>'+
+      h+='<tr class="'+(x===lastTouched?'new':'')+'"><td class="num">'+(i+1)+'</td><td class="num">'+x.ir+'</td><td>'+thumb(x.ir,56)+xmlEsc(x.name)+altHtml(x.ir)+(first&&gN[x.ir]>1?'<div class="from">item total here: '+gTot[x.ir]+' ('+gN[x.ir]+' expiry dates)</div>':'')+'</td>'+
         (showExp?'<td><input class="exp" type="text" inputmode="text" autocomplete="off" placeholder="no expiry" title="Edit the expiry date: 31/12/2030 or 12/2030. Empty = no expiry" value="'+(x.expiry?dmy(x.expiry):'')+'" data-a="e" data-i="'+i+'">'+(isCnt(st.mode)?expBadge(x.expiry):'')+'</td>':'')+
         '<td><div class="q"><button data-a="m" data-i="'+i+'">−</button><input type="number" min="1" value="'+x.qty+'" data-a="q" data-i="'+i+'"><button data-a="p" data-i="'+i+'">+</button>'+unitBadge(unitOf(x.ir))+'</div></td>'+
         '<td><button class="x" title="Remove" data-a="d" data-i="'+i+'">✕</button></td></tr>';});
@@ -926,7 +1014,7 @@ function c128Scan(gray, w, h, K) {
     }
     const wo=isWo(st.mode),out=st.mode==='OUT'||wo;
     pendingItem=item;$('recv').className=wo?'out wo':out?'out':'';$('recv').style.display='block';
-    $('recvName').textContent=(tag||'')+(wo?'WRITE OFF - '+woName(st.mode)+': ':out?'OUT: ':(isCnt(st.mode)?'COUNT '+roomName(st.mode)+': ':'IN: '))+item.name+'  ('+item.ir+')'+(item.loc?'  ·  '+shortLoc(item.loc):'');
+    $('recvName').textContent=(tag||'')+(wo?'WRITE OFF - '+woName(st.mode)+': ':out?'OUT: ':(isCnt(st.mode)?'COUNT '+roomName(st.mode)+': ':'IN: '))+item.name+'  ('+item.ir+')'+(item.loc?'  ·  '+shortLoc(item.loc):'');$('recvName').insertAdjacentHTML('beforeend',altHtml(item.ir));
     const un=item.unit||'';$('rQtyLbl').textContent=(wo?'Qty written off':out?'Qty taken':(isCnt(st.mode)?'Qty counted':'Qty received'))+(un?' ('+un+')':'');$('rSave').className='btn'+(out?'':' in');
     $('rUnit').textContent=un;$('rUnit').className='u'+(un&&un!=='EAC'?' odd':'');$('rUnit').style.fontSize='15px';
     $('rUnitNote').textContent=(un&&un!=='EAC')?'This item is counted in '+un+' - not in single pieces.':'';$('rMore').style.display=(isCnt(st.mode)||st.mode==='IN')?'':'none';renderRecvPhoto(item);$('rSetDef').checked=!wo;$('rSetDef').parentElement.style.display=wo?'none':'';$('rDefInfo').style.display=wo?'none':'';$('rDefInfo').textContent=defInfo(item);
@@ -969,11 +1057,11 @@ function c128Scan(gray, w, h, K) {
   function showSugg(text){
     const r=searchItems(items,text,8),s=$('sugg');
     if(!r.length||/^\d+$/.test(text)){s.style.display='none';return r;}
-    s.innerHTML=r.map(it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir+'</b>'+xmlEsc(it.name)+'</div>').join('');s.style.display='block';return r;
+    s.innerHTML=r.map(it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir+'</b>'+xmlEsc(it.name)+altHtml(it.ir)+'</div>').join('');s.style.display='block';return r;
   }
   function endsWithItems(t){return items.filter(i=>i.ir.endsWith(t));}
   function showList(r){const s=$('sugg');if(!r.length){s.style.display='none';return;}
-    s.innerHTML=r.slice(0,8).map(it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir.slice(0,-4)+'<span style="font-size:1.25em">'+it.ir.slice(-4)+'</span></b>'+xmlEsc(it.name)+'</div>').join('');s.style.display='block';}
+    s.innerHTML=r.slice(0,8).map(it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir.slice(0,-4)+'<span style="font-size:1.25em">'+it.ir.slice(-4)+'</span></b>'+xmlEsc(it.name)+altHtml(it.ir)+'</div>').join('');s.style.display='block';}
   function submitScan(){
     const t=$('scan').value.trim();if(!t)return;
     const it=lookupItem(map,t);
@@ -1081,7 +1169,7 @@ function c128Scan(gray, w, h, K) {
     st.shareLink=(v===defaultLink())?'':v;save();renderLink();msg('ok',!v?(defaultLink()?'Back to the default link.':'Link removed.'):'Link saved on this device.');});
   $('openShared').onclick=()=>{const u=shareUrl();if(u)window.open(u,'_blank','noopener');};
   $('autoOpen').onchange=()=>{st.autoOpen=$('autoOpen').checked;save();};
-  renderLink();$('ver').textContent='build '+VERSION+(PWA?' (app)':'');renderCat();renderInstall();if(!items.length)msg('warn','No item list yet. Tap “Import item list…” and choose the Excel list or the setup file from your team.');if(EMBEDDED){$('embedWarn').style.display='block';$('copy').style.display='';}
+  renderLink();$('ver').textContent='version '+VERSION+(PWA?' (app)':'');renderCat();renderInstall();if(!items.length)msg('warn','No item list yet. Tap “Import item list…” and choose the Excel list or the setup file from your team.');if(EMBEDDED){$('embedWarn').style.display='block';$('copy').style.display='';}
   $('copy').onclick=()=>{
     const cfg=EXPORT[st.mode],rows=buildRows(list(),items,$('allItems').checked);if(!list().length){msg('err','The list is empty.');return;}
     const tsv=[cfg.cols.map(c=>c[0]).join('\t')].concat(rows.map(r=>cfg.cols.map(c=>c[2]==='d'&&r[c[1]]?r[c[1]].split('-').reverse().join('/'):(r[c[1]]==null?'':r[c[1]])).join('\t'))).join('\n');
@@ -1299,7 +1387,7 @@ function c128Scan(gray, w, h, K) {
   const okUrl=u=>/^https:\/\//i.test(u)||/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//i.test(u);
   const shReady=()=>!!(sh.enabled&&okUrl(sh.url||'')&&(sh.scanCode||sh.chargeCode));
   const hm=t=>{const d=new Date(t);return pad2(d.getHours())+':'+pad2(d.getMinutes());};
-  function shPayload(m){return{action:'push',code:sh.scanCode||sh.chargeCode,device:sh.device,by:(st.who||'').trim(),mode:m,session:sh.sess[m]||1,ack:((sh.ack||{})[m+':'+(sh.sess[m]||1)]||[]).slice(),lines:st.lists[m].map(l=>({ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty}))};}
+  function shPayload(m){return{action:'push',code:sh.scanCode||sh.chargeCode,device:sh.device,by:(st.who||'').trim(),mode:m,session:sh.sess[m]||1,ack:((sh.ack||{})[m+':'+(sh.sess[m]||1)]||[]).slice(),lines:st.lists[m].map(l=>({ir:l.ir,name:l.name,expiry:l.expiry||'',qty:l.qty,t:l.t||''}))};}
   let shTimer=null,shBusy=false,shRetry=0;
   function shQueue(modes){
     if(!shReady())return;
@@ -1392,7 +1480,7 @@ function c128Scan(gray, w, h, K) {
     const isC=shLoaded&&shLoaded.mode==='COUNT',isW=shLoaded&&shLoaded.mode==='WO';$('shMark').textContent=isC?'Mark as done':'Mark as imported';
     const anyExp=isC||shRows.some(r=>r.expiry);
     let h='<table><thead><tr><th></th><th>Item</th>'+(anyExp?'<th>Expiry</th>':'')+'<th>Qty</th></tr></thead><tbody>';
-    shRows.forEach((r,i)=>{h+='<tr class="'+(r.include?'':'off')+'" data-ir="'+xmlEsc(r.ir)+'" data-from="'+xmlEsc(r.from.join(', '))+'"><td><input type="checkbox" data-a="c" data-i="'+i+'"'+(r.include?' checked':'')+'></td><td>'+thumb(r.ir,56)+xmlEsc(r.name)+'<div class="from">'+(isC?'<b>'+xmlEsc(roomName(r.mode))+'</b> · ':'')+(isW?'<b>'+xmlEsc(woName(r.mode))+'</b> · ':'')+xmlEsc(r.ir)+' · from '+xmlEsc(r.from.join(', '))+'</div></td>'+(anyExp?'<td>'+(r.expiry?dmy(r.expiry):'')+(isC?expBadge(r.expiry):'')+'</td>':'')+
+    shRows.forEach((r,i)=>{h+='<tr class="'+(r.include?'':'off')+'" data-ir="'+xmlEsc(r.ir)+'" data-from="'+xmlEsc(r.from.join(', '))+'"><td><input type="checkbox" data-a="c" data-i="'+i+'"'+(r.include?' checked':'')+'></td><td>'+thumb(r.ir,56)+xmlEsc(r.name)+altHtml(r.ir)+'<div class="from">'+(isC?'<b>'+xmlEsc(roomName(r.mode))+'</b> · ':'')+(isW?'<b>'+xmlEsc(woName(r.mode))+'</b> · ':'')+xmlEsc(r.ir)+' · from '+xmlEsc(r.from.join(', '))+'</div></td>'+(anyExp?'<td>'+(r.expiry?dmy(r.expiry):'')+(isC?expBadge(r.expiry):'')+'</td>':'')+
       '<td><input class="sq" type="number" min="1" value="'+r.qty+'" data-a="q" data-i="'+i+'">'+unitBadge(unitOf(r.ir))+(r.qty!==r.orig?'<div class="from">was '+r.orig+'</div>':'')+'</td></tr>';});
     $('shList').innerHTML=h+'</tbody></table>';
     const inc=shRows.filter(r=>r.include);$('shTot').textContent=inc.length+' line'+(inc.length===1?'':'s')+' · '+inc.reduce((a,r)=>a+r.qty,0)+' units';
@@ -1581,7 +1669,7 @@ function c128Scan(gray, w, h, K) {
     if(navigator.onLine===false){gateMsg('err','No internet. Connect to Wi-Fi or mobile data the first time.');return;}
     $('gateBtn').disabled=true;gateMsg('warn','Checking…');
     try{const j=await shPost('whoami',{code:pw},15000);sh.scanCode=pw;if(j.role==='charge')sh.chargeCode=pw;sh.loggedIn=true;sh.enabled=true;sh.lastErr='';shSave();
-      $('gatePw').value='';gateMsg('ok','');gateRender();renderConn();shLoadDefaults();const m=ALLM.filter(x=>st.lists[x].length);if(m.length)shQueue(m);shSync();phSync();icFlush().then(icLoad);
+      $('gatePw').value='';gateMsg('ok','');gateRender();renderConn();shLoadDefaults();const m=ALLM.filter(x=>st.lists[x].length);if(m.length)shQueue(m);shSync();phSync();icFlush().then(icLoad);snFlush().then(snLoad);
       msg('ok','Signed in'+(UNIT_NAME?' to '+UNIT_NAME:'')+(j.role==='charge'?' as charge nurse':'')+'.');focusScan();}
     catch(e){gateMsg('err',/wrong code|cannot open/i.test(e.message||'')?'Wrong password.':(/too many/i.test(e.message||'')?e.message:'Could not check the password: '+(e.message||e.name)));}
     finally{$('gateBtn').disabled=false;}
@@ -1590,7 +1678,7 @@ function c128Scan(gray, w, h, K) {
   $('shSignOut').onclick=()=>{if(!confirm('Sign out of this unit on this phone? Scans that are not sent yet stay on the phone.'))return;sh.loggedIn=false;sh.scanCode='';sh.chargeCode='';shSave();renderConn();gateRender();};
   // the password was changed in the Sheet -> sign in again
   function gateOnError(e){if(sh.loggedIn&&!sh.codeFromCfg&&/^wrong code/i.test((e&&e.message)||'')){sh.loggedIn=false;shSave();gateRender();gateMsg('warn','The unit password has changed. Please sign in again.');}}
-  shBadge();renderConn();$('shConn').open=!shReady();gateRender();shLoadConfig().finally(()=>{gateRender();loadMaster();loadWebPhotos();shLoadDefaults();});
+  shBadge();renderConn();$('shConn').open=!shReady();gateRender();shLoadConfig().finally(()=>{gateRender();loadMaster();loadWebPhotos();shLoadDefaults();snFlush().then(snLoad);if(st.mode==='IC')icEnter();});
 
   // ================================================================ STOCK COUNT: 3 store rooms, every line with an expiry date
   function addDaysIso(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
@@ -1726,13 +1814,14 @@ function c128Scan(gray, w, h, K) {
     if(de)exps.push(de);
     if(c&&c.lots)c.lots.forEach(l=>{if(l.expiry&&l.expiry>=today&&exps.indexOf(l.expiry)<0)exps.push(l.expiry);});
     if(!exps.length)exps.push('');
-    icRenderPhoto(it);$('icName').innerHTML=xmlEsc(it.name)+'<div class="note" style="margin:2px 0 0;font-weight:400">'+xmlEsc(it.ir)+(it.unit?' · unit '+xmlEsc(it.unit):'')+(it.loc?' · '+xmlEsc(shortLoc(it.loc)):'')+'</div>';
+    icRenderPhoto(it);$('icAlt').value=(SN[it.ir]&&SN[it.ir].n)||'';$('icName').innerHTML=icNameHtml(it);
     $('icLast').innerHTML=icLastTxt(it.ir,it.unit);
     $('icRows').innerHTML=exps.map((e,i)=>icRowHtml('',e?dmy(e):'',!!de&&e===de,i===0)).join('');
     $('icSkip').style.display=ic.mode==='app'?'':'none';$('icCancel').style.display=ic.mode==='app'?'none':'';
     $('icPanel').style.display='';icRenderNext();
     const q=$('icRows').querySelector('.icq');if(q&&!uiRestoring){q.focus();try{$('icPanel').scrollIntoView({block:'start',behavior:'smooth'});}catch(e){}}
   }
+  function icNameHtml(it){return xmlEsc(it.name)+altHtml(it.ir)+'<div class="note" style="margin:2px 0 0;font-weight:400">'+xmlEsc(it.ir)+(it.unit?' · unit '+xmlEsc(it.unit):'')+(it.loc?' · '+xmlEsc(shortLoc(it.loc)):'')+'</div>';}
   function icClose(){icItem=null;$('icPanel').style.display='none';icRenderNext();}
   $('icRows').addEventListener('change',e=>{const t=e.target;if(t.type==='checkbox'&&t.checked)$('icRows').querySelectorAll('.icdef input').forEach(x=>{if(x!==t)x.checked=false;});});
   $('icRows').addEventListener('click',e=>{const b=e.target.closest('button.x');if(b){b.closest('.icrow').remove();}});
@@ -1769,20 +1858,22 @@ function c128Scan(gray, w, h, K) {
     if(ic.mode!=='app'||!items.length){$('icNext').innerHTML='';return;}
     const q=icOrder().filter(it=>icSkip.indexOf(it.ir)<0&&(!icItem||it.ir!==icItem.ir)).slice(0,5);
     $('icNext').innerHTML='<div class="note" style="margin:10px 0 2px"><b>Next suggested</b> (never counted / oldest count first) - tap to count now:</div>'+q.map(it=>{const c=ic.counts[it.ir];
-      return '<button type="button" class="btn alt nx" data-ir="'+xmlEsc(it.ir)+'">'+xmlEsc(it.name)+'<small>'+(c?'last count '+xmlEsc(icAt(c.at))+' by '+xmlEsc(c.by||'?'):'never counted')+(it.loc?' · '+xmlEsc(shortLoc(it.loc)):'')+'</small></button>';}).join('');
+      return '<button type="button" class="btn alt nx" data-ir="'+xmlEsc(it.ir)+'">'+xmlEsc(it.name)+altHtml(it.ir)+'<small>'+(c?'last count '+xmlEsc(icAt(c.at))+' by '+xmlEsc(c.by||'?'):'never counted')+(it.loc?' · '+xmlEsc(shortLoc(it.loc)):'')+'</small></button>';}).join('');
   }
   $('icNext').addEventListener('click',e=>{const b=e.target.closest('button[data-ir]');if(b){const it=map.get(b.dataset.ir);if(it)icOpen(it);}});
   function icRenderInfo(){
-    $('icModeStaff').classList.toggle('on',ic.mode==='staff');$('icModeApp').classList.toggle('on',ic.mode==='app');
+    $('icModeStaff').classList.toggle('on',ic.mode==='staff');$('icModeApp').classList.toggle('on',ic.mode==='app');$('icModeNoir').classList.toggle('on',ic.mode==='noir');
+    {const nm=ic.mode==='noir';$('nrBox').style.display=nm?'':'none';$('icXbar').style.display=nm?'none':'';$('icRecent').style.display=nm?'none':'';if(nm){$('icPanel').style.display='none';$('icNext').innerHTML='';nrRenderList();return;}}
     const n=items.length,keys=Object.keys(ic.counts),since=icDay(30),rec=items.filter(it=>ic.counts[it.ir]&&String(ic.counts[it.ir].at)>=since).length,never=items.filter(it=>!ic.counts[it.ir]).length,pend=Object.keys(ic.pend).length;
     $('icStat').innerHTML='Counted in the last 30 days: <b>'+rec+'</b> of '+n+' items · never counted: <b>'+never+'</b>'+(pend?' · <span style="color:var(--out)">'+pend+' not sent yet</span>':'')+(shReady()?'':' · <b>not shared</b> (no Google Sheet link)');
     if(icItem)$('icLast').innerHTML=icLastTxt(icItem.ir,icItem.unit);
     const last=keys.sort((a,b)=>String(ic.counts[b].at).localeCompare(String(ic.counts[a].at))).slice(0,8);
-    $('icRecent').innerHTML=last.length?'<b>Last counts in the unit</b>'+last.map(ir=>{const c=ic.counts[ir],it=map.get(ir);return '<div>'+xmlEsc(icAt(c.at))+' · <b>'+xmlEsc(c.by||'?')+'</b> · '+xmlEsc(it?it.name:ir)+' = '+c.total+'</div>';}).join(''):'';
+    $('icRecent').innerHTML=last.length?'<b>Last counts in the unit</b>'+last.map(ir=>{const c=ic.counts[ir],it=map.get(ir);return '<div>'+xmlEsc(icAt(c.at))+' · <b>'+xmlEsc(c.by||'?')+'</b> · '+xmlEsc(it?it.name:ir)+(SN[ir]?' ('+xmlEsc(SN[ir].n)+')':'')+' = '+c.total+'</div>';}).join(''):'';
     icRenderNext();
   }
-  $('icModeStaff').onclick=()=>{ic.mode='staff';icStore();icClose();render();focusScan();};
-  $('icModeApp').onclick=()=>{ic.mode='app';icStore();render();icOpenNext();};
+  $('icModeStaff').onclick=()=>{ic.mode='staff';icStore();icClose();nrClose();render();focusScan();};
+  $('icModeNoir').onclick=()=>{ic.mode='noir';icStore();icClose();render();nrLoad();};
+  $('icModeApp').onclick=()=>{ic.mode='app';icStore();nrClose();render();icOpenNext();};
   async function icFlush(){
     if(icBusy||!shReady()||navigator.onLine===false||needLogin())return;const k=Object.keys(ic.pend);if(!k.length)return;
     const who=(st.who||'').trim();if(!who)return;
@@ -1801,7 +1892,7 @@ function c128Scan(gray, w, h, K) {
     catch(e){gateOnError(e);}
     finally{icLoading=false;}
   }
-  function icEnter(){icRenderInfo();icFlush().then(icLoad).then(()=>{if(st.mode==='IC'&&ic.mode==='app'&&!icItem)icOpenNext();});if(ic.mode==='app'&&!icItem&&items.length)icOpenNext();else focusScan();}
+  function icEnter(){if(ic.mode==='noir'){render();nrLoad();snLoad();return;}snLoad();icRenderInfo();icFlush().then(icLoad).then(()=>{if(st.mode==='IC'&&ic.mode==='app'&&!icItem)icOpenNext();});if(ic.mode==='app'&&!icItem&&items.length)icOpenNext();else focusScan();}
   $('icRefresh').onclick=()=>{icFlush().then(icLoad).then(()=>msg('ok','Counts refreshed.'));};
   setInterval(()=>{if(st.mode==='IC'&&view==='scan'&&!document.hidden)icFlush().then(icLoad);},60000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&st.mode==='IC')icFlush().then(icLoad);});
@@ -1822,6 +1913,208 @@ function c128Scan(gray, w, h, K) {
     if(r.cancelled){msg('warn','Save cancelled - nothing was saved.');return;}
     if(r.blocked){msg('err','The file was probably NOT saved (downloads are blocked in this preview).');beep(false);return;}
     msg('ok','Saved '+r.name+' in '+r.where+' ('+nIt+' items, '+rows.length+' lines).');beep(true);
+  };
+
+  // ================================================================ SECOND NAMES (shared by all units through the photo sheet)
+  function snStore(){try{localStorage.setItem(SN_KEY,JSON.stringify({names:SN,pend:snPend}));}catch(e){}}
+  function snApply(){items.forEach(i=>{i.key=(i.name+' '+(i.alias||'')+' '+((SN[i.ir]&&SN[i.ir].n)||'')).toLowerCase();});
+    if(icItem)$('icName').innerHTML=icNameHtml(icItem);
+    if(pendingItem){$('recvName').querySelectorAll('.alt2').forEach(x=>x.remove());$('recvName').insertAdjacentHTML('beforeend',altHtml(pendingItem.ir));}
+    bgRender();}
+  let snBusy=false;
+  async function snFlush(){
+    if(snBusy||!shReady()||navigator.onLine===false||needLogin())return;const k=Object.keys(snPend);if(!k.length)return;snBusy=true;
+    try{for(const ir of k){const v=snPend[ir];await shPost('nameSet',{code:sh.scanCode||sh.chargeCode,ir,name2:v,by:(st.who||'').trim()},20000);if(snPend[ir]===v)delete snPend[ir];snStore();}}
+    catch(e){gateOnError(e);}finally{snBusy=false;}
+  }
+  let snLoading=false;
+  async function snLoad(){
+    if(snLoading||!shReady()||navigator.onLine===false||needLogin())return;snLoading=true;
+    try{const j=await shPost('names',{code:sh.scanCode||sh.chargeCode},20000),srv=j.names||{},out={};
+      Object.keys(srv).forEach(ir=>{if(srv[ir]&&srv[ir].n)out[ir]=srv[ir];});
+      Object.keys(snPend).forEach(ir=>{if(snPend[ir])out[ir]={n:snPend[ir],by:(st.who||'').trim(),at:''};else delete out[ir];});
+      const changed=JSON.stringify(out)!==JSON.stringify(SN);SN=out;snStore();if(changed)snApply();}
+    catch(e){}finally{snLoading=false;}
+  }
+  $('icAltSave').onclick=()=>{
+    const it=icItem;if(!it)return;const v=$('icAlt').value.replace(/\s+/g,' ').trim().slice(0,80);
+    if(v)SN[it.ir]={n:v,by:(st.who||'').trim(),at:icNow()};else delete SN[it.ir];snPend[it.ir]=v;snStore();snApply();
+    msg('ok',v?'Second name saved: “'+v+'” - everybody can now find '+it.name+' with it.':'Second name removed.');beep(true);snFlush();
+  };
+  $('icAlt').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('icAltSave').click();}});
+
+  // ================================================================ ITEMS WITHOUT AN IR NUMBER (report for the CCS team)
+  const NR_KEY='ccsNoIR.v1'+PROFILE,NRP=new Map();
+  let nr={items:[],pend:{}},nrEdit=null,nrTarget=1,nrBusy=false;
+  try{const o=JSON.parse(localStorage.getItem(NR_KEY)||'null');if(o&&typeof o==='object'){nr.items=Array.isArray(o.items)?o.items:[];nr.pend=(o.pend&&typeof o.pend==='object')?o.pend:{};}}catch(e){}
+  Object.keys(nr.pend).forEach(id=>{const p=nr.pend[id];if(p&&(p.p1||p.p2))NRP.set(id,{p1:p.p1||'',p2:p.p2||''});});
+  function nrStore(){try{localStorage.setItem(NR_KEY,JSON.stringify(nr));}catch(e){msg('warn','This phone is full: the photos of unsent items could not be kept. Connect to the internet.');}}
+  function nrRowHtml(q,e,first){return '<div class="icrow"><input class="icq" type="number" min="0" inputmode="numeric" placeholder="Qty" value="'+xmlEsc(q)+'"><input class="ice" type="text" autocomplete="off" placeholder="DD/MM/YYYY" value="'+xmlEsc(e)+'">'+(first?'<span style="width:34px"></span>':'<button class="x" type="button" title="Remove this row">✕</button>')+'</div>';}
+  function nrPhotoBox(k){const v=nrEdit?nrEdit['p'+k]:'';$('nrP'+k).innerHTML=v?'<img src="'+v+'" alt="">':'<span class="note" style="margin:0">no photo</span>';$('nrP'+k+'Btn').textContent=(v?'📷 Change ':'📷 Photo ')+(k===1?'front':'back');}
+  function nrOpen(it){
+    nrEdit={id:it?it.id:'',p1:'',p2:'',ch1:false,ch2:false};const ph=it&&NRP.get(it.id);if(ph){nrEdit.p1=ph.p1||'';nrEdit.p2=ph.p2||'';}
+    $('nrName').value=it?it.name:'';$('nrName2').value=it?(it.name2||''):'';
+    const lots=it&&it.lots&&it.lots.length?it.lots:[{qty:'',expiry:''}];
+    $('nrRows').innerHTML=lots.map((l,i)=>nrRowHtml(l.qty===''?'':String(l.qty),l.expiry?dmy(l.expiry):'',i===0)).join('');
+    nrPhotoBox(1);nrPhotoBox(2);$('nrDel').style.display=it?'':'none';$('nrPanel').style.display='';$('nrNew').style.display='none';
+    if(it&&((it.p1&&!(ph&&ph.p1))||(it.p2&&!(ph&&ph.p2))))nrFetch([it.id]).then(()=>{const p=NRP.get(it.id);if(nrEdit&&nrEdit.id===it.id&&p){if(!nrEdit.ch1)nrEdit.p1=p.p1||'';if(!nrEdit.ch2)nrEdit.p2=p.p2||'';nrPhotoBox(1);nrPhotoBox(2);}});
+    (it?$('nrRows').querySelector('.icq'):$('nrName')).focus();try{$('nrPanel').scrollIntoView({block:'start',behavior:'smooth'});}catch(e){}
+  }
+  function nrClose(){nrEdit=null;$('nrPanel').style.display='none';$('nrNew').style.display='';}
+  $('nrNew').onclick=()=>nrOpen(null);
+  $('nrCancel').onclick=()=>{nrClose();msg('','');};
+  $('nrAdd').onclick=()=>{$('nrRows').insertAdjacentHTML('beforeend',nrRowHtml('','',false));$('nrRows').lastElementChild.querySelector('.icq').focus();};
+  $('nrRows').addEventListener('click',e=>{const b=e.target.closest('button.x');if(b)b.closest('.icrow').remove();});
+  $('nrRows').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();const r=e.target.closest('.icrow');if(e.target.classList.contains('icq'))r.querySelector('.ice').focus();else $('nrSave').click();});
+  function nrBigPhoto(file){                                       // up to 480 px, small enough for one Google Sheet cell
+    return new Promise((res,rej)=>{const url=URL.createObjectURL(file),img=new Image();
+      img.onload=()=>{try{let S=480,q=0.72,d='';for(let t=0;t<8;t++){const k=Math.min(1,S/Math.max(img.width,img.height)),w=Math.max(1,Math.round(img.width*k)),h=Math.max(1,Math.round(img.height*k)),c=document.createElement('canvas');c.width=w;c.height=h;
+          const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,w,h);g.drawImage(img,0,0,w,h);d=c.toDataURL('image/jpeg',q);if(d.length<=46000)break;if(q>0.5)q-=0.1;else S=Math.round(S*0.8);}
+        URL.revokeObjectURL(url);if(d.length>46000)rej(new Error('picture too detailed'));else res(d);}catch(e){rej(e);}};
+      img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error('this picture cannot be opened'));};img.src=url;});
+  }
+  $('nrP1Btn').onclick=()=>{nrTarget=1;$('nrFile').value='';$('nrFile').click();};
+  $('nrP2Btn').onclick=()=>{nrTarget=2;$('nrFile').value='';$('nrFile').click();};
+  $('nrFile').onchange=async()=>{const f=$('nrFile').files&&$('nrFile').files[0];if(!f||!nrEdit)return;
+    try{const d=await nrBigPhoto(f);nrEdit['p'+nrTarget]=d;nrEdit['ch'+nrTarget]=true;nrPhotoBox(nrTarget);}catch(e){msg('err','Could not use this picture: '+(e.message||e.name));}};
+  $('nrSave').onclick=()=>{
+    if(!nrEdit)return;const who=(st.who||'').trim();if(!who){msg('err','Type your name in “Prepared by” at the top first.');beep(false);$('who').focus();return;}
+    const name=$('nrName').value.replace(/\s+/g,' ').trim(),name2=$('nrName2').value.replace(/\s+/g,' ').trim();
+    if(!name){msg('err','Type the name of the item.');beep(false);$('nrName').focus();return;}
+    const lots=[];let bad='';
+    $('nrRows').querySelectorAll('.icrow').forEach(r=>{if(bad)return;const qs=r.querySelector('.icq').value.trim(),es=r.querySelector('.ice').value.trim();let e='';
+      if(es){e=parseExpiry(es);if(!e){bad='Expiry date not understood: “'+es+'” (use 31/12/2030 or 12/2030).';return;}}
+      if(qs==='')return;const q=Math.floor(+qs);if(!(q>=0)||q>1000000){bad='The quantity must be 0 or more.';return;}lots.push({qty:q,expiry:e});});
+    if(bad){msg('err',bad);beep(false);return;}
+    if(!lots.length){if(!confirm('No quantity typed. Save it as 0?'))return;lots.push({qty:0,expiry:''});}
+    const m=icMerge(lots),total=m.reduce((a,l)=>a+l.qty,0),id=nrEdit.id||('L'+Date.now().toString(36));
+    const p={id:/^N/.test(id)?id:'',name,name2,lots:m};if(nrEdit.ch1||!nrEdit.id)p.p1=nrEdit.p1||'';if(nrEdit.ch2||!nrEdit.id)p.p2=nrEdit.p2||'';
+    const old=nr.pend[id];if(old){if(p.p1===undefined&&old.p1!==undefined)p.p1=old.p1;if(p.p2===undefined&&old.p2!==undefined)p.p2=old.p2;}
+    let it=nr.items.find(x=>x.id===id);if(!it){it={id};nr.items.push(it);}
+    Object.assign(it,{name,name2,lots:m,total,by:who,at:icNow(),p1:!!nrEdit.p1,p2:!!nrEdit.p2});NRP.set(id,{p1:nrEdit.p1||'',p2:nrEdit.p2||''});
+    nr.pend[id]=p;nrStore();nrClose();nrRenderList();
+    msg('ok','Saved: '+name+' = '+total+(m.length>1?' ('+m.length+' expiry dates)':'')+(shReady()?'':'  (kept on this phone - no Google Sheet link)'));beep(true);nrFlush();
+  };
+  $('nrDel').onclick=async()=>{
+    if(!nrEdit||!nrEdit.id)return;const id=nrEdit.id,it=nr.items.find(x=>x.id===id);if(!confirm('Delete '+(it?it.name:'this item')+' from the no-IR list (for everybody)?'))return;
+    if(/^N/.test(id)){if(!shReady()||navigator.onLine===false){msg('err','Deleting needs the internet.');return;}
+      try{await shPost('noirDel',{code:sh.scanCode||sh.chargeCode,id},20000);}catch(e){msg('err','Could not delete: '+(e.message||e.name));return;}}
+    nr.items=nr.items.filter(x=>x.id!==id);delete nr.pend[id];NRP.delete(id);nrStore();nrClose();nrRenderList();msg('ok','Deleted.');
+  };
+  async function nrFlush(){
+    if(nrBusy||!shReady()||navigator.onLine===false||needLogin())return;const who=(st.who||'').trim();if(!who)return;nrBusy=true;
+    try{for(const id of Object.keys(nr.pend)){const p=nr.pend[id];
+        const j=await shPost('noirSet',Object.assign({code:sh.scanCode||sh.chargeCode,by:who,device:sh.device},p),40000);
+        if(nr.pend[id]===p)delete nr.pend[id];const it=nr.items.find(x=>x.id===id);
+        if(it){it.at=j.at||it.at;if(j.id&&j.id!==id){it.id=j.id;if(NRP.has(id)){NRP.set(j.id,NRP.get(id));NRP.delete(id);}if(nrEdit&&nrEdit.id===id)nrEdit.id=j.id;}}
+        nrStore();}
+      if(st.mode==='IC'&&ic.mode==='noir')nrRenderList();}
+    catch(e){gateOnError(e);if(/unknown action/i.test(e.message||''))msg('warn','The Google Sheet script is an old version: paste the new SharedList_Code and deploy a new version.');}
+    finally{nrBusy=false;}
+  }
+  async function nrFetch(ids){
+    const need=ids.filter(id=>/^N/.test(id));
+    for(let i=0;i<need.length;i+=8){try{const j=await shPost('noirGet',{code:sh.scanCode||sh.chargeCode,ids:need.slice(i,i+8)},40000);
+      Object.keys(j.photos||{}).forEach(id=>NRP.set(id,{p1:j.photos[id].p1||'',p2:j.photos[id].p2||''}));}catch(e){break;}}
+  }
+  async function nrLoad(){
+    await nrFlush();
+    if(shReady()&&navigator.onLine!==false&&!needLogin()){
+      try{const j=await shPost('noirList',{code:sh.scanCode||sh.chargeCode},20000),srv=j.items||[];
+        const local=nr.items.filter(x=>nr.pend[x.id]);nr.items=srv.filter(x=>!nr.pend[x.id]).concat(local);nrStore();}catch(e){gateOnError(e);}
+    }
+    nrRenderList();
+    const miss=nr.items.filter(x=>(x.p1||x.p2)&&!NRP.has(x.id)).map(x=>x.id);
+    if(miss.length){await nrFetch(miss);nrRenderList();}
+  }
+  function nrRenderList(){
+    const L=nr.items.slice().sort((a,b)=>String(b.at).localeCompare(String(a.at))),pend=Object.keys(nr.pend).length;
+    $('icStat').innerHTML='Items without an IR number in this unit: <b>'+L.length+'</b>'+(pend?' · <span style="color:var(--out)">'+pend+' not sent yet</span>':'')+(shReady()?'':' · <b>not shared</b> (no Google Sheet link)');
+    $('nrList').innerHTML=L.length?L.map(it=>{const p=NRP.get(it.id)||{};
+      return '<button type="button" class="btn alt nri" data-id="'+xmlEsc(it.id)+'">'+(p.p1?'<img src="'+p.p1+'" alt="">':'')+(p.p2?'<img src="'+p.p2+'" alt="">':'')+'<span class="tx"><b>'+xmlEsc(it.name)+'</b>'+(it.name2?'<span class="alt2">'+xmlEsc(it.name2)+'</span>':'')
+        +'<small>'+it.total+' · '+xmlEsc(icLotsTxt(it))+'</small><small>last count '+xmlEsc(icAt(it.at))+' by '+xmlEsc(it.by||'?')+(nr.pend[it.id]?' · <i>not sent yet</i>':'')+'</small></span></button>';}).join(''):'<div class="note">No items yet. Press “New item without IR” for every item in the store that has no IR number / barcode.</div>';
+  }
+  $('nrList').addEventListener('click',e=>{const b=e.target.closest('button[data-id]');if(!b)return;const it=nr.items.find(x=>x.id===b.dataset.id);if(it)nrOpen(it);});
+  $('nrRefresh').onclick=()=>nrLoad().then(()=>msg('ok','List refreshed.'));
+  function dataBytes(d){const b=atob(d.split(',')[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
+  function imgSize(d){return new Promise(res=>{const i=new Image();i.onload=()=>res([i.naturalWidth||1,i.naturalHeight||1]);i.onerror=()=>res([1,1]);i.src=d;});}
+  $('nrXlsx').onclick=async()=>{
+    await nrFlush();const L=nr.items.slice().sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+    if(!L.length){msg('err','The no-IR list is empty.');beep(false);return;}
+    const miss=L.filter(x=>(x.p1||x.p2)&&!NRP.has(x.id)).map(x=>x.id);if(miss.length){msg('warn','Loading the photos…');await nrFetch(miss);}
+    const cols=[['No','no','n',5],['Item name','name','s',42],['Second name','name2','s',26],['Expiry','expiry','d',13],['Qty','qty','n',8],['Item total','total','n',10],['Last counted','lastc','s',17],['Counted by','by','s',14],['Unit','unit','s',10],['Photo front','x1','s',17],['Photo back','x2','s',17]];
+    const rows=[],images=[],rowHt={};let n=0;
+    for(const it of L){n++;const ls=(it.lots&&it.lots.length?it.lots:[{qty:0,expiry:''}]).slice().sort((a,b)=>(a.expiry||'9999').localeCompare(b.expiry||'9999'));
+      ls.forEach((l,k)=>rows.push({no:k?'':n,name:it.name,name2:it.name2||'',expiry:l.expiry||'',qty:l.qty,total:k?'':it.total,lastc:icAt(it.at),by:it.by||'',unit:UNIT_NAME||''}));
+      const r0=rows.length-ls.length+2,p=NRP.get(it.id)||{};let any=false;
+      for(const [k,c] of [['p1',9],['p2',10]]){const d=p[k];if(!d)continue;const [w,h]=await imgSize(d),f=Math.min(112/w,112/h,1);images.push({row:r0,col:c,bytes:dataBytes(d),ext:/^data:image\/png/.test(d)?'png':'jpeg',w:Math.round(w*f),h:Math.round(h*f)});any=true;}
+      if(any){const per=Math.max(90/ls.length,15);ls.forEach((l,k)=>rowHt[r0+k]=Math.round(per));}}
+    const who0=(st.who||'').trim(),nowD=new Date();
+    const meta={who:who0,created:nowD,title:'ITEMS WITHOUT IR',rowHt,images,fitWide:true,infoName:'Info',info:[['Report','Items found in the store room WITHOUT an IR number'],['Purpose','For the CCS team: please add these items to the CCS item list of the unit'],
+      ['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],...(UNIT_NAME?[['Unit',UNIT_NAME]]:[]),['Items',L.length],['Tool','CCS Scan Helper']]};
+    const wn=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),r=await saveExport('CCS_NoIR_Report_'+stamp()+(wn?'_'+wn:'')+'.xlsx',buildXlsx('items without IR',cols,rows,meta));
+    if(r.cancelled){msg('warn','Save cancelled - nothing was saved.');return;}
+    if(r.blocked){msg('err','The file was probably NOT saved (downloads are blocked in this preview).');beep(false);return;}
+    msg('ok','Saved '+r.name+' in '+r.where+' ('+L.length+' items, '+images.length+' photos).');beep(true);
+  };
+  window.addEventListener('online',()=>{nrFlush();snFlush();});
+
+  // ================================================================ HISTORY (what was taken / received / written off between two times)
+  let hiMode='OUT',hiV='total',hiData=null;
+  const dtl=d=>d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+'T'+pad2(d.getHours())+':'+pad2(d.getMinutes());
+  const hiDisp=t=>{t=String(t||'');return /^\d{4}-\d{2}-\d{2}/.test(t)?dmy(t.slice(0,10))+' '+t.slice(11,16):t;};
+  function hiInit(){if(!$('hiFrom').value){const now=new Date(Date.now()+60000),f=new Date(now.getTime()-7*86400000);f.setHours(6,0,0,0);$('hiFrom').value=dtl(f);$('hiTo').value=dtl(now);}
+    document.querySelectorAll('#hiModes .room').forEach(b=>b.classList.toggle('on',b.dataset.m===hiMode));}
+  $('hiModes').addEventListener('click',e=>{const b=e.target.closest('button[data-m]');if(!b)return;hiMode=b.dataset.m;hiInit();hiData=null;$('hiOut').innerHTML='';$('hiInfo').textContent='';});
+  $('hiView').addEventListener('click',e=>{const b=e.target.closest('button[data-v]');if(!b)return;hiV=b.dataset.v;document.querySelectorAll('#hiView .room').forEach(x=>x.classList.toggle('on',x.dataset.v===hiV));if(hiData)hiShow();});
+  // "In total": one line per item + expiry (+ reason for write off) - no names, no times
+  function hiTotals(L){const by=new Map();L.forEach(x=>{const k=x.ir+'|'+(x.expiry||'')+'|'+(/^WO/.test(x.mode)?x.mode:'');let g=by.get(k);if(!g){g={ir:x.ir,name:x.name,expiry:x.expiry||'',mode:x.mode,qty:0,n:0};by.set(k,g);}g.qty+=(+x.qty||0);g.n++;});
+    const ord=new Map(items.map((it,i)=>[it.ir,i]));return [...by.values()].sort((a,b)=>((ord.has(a.ir)?ord.get(a.ir):1e9)-(ord.has(b.ir)?ord.get(b.ir):1e9))||(a.expiry||'9999').localeCompare(b.expiry||'9999')||String(a.mode).localeCompare(String(b.mode)));}
+  function hiShow(){
+    const L=hiData.lines,wo=hiData.mode==='WO';if(!L.length){$('hiOut').innerHTML='<div class="note">Nothing in this period.</div>';return;}
+    const unit=ir=>{const it=map.get(ir);return it&&it.unit?' '+xmlEsc(it.unit):'';},nm=x=>{const it=map.get(x.ir);return xmlEsc(it?it.name:x.name)+altHtml(x.ir)+'<div class="note" style="margin:1px 0 0;font-size:11px">'+xmlEsc(x.ir)+(wo?' · <b>'+xmlEsc(woName(x.mode))+'</b>':'')+'</div>';};
+    if(hiV==='total'){const T=hiTotals(L);
+      $('hiOut').innerHTML='<table><tr><th>Item</th><th>Expiry</th><th>Qty</th></tr>'+T.map(g=>'<tr><td>'+nm(g)+'</td><td>'+(g.expiry?xmlEsc(dmy(g.expiry)):'-')+'</td><td><b>'+g.qty+'</b>'+unit(g.ir)+'</td></tr>').join('')+'</table>';}
+    else $('hiOut').innerHTML='<table><tr><th>When · who</th><th>Item</th><th>Qty</th></tr>'+L.map(x=>'<tr><td>'+xmlEsc(hiDisp(x.t))+'<br><b>'+xmlEsc(x.by||'?')+'</b><br><span class="st '+(x.status==='imported'?'imp':'wait')+'">'+(x.status==='imported'?'in CCS':'waiting')+'</span></td><td>'+nm(x)+'</td><td><b>'+x.qty+'</b>'+unit(x.ir)+(x.expiry?'<br><span class="note" style="margin:0">exp '+xmlEsc(dmy(x.expiry))+'</span>':'')+'</td></tr>').join('')+'</table>';
+  }
+  $('tabHI').onclick=()=>{view='history';cancelRecv();$('sugg').style.display='none';render();hiInit();};
+  function hiMsg(k,t){$('hiMsg').className='msg'+(k?' '+k:'');$('hiMsg').textContent=t||'';}
+  $('hiGo').onclick=async()=>{
+    const f=$('hiFrom').value.replace('T',' '),t=$('hiTo').value.replace('T',' ');
+    if(!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(f)||!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(t)){hiMsg('err','Choose the date and time in “From” and “To”.');return;}
+    if(t<=f){hiMsg('err','“To” must be after “From”.');return;}
+    if(!shReady()){hiMsg('err','The history needs the unit’s Google Sheet (no link in this copy of the app).');return;}
+    if(navigator.onLine===false){hiMsg('err','The history needs the internet.');return;}
+    hiMsg('warn','Loading…');$('hiOut').innerHTML='';$('hiInfo').textContent='';hiData=null;
+    try{await shFlush();}catch(e){}
+    try{const j=await shPost('history',{code:sh.scanCode||sh.chargeCode,mode:hiMode,from:f,to:t},40000),L=j.lines||[];
+      const name=hiMode==='OUT'?'STOCK OUT':hiMode==='IN'?'STOCK IN':'WRITE OFF',units=L.reduce((a,x)=>a+(+x.qty||0),0),nIt=new Set(L.map(x=>x.ir)).size;
+      $('hiInfo').innerHTML='<b>'+name+'</b> · '+xmlEsc(hiDisp(f))+' → '+xmlEsc(hiDisp(t))+' · <b>'+L.length+'</b> line'+(L.length===1?'':'s')+' · <b>'+units+'</b> units · '+nIt+' item'+(nIt===1?'':'s')+(j.more?' · only the first 5000 lines are shown':'');
+      hiMsg('','');
+      hiData={lines:L,mode:hiMode,f,t,name};hiShow();return true;
+      $('hiOut').innerHTML='<table><tr><th>When · who</th><th>Item</th><th>Qty</th></tr>'+L.map(x=>{const it=map.get(x.ir);
+        return '<tr><td>'+xmlEsc(hiDisp(x.t))+'<br><b>'+xmlEsc(x.by||'?')+'</b><br><span class="st '+(x.status==='imported'?'imp':'wait')+'">'+(x.status==='imported'?'in CCS':'waiting')+'</span></td>'
+          +'<td>'+xmlEsc(it?it.name:x.name)+altHtml(x.ir)+'<div class="note" style="margin:2px 0 0">'+xmlEsc(x.ir)+(/^WO[1-5]$/.test(x.mode)?' · <b>'+xmlEsc(woName(x.mode))+'</b>':'')+'</div></td>'
+          +'<td><b>'+x.qty+'</b>'+(it&&it.unit?' '+xmlEsc(it.unit):'')+(x.expiry?'<br><span class="note" style="margin:0">exp '+xmlEsc(dmy(x.expiry))+'</span>':'')+'</td></tr>';}).join('')+'</table>';
+    }catch(e){gateOnError(e);hiMsg('err',/unknown action/i.test(e.message||'')?'The Google Sheet script is an old version: paste the new SharedList_Code and deploy a new version.':'Could not load the history: '+(e.message||e.name));}
+  };
+
+  const HI_DET=TEMPLATE_COLS.concat([['Scanned by','by','s',16],['Scan date & time','when','s',18]]);
+  $('hiXlsx').onclick=async()=>{
+    const f=$('hiFrom').value.replace('T',' '),t=$('hiTo').value.replace('T',' ');
+    if(!hiData||hiData.mode!==hiMode||hiData.f!==f||hiData.t!==t){const ok=await $('hiGo').onclick();if(ok!==true)return;}
+    const D=hiData,L=D.lines,wo=D.mode==='WO';if(!L.length){hiMsg('err','Nothing in this period - no file saved.');return;}
+    let rows=[],cols;
+    if(hiV==='total'){hiTotals(L).forEach(g=>buildRows([{ir:g.ir,name:g.name,expiry:g.expiry,qty:g.qty}],items,false).forEach(r=>{if(wo)r.reason=woName(g.mode);rows.push(r);}));cols=wo?TEMPLATE_COLS.concat([['Reason','reason','s',28]]):TEMPLATE_COLS;}
+    else{L.slice().sort((a,b)=>String(a.t).localeCompare(String(b.t))).forEach(x=>buildRows([{ir:x.ir,name:x.name,expiry:x.expiry||'',qty:x.qty}],items,false).forEach(r=>{r.by=x.by||'';r.when=hiDisp(x.t);if(wo)r.reason=woName(x.mode);rows.push(r);}));cols=wo?HI_DET.concat([['Reason','reason','s',28]]):HI_DET;}
+    const who0=(st.who||'').trim(),nowD=new Date(),units=L.reduce((a,x)=>a+(+x.qty||0),0);
+    const meta={who:who0,created:nowD,title:'HISTORY '+D.name,infoName:'Info',info:st.infoSheet?[['Report','HISTORY - '+D.name],['Period',hiDisp(D.f)+'  to  '+hiDisp(D.t)],['Layout',hiV==='total'?'In total (one line per item and expiry date)':'Per scan (staff name, date and time of every scan)'],
+      ...(UNIT_NAME?[['Unit',UNIT_NAME]]:[]),['Scans',L.length],['Total units',units],['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],['Tool','CCS Scan Helper']]:null};
+    const tag=D.mode==='OUT'?'StockOut':D.mode==='IN'?'StockIn':'WriteOff',d8=x=>x.slice(0,10).replace(/-/g,'')+'_'+x.slice(11,16).replace(':',''),wn=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,'');
+    const r=await saveExport('CCS_History_'+tag+'_'+(hiV==='total'?'Total':'PerScan')+'_'+d8(D.f)+'-'+d8(D.t)+(wn?'_'+wn:'')+'.xlsx',buildXlsx('inventory list',cols,rows,meta));
+    if(r.cancelled){hiMsg('warn','Save cancelled - nothing was saved.');return;}
+    if(r.blocked){hiMsg('err','The file was probably NOT saved (downloads are blocked in this preview).');return;}
+    hiMsg('ok','Saved '+r.name+' in '+r.where+' ('+rows.length+' lines, '+units+' units).');
   };
 
   // ---- photo sync with the unit's Google Sheet
@@ -1853,12 +2146,13 @@ function c128Scan(gray, w, h, K) {
     if(again)return phSync(1);
   }
   setInterval(phSync,300000);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&Date.now()-phAt>120000)phSync();});
-  phLoadAll().then(()=>{phReady=true;phSync();shSync();});
+  phLoadAll().then(()=>{phReady=true;phSync();shSync();snFlush().then(snLoad);});
+  setInterval(()=>{if(!document.hidden)snFlush().then(snLoad);},600000);
   $('listWrap').addEventListener('focusout',()=>{if(needRender){needRender=false;setTimeout(render,0);}});
   const UI_KEY='ccsUi.v1'+PROFILE;
   try{history.scrollRestoration='manual';}catch(e){}
   function uiSave(){
-    try{const o={t:Date.now(),view,mode:st.mode,y:window.scrollY||0,scan:$('scan').value||'',shMode:shMode()};
+    try{const o={t:Date.now(),view,mode:st.mode,y:window.scrollY||0,scan:$('scan').value||'',shMode:shMode(),hi:{m:hiMode,v:hiV,f:$('hiFrom').value,t:$('hiTo').value,shown:!!$('hiOut').innerHTML}};
       if(st.mode==='IC'&&icItem)o.ic={ir:icItem.ir,rows:[...$('icRows').querySelectorAll('.icrow')].map(r=>[r.querySelector('.icq').value,r.querySelector('.ice').value,r.querySelector('.icdef input').checked])};
       if(pendingItem)o.recv={ir:pendingItem.ir,qty:$('rQty').value,exp:$('rExp').value,noexp:$('rNoExp').checked,def:$('rSetDef').checked};
       localStorage.setItem(UI_KEY,JSON.stringify(o));}catch(e){}
@@ -1869,13 +2163,15 @@ function c128Scan(gray, w, h, K) {
     let o=null;try{o=JSON.parse(localStorage.getItem(UI_KEY)||'null');}catch(e){}
     if(!o||Date.now()-(+o.t||0)>12*3600000)return;
     uiRestoring=true;try{
-      if(o.view==='shared'){const r=document.querySelector('input[name=shMode][value="'+o.shMode+'"]');if(r)r.checked=true;$('tabSH').onclick();}
+      if(o.view==='history'){if(o.hi){hiMode=/^(OUT|IN|WO)$/.test(o.hi.m)?o.hi.m:'OUT';hiV=o.hi.v==='detail'?'detail':'total';document.querySelectorAll('#hiView .room').forEach(x=>x.classList.toggle('on',x.dataset.v===hiV));$('hiFrom').value=o.hi.f||'';$('hiTo').value=o.hi.t||'';}$('tabHI').onclick();if(o.hi&&o.hi.shown)setTimeout(()=>$('hiGo').click(),1200);}
+      else if(o.view==='shared'){const r=document.querySelector('input[name=shMode][value="'+o.shMode+'"]');if(r)r.checked=true;$('tabSH').onclick();}
       else{
         if(o.scan)$('scan').value=o.scan;
         if(st.mode==='IC'){
           const it=o.ic&&map.get(o.ic.ir);
           if(it){icOpen(it);if(Array.isArray(o.ic.rows)&&o.ic.rows.length)$('icRows').innerHTML=o.ic.rows.map((r,i)=>icRowHtml(r[0]||'',r[1]||'',!!r[2],i===0)).join('');}
           else if(ic.mode==='app'&&items.length)icOpenNext();
+          else if(ic.mode==='noir')nrLoad();
         }else if(o.recv&&o.mode===st.mode&&map.get(o.recv.ir)){
           pick(map.get(o.recv.ir),0,'');
           if(pendingItem){$('rQty').value=o.recv.qty;$('rExp').value=o.recv.exp;$('rNoExp').checked=!!o.recv.noexp;$('rNoExp').dispatchEvent(new Event('change'));$('rSetDef').checked=!!o.recv.def;}
