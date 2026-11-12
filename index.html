@@ -153,6 +153,36 @@ label[for=shUrl],#shUrl,#shUrlNote{display:none!important}
 #woBar .room{font-size:13px;padding:7px 10px;text-align:left}
 #woBar .room.on{border-color:#8e44ad;background:rgba(142,68,173,.16);color:#8e44ad}
 #recv.wo{border-color:#8e44ad;background:rgba(142,68,173,.10)}
+/* v8 */
+header{padding:4px 12px!important;gap:8px!important}
+#unitTag{font-size:15px!important}
+header .who{font-size:12.5px!important;gap:6px!important;margin-left:auto!important}
+header input{font-size:14px!important;padding:5px 8px!important;width:170px!important;max-width:50vw!important}
+.tabs.top{margin-bottom:6px}
+.tabs.top .tab{font-size:18px!important;padding:14px 4px!important}
+.tabs.top .tab small{font-size:12px!important}
+.tabs.sub .tab{font-size:12px!important;padding:7px 2px!important}
+.tabs.sub .tab small{font-size:10px!important}
+.tab.on.ic{border-color:#0f8a63;background:rgba(15,138,99,.14);color:#0f8a63}
+#icCard{border:2px solid #0f8a63}
+#icModes{display:flex;gap:6px;margin-bottom:8px}
+#icModes .room{flex:1;font-size:14px;padding:9px 6px}
+#icModes .room small{display:block;font-weight:400;font-size:11.5px;margin-top:2px}
+#icModes .room.on{border-color:#0f8a63;background:rgba(15,138,99,.16);color:#0f8a63}
+#icPanel{border-top:1px solid var(--line);margin-top:8px;padding-top:10px}
+#icPanel .name{font-weight:700;font-size:16px;margin-bottom:4px}
+#icLast{margin:4px 0 8px}
+.icrow{display:flex;gap:6px;align-items:center;margin-bottom:6px}
+.icrow .icq{width:84px;flex:0 0 84px;font-size:18px;padding:9px 8px}
+.icrow .ice{flex:1 1 auto;min-width:0;font-size:18px;padding:9px 8px;font-variant-numeric:tabular-nums}
+.icrow .icdef{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;font-size:10.5px;color:var(--muted);margin:0;line-height:1.1}
+.icrow .icdef input{width:22px;height:22px;margin:0 0 2px}
+.icrow .x{flex:0 0 auto}
+#icAdd{width:100%;font-size:20px;padding:8px;margin:2px 0 10px}
+#icNext .nx{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;font-size:13.5px}
+#icNext .nx small{display:block;color:var(--muted);font-weight:400}
+#icRecent{font-size:12.5px;color:var(--muted);margin-top:8px}
+#icRecent div{padding:3px 0;border-top:1px solid var(--line)}
 </style>
 </head>
 <body>
@@ -194,12 +224,15 @@ label[for=shUrl],#shUrl,#shUrlNote{display:none!important}
     <button class="btn alt" id="fForget" type="button" style="display:none">Disconnect</button>
   </div>
   <div class="conf" id="conf" style="display:none"></div>
-  <div class="tabs">
+  <div class="tabs top">
     <button class="tab out" id="tabOUT" type="button">STOCK OUT <small id="cOUT">0 lines</small></button>
-    <button class="tab in" id="tabIN" type="button">STOCK IN <small id="cIN">0 lines</small></button>
-    <button class="tab cnt" id="tabCNT" type="button">COUNT <small id="cCNT">0 lines</small></button>
-    <button class="tab wo" id="tabWO" type="button">WRITE OFF <small id="cWO">0 lines</small></button>
     <button class="tab sh" id="tabSH" type="button">SHARED <small>all phones</small></button>
+  </div>
+  <div class="tabs sub">
+    <button class="tab in" id="tabIN" type="button">STOCK IN <small id="cIN">0 lines</small></button>
+    <button class="tab wo" id="tabWO" type="button">WRITE OFF <small id="cWO">0 lines</small></button>
+    <button class="tab ic" id="tabIC" type="button">INVENTORY COUNT <small id="cIC"></small></button>
+    <button class="tab cnt" id="tabCNT" type="button">COUNT <small id="cCNT">0 lines</small></button>
   </div>
   <div id="scanView">
 
@@ -223,6 +256,26 @@ label[for=shUrl],#shUrl,#shUrlNote{display:none!important}
     <div id="msg" class="msg"></div>
   </div>
 
+  <div class="card" id="icCard" style="display:none">
+    <div id="icModes"><button type="button" class="room" id="icModeStaff">Staff choice<small>scan what you count</small></button><button type="button" class="room" id="icModeApp">App suggests<small>oldest count first</small></button></div>
+    <div class="note" id="icStat" style="margin:0"></div>
+    <div id="icPanel" style="display:none">
+      <div class="name" id="icName"></div>
+      <div class="note" id="icLast"></div>
+      <div class="note" style="margin:0 0 4px">Quantity · Expiry date (31/12/2030 or 12/2030, empty = no expiry) · tick = default expiry date</div>
+      <div id="icRows"></div>
+      <button class="btn alt" id="icAdd" type="button" title="Another expiry date of the same item">＋</button>
+      <div class="bar"><button class="btn in" id="icSave" type="button">Save count</button><button class="btn alt" id="icSkip" type="button">Skip</button><button class="btn alt" id="icCancel" type="button">Cancel</button></div>
+    </div>
+    <div id="icNext"></div>
+    <div class="bar" style="margin-top:10px">
+      <select id="icRange"><option value="30">Excel: counted in the last 30 days</option><option value="7">Excel: last 7 days</option><option value="1">Excel: today</option><option value="all">Excel: all counted items</option></select>
+      <button class="btn" id="icXlsx" type="button">&#11015; Save count Excel</button>
+      <button class="btn alt" id="icRefresh" type="button">&#8635; Refresh</button>
+    </div>
+    <div id="icRecent"></div>
+  </div>
+
   <div class="card" id="recv">
     <div class="name" id="recvName"></div>
     <div class="phbox"><div id="rPhoto"></div><div><button class="btn alt" id="rPhotoBtn" type="button">📷 Add photo</button><button class="btn alt" id="rPhotoDel" type="button" style="display:none">Remove photo</button><br><a id="rPhotoSearch" href="#" target="_blank" rel="noopener">🔎 Find a picture on the internet</a></div><input id="rPhotoFile" type="file" accept="image/*" style="display:none"></div>
@@ -235,7 +288,7 @@ label[for=shUrl],#shUrl,#shUrlNote{display:none!important}
     </div>
   </div>
 
-  <div class="card">
+  <div class="card" id="listCard">
     <div class="bar" style="margin-bottom:10px">
       <span class="note" style="margin:0">Excel file is saved to:</span>
       <select id="saveMode">
@@ -352,7 +405,7 @@ const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['E
 // DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
 // the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
 const UPLOAD_LINK = '';
-const VERSION = '2026-11-11.1';
+const VERSION = '2026-11-11.2';
 const FOLDER_FEATURE = false;          // shared-folder sync is switched off (not usable on the hospital PCs); the code is kept          // shown in the page header, so you can see which copy of the file you are running
 const EXPORT = {
   OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
@@ -678,7 +731,7 @@ function c128Scan(gray, w, h, K) {
   const isWo=m=>/^WO[1-5]$/.test(m),woName=m=>WO_REASONS[+String(m).slice(2)-1]||'';st.wo='WO1';
   const isCnt=m=>/^CNT[1-3]$/.test(m);const roomName=m=>st.rooms[+String(m).slice(3)-1]||('Store '+String(m).slice(3));
   let hadSaved=false;
-  try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){hadSaved=true;st.lists=Object.assign({OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[],WO1:[],WO2:[],WO3:[],WO4:[],WO5:[]},s.lists||{});if(Array.isArray(s.rooms)&&s.rooms.length===3)st.rooms=s.rooms.map((x,i)=>String(x).replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,20)||('Store '+(i+1)));if(/^CNT[1-3]$/.test(s.cnt))st.cnt=s.cnt;st.who=s.who||'';st.extra=s.extra||[];st.mode=/^(OUT|IN|WO[1-5])$/.test(s.mode)?s.mode:'OUT';if(/^WO[1-5]$/.test(s.wo))st.wo=s.wo;st.askExp=true;st.saveMode=['downloads','ask','folder'].includes(s.saveMode)?s.saveMode:'downloads';st.copyShared=s.copyShared!==false;st.shareLink=s.shareLink||'';st.infoSheet=s.infoSheet!==false;st.autoOpen=(s.ao2===true)?s.autoOpen===true:false;
+  try{const s=JSON.parse(localStorage.getItem(LS)||'null');if(s){hadSaved=true;st.lists=Object.assign({OUT:[],IN:[],CNT1:[],CNT2:[],CNT3:[],WO1:[],WO2:[],WO3:[],WO4:[],WO5:[]},s.lists||{});if(Array.isArray(s.rooms)&&s.rooms.length===3)st.rooms=s.rooms.map((x,i)=>String(x).replace(/[^A-Za-z0-9 _\/.-]/g,'').trim().slice(0,20)||('Store '+(i+1)));if(/^CNT[1-3]$/.test(s.cnt))st.cnt=s.cnt;st.who=s.who||'';st.extra=s.extra||[];st.mode=/^(OUT|IN|IC|WO[1-5])$/.test(s.mode)?s.mode:'OUT';if(/^WO[1-5]$/.test(s.wo))st.wo=s.wo;st.askExp=true;st.saveMode=['downloads','ask','folder'].includes(s.saveMode)?s.saveMode:'downloads';st.copyShared=s.copyShared!==false;st.shareLink=s.shareLink||'';st.infoSheet=s.infoSheet!==false;st.autoOpen=(s.ao2===true)?s.autoOpen===true:false;
     st.sync=Object.assign({OUT:'',IN:''},s.sync||{});st.dirty=Object.assign({OUT:false,IN:false},s.dirty||{});}}catch(e){}
   if(!hadSaved&&IS_IOS&&typeof navigator.share==='function')st.saveMode='share';   // iPhone apps cannot download files nicely: use the share sheet (Save to Files, OneDrive, Teams)
   function save(){try{localStorage.setItem(LS,JSON.stringify({lists:st.lists,rooms:st.rooms,cnt:st.cnt,wo:st.wo,who:st.who,extra:st.extra,mode:st.mode,askExp:st.askExp,saveMode:st.saveMode,copyShared:st.copyShared,shareLink:st.shareLink,infoSheet:st.infoSheet,autoOpen:st.autoOpen,ao2:true,sync:st.sync,dirty:st.dirty}));}catch(e){}}
@@ -697,7 +750,14 @@ function c128Scan(gray, w, h, K) {
   function beep(ok){if(!$('snd').checked)return;try{audio=audio||new (window.AudioContext||window.webkitAudioContext)();const o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);o.frequency.value=ok?880:220;g.gain.value=.08;o.start();o.stop(audio.currentTime+(ok?.07:.3));}catch(e){}}
   function msg(kind,text){const m=$('msg');m.className='msg '+kind;m.textContent=text;}
   function snapshot(){st.hist.push(JSON.stringify(st.lists));shHist.push(JSON.stringify(sh.sess));if(st.hist.length>30){st.hist.shift();shHist.shift();}}
-  const list=()=>st.lists[st.mode];
+  const list=()=>st.lists[st.mode]||[];
+  const IC_KEY='ccsCount.v1'+PROFILE;
+  let ic={mode:'staff',counts:{},pend:{},at:0},icItem=null,icSkip=[],icBusy=false,icLoading=false;
+  try{const o=JSON.parse(localStorage.getItem(IC_KEY)||'null');if(o&&typeof o==='object'){ic.mode=o.mode==='app'?'app':'staff';ic.counts=(o.counts&&typeof o.counts==='object')?o.counts:{};ic.pend=(o.pend&&typeof o.pend==='object')?o.pend:{};ic.at=+o.at||0;}}catch(e){}
+  function icStore(){try{localStorage.setItem(IC_KEY,JSON.stringify(ic));}catch(e){}}
+  const icNow=()=>{const d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds());};
+  const icDay=n=>{const d=new Date(Date.now()-(n||0)*86400000);return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());};
+  const icAt=a=>{a=String(a||'');return /^\d{4}-\d{2}-\d{2}/.test(a)?dmy(a.slice(0,10))+(a.length>=16?' '+a.slice(11,16):''):a;};
   // The files and the CCS list are English: keep names English-only (strict = letters, digits, space . _ -)
   function englishOnly(t,strict){const re=strict?/[^A-Za-z0-9 ._-]/g:/[^\x20-\x7E]/g;const out=String(t||'').replace(re,'');return{text:out,removed:out!==String(t||'')};}
   const EMBEDDED=(()=>{try{return window.top!==window.self;}catch(e){return true;}})();
@@ -808,13 +868,14 @@ function c128Scan(gray, w, h, K) {
   // ---------------------------------------------------------------- list
   function render(){
     const sv=view==='shared';$('scanView').style.display=sv?'none':'';$('sharedView').style.display=sv?'':'none';$('tabSH').classList.toggle('on',sv);
-    $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);$('tabCNT').classList.toggle('on',isCnt(st.mode)&&!sv);$('tabWO').classList.toggle('on',isWo(st.mode)&&!sv);
+    $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);$('tabCNT').classList.toggle('on',isCnt(st.mode)&&!sv);{const icm=st.mode==='IC';$('tabIC').classList.toggle('on',icm&&!sv);$('icCard').style.display=icm?'':'none';$('listCard').style.display=icm?'none':'';$('cIC').textContent=icTodayTxt();}$('tabWO').classList.toggle('on',isWo(st.mode)&&!sv);
     {const ls=WOM.map(m=>st.lists[m]),n=ls.reduce((a,l)=>a+l.length,0),u=ls.reduce((a,l)=>a+l.reduce((b,x)=>b+x.qty,0),0);$('cWO').textContent=n+' line'+(n===1?'':'s')+' · '+u+' units';}
     ['OUT','IN'].forEach(m=>{const l=st.lists[m];$('c'+m).textContent=l.length+' line'+(l.length===1?'':'s')+' · '+l.reduce((a,x)=>a+x.qty,0)+' units';});
     {const ls=['CNT1','CNT2','CNT3'].map(m=>st.lists[m]),n=ls.reduce((a,l)=>a+l.length,0),u=ls.reduce((a,l)=>a+l.reduce((b,x)=>b+x.qty,0),0);$('cCNT').textContent=n+' line'+(n===1?'':'s')+' · '+u+' units';}
     $('askExp').checked=st.askExp;$('qtyBox').style.display=(st.mode==='OUT'&&!st.askExp)?'':'none';
-    $('scanLabel').textContent=isWo(st.mode)?('WRITE OFF - '+woName(st.mode)+': scan the item (or type the last 4 digits / part of the name)'):isCnt(st.mode)?('COUNTING in '+roomName(st.mode)+': scan the item (or type the last 4 digits / part of the name), then the quantity and the EXPIRY date'):st.mode==='OUT'?'Scan barcode of the item you TAKE (or type the last 4 digits / part of the name)':'Scan barcode of the item you RECEIVE (or type the last 4 digits / part of the name)';
+    $('scanLabel').textContent=st.mode==='IC'?(ic.mode==='app'?'INVENTORY COUNT: count the suggested item below, or scan another item':'INVENTORY COUNT: scan the item you count (or type the last 4 digits / part of the name)'):isWo(st.mode)?('WRITE OFF - '+woName(st.mode)+': scan the item (or type the last 4 digits / part of the name)'):isCnt(st.mode)?('COUNTING in '+roomName(st.mode)+': scan the item (or type the last 4 digits / part of the name), then the quantity and the EXPIRY date'):st.mode==='OUT'?'Scan barcode of the item you TAKE (or type the last 4 digits / part of the name)':'Scan barcode of the item you RECEIVE (or type the last 4 digits / part of the name)';
     renderRoomBar();renderWoBar();$('xlsx').textContent=isCnt(st.mode)?'⬇ Save count Excel (all rooms)':isWo(st.mode)?'⬇ Save write-off Excel (all reasons)':'⬇ Save Excel (.xlsx)';
+    if(st.mode==='IC'){icRenderInfo();return;}
     const l=list();
     if(!l.length){$('listWrap').innerHTML='<div class="empty">Nothing scanned yet.</div>';$('tot').textContent='';return;}
     const IN=st.mode==='IN';
@@ -853,6 +914,7 @@ function c128Scan(gray, w, h, K) {
   let queue=[],qTotal=0,qNote='';
   function pick(item,qtyHint,tag){
     $('sugg').style.display='none';
+    if(st.mode==='IC'){queue=[];$('scan').value='';icOpen(item);return;}
     if(st.mode==='OUT'&&!st.askExp){
       const q=qtyHint||Math.max(1,Math.floor(+$('qty').value)||1);snapshot();
       const de=defOf(item);lastTouched=addLine(list(),'OUT',item,q,de);touched(['OUT']);render();
@@ -933,8 +995,8 @@ function c128Scan(gray, w, h, K) {
   ['rQty','rExp'].forEach(id=>$(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();if(isCnt(st.mode)&&id==='rQty'&&!$('rExp').value.trim()&&!$('rNoExp').checked){$('rExp').focus();return;}saveRecv(false);}if(e.key==='Escape')cancelRecv(true);}));
   $('rNoExp').addEventListener('change',()=>{$('rExp').disabled=$('rNoExp').checked;});
   $('askExp').addEventListener('change',()=>{st.askExp=$('askExp').checked;save();render();focusScan();});
-  function setMode(m){view='scan';if(isCnt(m))st.cnt=m;if(isWo(m))st.wo=m;st.mode=m;cancelRecv();$('sugg').style.display='none';save();render();focusScan();}
-  $('tabOUT').onclick=()=>setMode('OUT');$('tabIN').onclick=()=>setMode('IN');$('tabCNT').onclick=()=>setMode(isCnt(st.cnt)?st.cnt:'CNT1');$('tabWO').onclick=()=>setMode(isWo(st.wo)?st.wo:'WO1');
+  function setMode(m){view='scan';if(isCnt(m))st.cnt=m;if(isWo(m))st.wo=m;const was=st.mode;st.mode=m;cancelRecv();$('sugg').style.display='none';if(m!=='IC')icItem=null;save();render();if(m==='IC'&&was!=='IC')icEnter();else focusScan();}
+  $('tabOUT').onclick=()=>setMode('OUT');$('tabIN').onclick=()=>setMode('IN');$('tabCNT').onclick=()=>setMode(isCnt(st.cnt)?st.cnt:'CNT1');$('tabWO').onclick=()=>setMode(isWo(st.wo)?st.wo:'WO1');$('tabIC').onclick=()=>setMode('IC');
   st.who=englishOnly(st.who,true).text;$('who').value=st.who;
   $('who').addEventListener('input',()=>{const r=englishOnly($('who').value,true);if(r.removed){$('who').value=r.text;msg('warn','“Prepared by”: English letters only (A-Z, 0-9). Please type your name in English.');}st.who=$('who').value;save();});
 
@@ -1516,7 +1578,7 @@ function c128Scan(gray, w, h, K) {
     if(navigator.onLine===false){gateMsg('err','No internet. Connect to Wi-Fi or mobile data the first time.');return;}
     $('gateBtn').disabled=true;gateMsg('warn','Checking…');
     try{const j=await shPost('whoami',{code:pw},15000);sh.scanCode=pw;if(j.role==='charge')sh.chargeCode=pw;sh.loggedIn=true;sh.enabled=true;sh.lastErr='';shSave();
-      $('gatePw').value='';gateMsg('ok','');gateRender();renderConn();shLoadDefaults();const m=ALLM.filter(x=>st.lists[x].length);if(m.length)shQueue(m);shSync();phSync();
+      $('gatePw').value='';gateMsg('ok','');gateRender();renderConn();shLoadDefaults();const m=ALLM.filter(x=>st.lists[x].length);if(m.length)shQueue(m);shSync();phSync();icFlush().then(icLoad);
       msg('ok','Signed in'+(UNIT_NAME?' to '+UNIT_NAME:'')+(j.role==='charge'?' as charge nurse':'')+'.');focusScan();}
     catch(e){gateMsg('err',/wrong code|cannot open/i.test(e.message||'')?'Wrong password.':(/too many/i.test(e.message||'')?e.message:'Could not check the password: '+(e.message||e.name)));}
     finally{$('gateBtn').disabled=false;}
@@ -1639,6 +1701,117 @@ function c128Scan(gray, w, h, K) {
     catch(e){msg('err','Could not use this picture: '+(e.message||e.name));}
   };
   $('rPhotoDel').onclick=async()=>{const it=pendingItem;if(!it||!confirm('Remove the photo of '+it.name+'?'))return;if(await phWrite([[it.ir,null]])){if(sh.phTs[it.ir]||sh.phPend[it.ir]==='set'){sh.phPend[it.ir]='del';shSave();}renderRecvPhoto(it);render();phSync();}};
+  // ================================================================ INVENTORY COUNT
+  // Every count is saved at once in the unit's Google Sheet (sheet "Counts": the latest count of every item, sheet "CountLog": all counts),
+  // so the whole unit shares one count. Kept on the phone too (works offline, sent later).
+  function icTodayTxt(){const t=icDay(0);const n=Object.keys(ic.counts).filter(ir=>String(ic.counts[ir].at||'').startsWith(t)).length;return n+' counted today';}
+  function icLotsTxt(c,unit){return (c.lots||[]).map(l=>l.qty+(l.expiry?' × '+dmy(l.expiry):' (no expiry)')).join(', ');}
+  function icLastTxt(ir,unit){const c=ic.counts[ir];if(!c)return 'Never counted in this unit.';return 'Last count: <b>'+xmlEsc(icAt(c.at))+'</b> by <b>'+xmlEsc(c.by||'?')+'</b> · total '+c.total+(unit?' '+xmlEsc(unit):'')+(c.lots&&c.lots.length?' ('+xmlEsc(icLotsTxt(c))+')':'')+(ic.pend[ir]?' · <i>not sent yet</i>':'');}
+  function icMerge(lots){const by={},order=[];lots.forEach(l=>{if(!(l.expiry in by)){by[l.expiry]=0;order.push(l.expiry);}by[l.expiry]+=l.qty;});return order.map(e=>({qty:by[e],expiry:e}));}
+  function icRowHtml(q,e,def,first){return '<div class="icrow"><input class="icq" type="number" min="0" inputmode="numeric" placeholder="Qty" value="'+xmlEsc(q)+'"><input class="ice" type="text" autocomplete="off" placeholder="DD/MM/YYYY" value="'+xmlEsc(e)+'"><label class="icdef" title="Set as default expiry date"><input type="checkbox"'+(def?' checked':'')+'>default</label>'+(first?'<span style="width:34px"></span>':'<button class="x" type="button" title="Remove this row">✕</button>')+'</div>';}
+  function icOpen(it){
+    if(!it)return;icItem=it;const c=ic.counts[it.ir],de=defOf(it),today=icDay(0),exps=[];
+    if(de)exps.push(de);
+    if(c&&c.lots)c.lots.forEach(l=>{if(l.expiry&&l.expiry>=today&&exps.indexOf(l.expiry)<0)exps.push(l.expiry);});
+    if(!exps.length)exps.push('');
+    $('icName').innerHTML=thumb(it.ir,72)+xmlEsc(it.name)+'<div class="note" style="margin:2px 0 0;font-weight:400">'+xmlEsc(it.ir)+(it.unit?' · unit '+xmlEsc(it.unit):'')+(it.loc?' · '+xmlEsc(shortLoc(it.loc)):'')+'</div>';
+    $('icLast').innerHTML=icLastTxt(it.ir,it.unit);
+    $('icRows').innerHTML=exps.map((e,i)=>icRowHtml('',e?dmy(e):'',!!de&&e===de,i===0)).join('');
+    $('icSkip').style.display=ic.mode==='app'?'':'none';$('icCancel').style.display=ic.mode==='app'?'none':'';
+    $('icPanel').style.display='';icRenderNext();
+    const q=$('icRows').querySelector('.icq');if(q){q.focus();try{$('icPanel').scrollIntoView({block:'start',behavior:'smooth'});}catch(e){}}
+  }
+  function icClose(){icItem=null;$('icPanel').style.display='none';icRenderNext();}
+  $('icRows').addEventListener('change',e=>{const t=e.target;if(t.type==='checkbox'&&t.checked)$('icRows').querySelectorAll('.icdef input').forEach(x=>{if(x!==t)x.checked=false;});});
+  $('icRows').addEventListener('click',e=>{const b=e.target.closest('button.x');if(b){b.closest('.icrow').remove();}});
+  $('icRows').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();const r=e.target.closest('.icrow');if(e.target.classList.contains('icq')){r.querySelector('.ice').focus();}else icDoSave();});
+  $('icAdd').onclick=()=>{$('icRows').insertAdjacentHTML('beforeend',icRowHtml('','',false,false));const r=$('icRows').lastElementChild;r.querySelector('.icq').focus();};
+  $('icCancel').onclick=()=>{icClose();msg('','');focusScan();};
+  $('icSkip').onclick=()=>{if(icItem)icSkip.push(icItem.ir);icOpenNext();};
+  async function icDoSave(){
+    const it=icItem;if(!it)return;
+    const who=(st.who||'').trim();if(!who){msg('err','Type your name in “Prepared by” at the top first - the count is saved with your name.');beep(false);$('who').focus();return;}
+    const lots=[];let bad='',defE='';
+    $('icRows').querySelectorAll('.icrow').forEach(r=>{if(bad)return;const qs=r.querySelector('.icq').value.trim(),es=r.querySelector('.ice').value.trim(),d=r.querySelector('.icdef input').checked;
+      let e='';if(es){e=parseExpiry(es);if(!e){bad='Expiry date not understood: “'+es+'” (use 31/12/2030 or 12/2030).';return;}}
+      if(d&&e)defE=e;if(qs==='')return;const q=Math.floor(+qs);if(!(q>=0)||q>1000000){bad='The quantity must be 0 or more.';return;}lots.push({qty:q,expiry:e});});
+    if(bad){msg('err',bad);beep(false);return;}
+    if(!lots.length){if(!confirm('No quantity typed.\n\nSave '+it.name+' as 0 (none in the store)?'))return;lots.push({qty:0,expiry:''});}
+    const m=icMerge(lots),total=m.reduce((a,l)=>a+l.qty,0);
+    ic.counts[it.ir]={lots:m,total,by:who,at:icNow()};ic.pend[it.ir]={ir:it.ir,name:it.name,lots:m};icStore();
+    if(defE&&defE!==defOf(it))setDef(it.ir,defE);
+    msg('ok','Count saved: '+it.name+' = '+total+(it.unit?' '+it.unit:'')+(m.length>1?' ('+m.length+' expiry dates)':'')+(shReady()?'':'  (kept on this phone - no Google Sheet link)'));beep(true);
+    icFlush();
+    if(ic.mode==='app')icOpenNext();else{icClose();focusScan();}
+    render();
+  }
+  $('icSave').onclick=icDoSave;
+  function icOrder(){return items.map((it,i)=>({it,i,at:String((ic.counts[it.ir]&&ic.counts[it.ir].at)||'')})).sort((a,b)=>a.at.localeCompare(b.at)||a.i-b.i).map(o=>o.it);}
+  function icOpenNext(){
+    if(!items.length){msg('warn','The item list is not loaded yet.');return;}
+    let q=icOrder().filter(it=>icSkip.indexOf(it.ir)<0&&(!icItem||it.ir!==icItem.ir));
+    if(!q.length){icSkip=[];q=icOrder();}
+    icOpen(q[0]);
+  }
+  function icRenderNext(){
+    if(ic.mode!=='app'||!items.length){$('icNext').innerHTML='';return;}
+    const q=icOrder().filter(it=>icSkip.indexOf(it.ir)<0&&(!icItem||it.ir!==icItem.ir)).slice(0,5);
+    $('icNext').innerHTML='<div class="note" style="margin:10px 0 2px"><b>Next suggested</b> (never counted / oldest count first) - tap to count now:</div>'+q.map(it=>{const c=ic.counts[it.ir];
+      return '<button type="button" class="btn alt nx" data-ir="'+xmlEsc(it.ir)+'">'+xmlEsc(it.name)+'<small>'+(c?'last count '+xmlEsc(icAt(c.at))+' by '+xmlEsc(c.by||'?'):'never counted')+(it.loc?' · '+xmlEsc(shortLoc(it.loc)):'')+'</small></button>';}).join('');
+  }
+  $('icNext').addEventListener('click',e=>{const b=e.target.closest('button[data-ir]');if(b){const it=map.get(b.dataset.ir);if(it)icOpen(it);}});
+  function icRenderInfo(){
+    $('icModeStaff').classList.toggle('on',ic.mode==='staff');$('icModeApp').classList.toggle('on',ic.mode==='app');
+    const n=items.length,keys=Object.keys(ic.counts),since=icDay(30),rec=items.filter(it=>ic.counts[it.ir]&&String(ic.counts[it.ir].at)>=since).length,never=items.filter(it=>!ic.counts[it.ir]).length,pend=Object.keys(ic.pend).length;
+    $('icStat').innerHTML='Counted in the last 30 days: <b>'+rec+'</b> of '+n+' items · never counted: <b>'+never+'</b>'+(pend?' · <span style="color:var(--out)">'+pend+' not sent yet</span>':'')+(shReady()?'':' · <b>not shared</b> (no Google Sheet link)');
+    if(icItem)$('icLast').innerHTML=icLastTxt(icItem.ir,icItem.unit);
+    const last=keys.sort((a,b)=>String(ic.counts[b].at).localeCompare(String(ic.counts[a].at))).slice(0,8);
+    $('icRecent').innerHTML=last.length?'<b>Last counts in the unit</b>'+last.map(ir=>{const c=ic.counts[ir],it=map.get(ir);return '<div>'+xmlEsc(icAt(c.at))+' · <b>'+xmlEsc(c.by||'?')+'</b> · '+xmlEsc(it?it.name:ir)+' = '+c.total+'</div>';}).join(''):'';
+    icRenderNext();
+  }
+  $('icModeStaff').onclick=()=>{ic.mode='staff';icStore();icClose();render();focusScan();};
+  $('icModeApp').onclick=()=>{ic.mode='app';icStore();render();icOpenNext();};
+  async function icFlush(){
+    if(icBusy||!shReady()||navigator.onLine===false||needLogin())return;const k=Object.keys(ic.pend);if(!k.length)return;
+    const who=(st.who||'').trim();if(!who)return;
+    icBusy=true;const snap=Object.assign({},ic.pend);
+    try{const j=await shPost('countSet',{code:sh.scanCode||sh.chargeCode,by:who,device:sh.device,items:k.map(ir=>snap[ir])},30000);
+      k.forEach(ir=>{if(ic.pend[ir]===snap[ir]){delete ic.pend[ir];if(ic.counts[ir])ic.counts[ir].at=j.at||ic.counts[ir].at;}});icStore();if(st.mode==='IC')icRenderInfo();}
+    catch(e){gateOnError(e);if(st.mode==='IC'&&/old version|unknown action/i.test(e.message||''))msg('warn','Counts are kept on this phone: the Google Sheet script is an old version (paste the new SharedList_Code and deploy a new version).');}
+    finally{icBusy=false;}
+  }
+  async function icLoad(){
+    if(icLoading||!shReady()||navigator.onLine===false||needLogin())return;icLoading=true;
+    try{const j=await shPost('counts',{code:sh.scanCode||sh.chargeCode},20000),srv=j.counts||{},out={};
+      Object.keys(srv).forEach(ir=>{const c=srv[ir];if(c&&Array.isArray(c.lots))out[ir]={lots:c.lots,total:+c.total||0,by:c.by||'',at:c.at||''};});
+      Object.keys(ic.pend).forEach(ir=>{if(ic.counts[ir])out[ir]=ic.counts[ir];});
+      ic.counts=out;ic.at=Date.now();icStore();if(st.mode==='IC'){icRenderInfo();$('cIC').textContent=icTodayTxt();}}
+    catch(e){gateOnError(e);}
+    finally{icLoading=false;}
+  }
+  function icEnter(){icRenderInfo();icFlush().then(icLoad).then(()=>{if(st.mode==='IC'&&ic.mode==='app'&&!icItem)icOpenNext();});if(ic.mode==='app'&&!icItem&&items.length)icOpenNext();else focusScan();}
+  $('icRefresh').onclick=()=>{icFlush().then(icLoad).then(()=>msg('ok','Counts refreshed.'));};
+  setInterval(()=>{if(st.mode==='IC'&&view==='scan'&&!document.hidden)icFlush().then(icLoad);},60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&st.mode==='IC')icFlush().then(icLoad);});
+  window.addEventListener('online',()=>icFlush());
+  const IC_COLS=TEMPLATE_COLS.concat([['Last counted','lastc','s',18],['Counted by','countedby','s',16]]);
+  $('icXlsx').onclick=async()=>{
+    const r0=$('icRange').value,since=r0==='all'?'':icDay(r0==='1'?0:+r0),rows=[];let nIt=0;
+    items.forEach(it=>{const c=ic.counts[it.ir];if(!c||(since&&String(c.at)<since))return;nIt++;
+      const ls=(c.lots&&c.lots.length?c.lots:[{qty:0,expiry:''}]).slice().sort((a,b)=>(a.expiry||'9999').localeCompare(b.expiry||'9999'));
+      buildRows(ls.map(l=>({ir:it.ir,name:it.name,expiry:l.expiry||'',qty:l.qty})),items,false).forEach(r=>{r.lastc=icAt(c.at);r.countedby=c.by||'';rows.push(r);});});
+    if(!rows.length){msg('err','Nothing was counted in this period.');beep(false);return;}
+    const who0=(st.who||'').trim(),nowD=new Date(),label=$('icRange').selectedOptions[0].textContent.replace(/^Excel: /,'');
+    const meta={who:who0,created:nowD,title:'INVENTORY COUNT',infoName:'Info',info:st.infoSheet?[
+      ['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],
+      ['Type','INVENTORY COUNT'],...(UNIT_NAME?[['Unit',UNIT_NAME]]:[]),['Period',label],['Items',nIt],['Lines',rows.length],['Total units',rows.reduce((a,x)=>a+(+x.qty||0),0)],['Tool','CCS Scan Helper'],
+      ['Note','The data is on the first sheet (inventory list). One row per item and expiry date. The last two columns are the date of the last count and who counted.']]:null};
+    const wn=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),r=await saveExport('CCS_Count_'+stamp()+(wn?'_'+wn:'')+'.xlsx',buildXlsx('inventory list',IC_COLS,rows,meta));
+    if(r.cancelled){msg('warn','Save cancelled - nothing was saved.');return;}
+    if(r.blocked){msg('err','The file was probably NOT saved (downloads are blocked in this preview).');beep(false);return;}
+    msg('ok','Saved '+r.name+' in '+r.where+' ('+nIt+' items, '+rows.length+' lines).');beep(true);
+  };
+
   // ---- photo sync with the unit's Google Sheet
   if(!sh.phTs||typeof sh.phTs!=='object')sh.phTs={};if(!sh.phPend||typeof sh.phPend!=='object')sh.phPend={};
   let phBusy=false,phAt=0,phReady=false;
