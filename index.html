@@ -67,7 +67,24 @@ button{font:inherit;cursor:pointer}
 .msg.ok{display:block;background:var(--inbg);color:var(--in)}
 .msg.err{display:block;background:var(--outbg);color:var(--out)}
 .msg.warn{display:block;background:var(--warnbg);color:var(--warn)}
-#sugg{margin-top:8px;display:none;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+#sugg{margin:0 0 8px;display:none;border:1px solid var(--line);border-radius:8px;overflow-y:auto;max-height:38vh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#sugg div{padding:7px 10px!important;font-size:13.5px!important}
+#sugg .sghead{position:sticky;top:0;background:var(--card);font-size:11.5px!important;color:var(--muted);cursor:default;padding:4px 10px!important}
+#saveBar{padding:8px 10px}
+#saveBar .sbrow{display:flex;gap:6px;align-items:flex-start}
+#saveBar .btn{padding:9px 12px;font-size:14.5px}
+#saveBar .sbx{display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex:1 1 auto;min-width:0}
+#saveBar .sbinfo{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+#saveBar select{font-size:14px;padding:8px 4px;flex:1 1 120px;min-width:0;max-width:200px}
+#saveBar .tot{font-size:12.5px;margin:0}
+#gearBtn{flex:0 0 auto;padding:8px 11px!important;font-size:17px!important}
+#gearPanel{display:none;margin-top:10px;border-top:1px solid var(--line);padding-top:10px}
+#gearPanel .bar{margin-bottom:8px}
+#gearPanel .btn{padding:8px 12px;font-size:14px}
+.ice.xbad{border-color:var(--out)!important;background:var(--outbg);color:var(--out)}
+.ice.xnear{border-color:#d97706!important;background:#fff4e0;color:#9a4b00}
+#icNote{width:100%;font-size:15px;padding:8px 10px;margin:4px 0 2px}
+#icTot .xw{color:var(--out)}
 #sugg div{padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;font-size:14px}
 #sugg div:last-child{border-bottom:0}
 #sugg div:hover{background:var(--hi)}
@@ -178,7 +195,10 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
 .icrow .icdef{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;font-size:10.5px;color:var(--muted);margin:0;line-height:1.1}
 .icrow .icdef input{width:22px;height:22px;margin:0 0 2px}
 .icrow .x{flex:0 0 auto}
-#icAdd{width:100%;font-size:20px;padding:8px;margin:2px 0 10px}
+.sthead{display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:12.5px;letter-spacing:.05em;color:var(--muted);margin:8px 0 3px;border-top:1px solid rgba(127,127,127,.25);padding-top:6px}
+.sthead:first-of-type{border-top:0;padding-top:0}
+#icTot{font-weight:600;margin:8px 0 0}
+#icAdd,#icAdd2{width:100%;font-size:20px;padding:8px;margin:2px 0 10px}
 #icNext .nx{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;font-size:13.5px}
 #icNext .nx small{display:block;color:var(--muted);font-weight:400}
 #icRecent{font-size:12.5px;color:var(--muted);margin-top:8px}
@@ -268,11 +288,53 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
     <button class="tab cnt" id="tabCNT" type="button">COUNT <small id="cCNT">0 lines</small></button>
   </div>
   <div id="scanView">
+  <div class="card" id="saveBar">
+    <div class="sbrow">
+      <span class="sbx" id="listXbar"><button class="btn" id="xlsx" type="button">&#11015; Save Excel</button><button class="btn alt" id="undo" type="button" title="Undo the last change of the list">&#8630; Undo</button><span class="sbinfo"><span class="tot" id="tot"></span><span class="tot" id="shBadge"></span></span></span>
+      <span class="sbx" id="icXbar"><select id="icRange"><option value="30">Counted: last 30 days</option><option value="7">Counted: last 7 days</option><option value="1">Counted: today</option><option value="all" selected>Counted: all</option><option value="not30">NOT counted in 30 days</option></select>
+      <button class="btn" id="icXlsx" type="button">&#11015; Save Excel</button>
+      <button class="btn alt" id="icRefresh" type="button" title="Refresh the counts of all phones">&#8635;</button><button class="btn alt" id="icUndo" type="button" style="display:none" title="Undo the last saved count (10 minutes)">&#8630; Undo</button></span>
+      <button class="btn alt" id="gearBtn" type="button" title="Save settings">&#9881;</button>
+    </div>
+    <div id="gearPanel">
+      <div class="bar" style="margin-bottom:10px">
+      <span class="note" style="margin:0">Save Excel to:</span>
+      <select id="saveMode">
+        <option value="downloads">Browser Downloads folder</option>
+        <option value="ask">Ask me each time (Save as…)</option>
+        <option value="folder">A fixed folder I choose</option>
+        <option value="share">Phone: share sheet (OneDrive, Teams, email…)</option>
+      </select>
+      <button class="btn alt" id="expChoose" type="button" style="display:none;padding:8px 14px">Choose folder</button>
+      <span class="note" id="expName" style="margin:0"></span>
+      <label class="chk" id="copyRow" style="margin:0 0 0 6px;display:none"><input type="checkbox" id="copySh" checked> also copy to the shared folder</label>
+    </div>
+    <div class="bar" style="margin-bottom:10px">
+      <span class="note" style="margin:0">Shared folder link:</span>
+      <input id="shareLink" type="text" placeholder="https://…" autocomplete="off" style="flex:1;min-width:220px;max-width:460px;font-size:15px;padding:8px 10px">
+      <button class="btn alt" id="openShared" type="button" style="display:none;padding:8px 14px">📂 Open shared folder</button>
+      <label class="chk" id="autoRow" style="margin:0 0 0 6px;display:none"><input type="checkbox" id="autoOpen"> open it after saving</label>
+    </div>
+      <div class="bar">
+      
+      <button class="btn alt" id="copy" type="button" style="display:none">Copy for Excel</button>
+      
+      <button class="btn danger" id="clear" type="button">Clear list</button>
+      <button class="btn alt" id="sendFile" type="button" title="Backup: send your lists as a small file (Teams / WhatsApp) to the charge nurse">&#128228; Send file</button>
+      <label class="chk" style="margin:0 0 0 6px"><input type="checkbox" id="snd" checked> sound</label>
+      <label class="chk" style="display:none"><input type="checkbox" id="askExp" checked> ask expiry on STOCK OUT</label>
+      <label class="chk" style="margin:0 0 0 6px" title="Whole item list like the CCS template, Qty filled only for scanned items"><input type="checkbox" id="allItems"> export all items</label>
+      <label class="chk" style="margin:0 0 0 6px" title="Adds a second sheet “Info” (Prepared by, date, counts). The file author is always set to your name. Turn off if CCS refuses the file."><input type="checkbox" id="infoSheet" checked> name sheet in file</label>
+      
+    </div>
+    </div>
+  </div>
 
   <div class="card">
     <div id="roomBar" style="display:none"></div>
     <div id="woBar" style="display:none"></div>
     <label for="scan" id="scanLabel">Scan barcode (or type part of the item name)</label>
+    <div id="sugg"></div>
     <div class="scanline">
       <div id="qtyBox"><input id="qty" type="number" min="1" value="1" aria-label="Quantity per scan" title="Quantity per scan"></div>
       <input id="scan" type="text" autocomplete="off" autofocus>
@@ -285,29 +347,31 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
     </div>
     <input id="videoIn" type="file" accept="video/*" capture="environment" style="display:none">
     <input id="photoIn" type="file" accept="image/*" capture="environment" style="display:none">
-    <div id="sugg"></div>
     <div id="msg" class="msg"></div>
   </div>
 
   <div class="card" id="icCard" style="display:none">
-    <div id="icModes"><button type="button" class="room" id="icModeStaff">Staff choice<small>scan what you count</small></button><button type="button" class="room" id="icModeApp">App suggests<small>oldest count first</small></button><button type="button" class="room" id="icModeNoir">No IR items<small>items without a code</small></button></div>
+    <div id="icModes"><button type="button" class="room" id="icModeStaff">Staff choice<small>scan what you count</small></button><button type="button" class="room" id="icModeApp">App suggests<small>shelf by shelf</small></button><button type="button" class="room" id="icModeNoir">No IR items<small>items without a code</small></button></div>
     <div class="note" id="icStat" style="margin:0"></div>
     <div id="icPanel" style="display:none">
       <div class="name" id="icName"></div>
       <div class="snrow"><input id="icAlt" type="text" autocomplete="off" placeholder="Second name (for easier search, all units)"><button class="btn alt" id="icAltSave" type="button">Save name</button></div>
       <div class="phbox"><div id="icPhoto"></div><div><button class="btn alt" id="icPhotoBtn" type="button">📷 Add photo</button><button class="btn alt" id="icPhotoDel" type="button" style="display:none">Remove photo</button><br><a id="icPhotoSearch" href="#" target="_blank" rel="noopener">🔎 Find a picture on the internet</a></div></div>
       <div class="note" id="icLast"></div>
-      <div class="note" style="margin:0 0 4px">Quantity · Expiry date (31/12/2030 or 12/2030, empty = no expiry) · tick = default expiry date</div>
+      <div class="note" style="margin:0 0 4px">Qty · Expiry (31/12/2030 or 12/2030) · tick = default</div>
+      <div class="sthead">STORE 1</div>
       <div id="icRows"></div>
-      <button class="btn alt" id="icAdd" type="button" title="Another expiry date of the same item">＋</button>
+      <button class="btn alt" id="icAdd" type="button" title="Another expiry date in Store 1">＋</button>
+      <div id="icS2" style="display:none"><div class="sthead">STORE 2<button class="x" id="icS2Del" type="button" title="Remove Store 2 from this count">✕</button></div>
+        <div id="icRows2"></div>
+        <button class="btn alt" id="icAdd2" type="button" title="Another expiry date in Store 2">＋</button></div>
+      <button class="btn alt" id="icS2Btn" type="button" style="margin-top:6px">＋ Add Store 2 (optional)</button>
+      <div class="note" id="icTot"></div>
+      <input id="icNote" type="text" maxlength="120" autocomplete="off" placeholder="Note (optional) e.g. box damaged">
       <div class="bar"><button class="btn in" id="icSave" type="button">Save count</button><button class="btn alt" id="icSkip" type="button">Skip</button><button class="btn alt" id="icCancel" type="button">Cancel</button></div>
     </div>
     <div id="icNext"></div>
-    <div class="bar" style="margin-top:10px" id="icXbar">
-      <select id="icRange"><option value="30">Excel: counted in the last 30 days</option><option value="7">Excel: last 7 days</option><option value="1">Excel: today</option><option value="all" selected>Excel: all counted items</option></select>
-      <button class="btn" id="icXlsx" type="button">&#11015; Save count Excel</button>
-      <button class="btn alt" id="icRefresh" type="button">&#8635; Refresh</button>
-    </div>
+    
     <div id="icRecent"></div>
     <div id="nrBox" style="display:none">
       <button class="btn in" id="nrNew" type="button" style="width:100%;margin-top:8px">＋ New item without IR</button>
@@ -338,41 +402,10 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
     </div>
   </div>
 
+  
   <div class="card" id="listCard">
-    <div class="bar" style="margin-bottom:10px">
-      <span class="note" style="margin:0">Excel file is saved to:</span>
-      <select id="saveMode">
-        <option value="downloads">Browser Downloads folder</option>
-        <option value="ask">Ask me each time (Save as…)</option>
-        <option value="folder">A fixed folder I choose</option>
-        <option value="share">Phone: share sheet (OneDrive, Teams, email…)</option>
-      </select>
-      <button class="btn alt" id="expChoose" type="button" style="display:none;padding:8px 14px">Choose folder</button>
-      <span class="note" id="expName" style="margin:0"></span>
-      <label class="chk" id="copyRow" style="margin:0 0 0 6px;display:none"><input type="checkbox" id="copySh" checked> also copy to the shared folder</label>
-    </div>
-    <div class="bar" style="margin-bottom:10px">
-      <span class="note" style="margin:0">Shared folder link (OneDrive / SharePoint / Forms):</span>
-      <input id="shareLink" type="text" placeholder="https://…" autocomplete="off" style="flex:1;min-width:220px;max-width:460px;font-size:15px;padding:8px 10px">
-      <button class="btn alt" id="openShared" type="button" style="display:none;padding:8px 14px">📂 Open shared folder</button>
-      <label class="chk" id="autoRow" style="margin:0 0 0 6px;display:none"><input type="checkbox" id="autoOpen"> open it after saving</label>
-    </div>
-    <div class="bar" style="margin-bottom:8px">
-      <button class="btn" id="xlsx" type="button">&#11015; Save Excel (.xlsx)</button>
-      <button class="btn alt" id="copy" type="button" style="display:none">Copy for Excel</button>
-      <button class="btn alt" id="undo" type="button">&#8630; Undo</button>
-      <button class="btn danger" id="clear" type="button">Clear list</button>
-      <button class="btn alt" id="sendFile" type="button" title="Backup: send your lists as a small file (Teams / WhatsApp) to the charge nurse">&#128228; Send file</button>
-      <label class="chk" style="margin:0 0 0 6px"><input type="checkbox" id="snd" checked> sound</label>
-      <label class="chk" style="display:none"><input type="checkbox" id="askExp" checked> ask expiry on STOCK OUT</label>
-      <label class="chk" style="margin:0 0 0 6px" title="Whole item list like the CCS template, Qty filled only for scanned items"><input type="checkbox" id="allItems"> export all items</label>
-      <label class="chk" style="margin:0 0 0 6px" title="Adds a second sheet “Info” (Prepared by, date, counts). The file author is always set to your name. Turn off if CCS refuses the file."><input type="checkbox" id="infoSheet" checked> name sheet in file</label>
-      <span class="tot" id="tot"></span><span class="tot" id="shBadge"></span>
-    </div>
     <textarea id="copyBox" readonly style="display:none;width:100%;height:140px;font:13px monospace;margin-bottom:8px;border:2px solid var(--blue2);border-radius:8px;background:var(--card);color:var(--ink);padding:8px"></textarea>
     <div id="listWrap"></div>
-    <div class="note">The list is kept on this computer even if you close the page. Save the Excel file (same columns as the CCS template), then use
-      <b>Import Stock Out from Excel</b> / <b>Import Stock In from Excel</b> in CCS.</div>
   </div>
   </div><!-- /scanView -->
 
@@ -445,7 +478,7 @@ header input{font-size:14px!important;padding:5px 8px!important;width:170px!impo
     <div class="note">Import the CCS inventory Excel (columns ir_number, item name, Expiry, Location, max_stock, min_stock, Unit Price, Qty_type) or a setup file (.json) from your team. It is kept on this phone.</div>
   </div>
 
-  <div class="card">
+  <div class="card" id="addItemCard">
     <details><summary>Item not in the list? Add it</summary>
       <div class="grid" style="margin-top:10px;grid-template-columns:150px 1fr 100px auto">
         <div><label for="nIr">IR number</label><input id="nIr" type="text" autocomplete="off"></div>
@@ -468,7 +501,7 @@ const TEMPLATE_COLS = [['ir_number','ir','s',14],['item name','name','s',70],['E
 // DEFAULT shared folder link (OneDrive / SharePoint / Microsoft Forms upload link). It is part of this file, so everybody who gets
 // the file already has it and it never gets lost when the page is closed. To change it for everybody, edit the text between the quotes.
 const UPLOAD_LINK = '';
-const VERSION = '4.2';
+const VERSION = '4.4';
 const FOLDER_FEATURE = false;          // shared-folder sync is switched off (not usable on the hospital PCs); the code is kept          // shown in the page header, so you can see which copy of the file you are running
 const EXPORT = {
   OUT: { sheet: 'inventory list', file: 'CCS_StockOut', cols: TEMPLATE_COLS },
@@ -837,8 +870,8 @@ function c128Scan(gray, w, h, K) {
   function snapshot(){st.hist.push(JSON.stringify(st.lists));shHist.push(JSON.stringify(sh.sess));if(st.hist.length>30){st.hist.shift();shHist.shift();}}
   const list=()=>st.lists[st.mode]||[];
   const IC_KEY='ccsCount.v1'+PROFILE;
-  let ic={mode:'staff',counts:{},pend:{},at:0},icItem=null,icSkip=[],icBusy=false,icLoading=false;
-  try{const o=JSON.parse(localStorage.getItem(IC_KEY)||'null');if(o&&typeof o==='object'){ic.mode=(o.mode==='app'||o.mode==='noir')?o.mode:'staff';ic.counts=(o.counts&&typeof o.counts==='object')?o.counts:{};ic.pend=(o.pend&&typeof o.pend==='object')?o.pend:{};ic.at=+o.at||0;}}catch(e){}
+  let ic={mode:'staff',counts:{},pend:{},undo:{},at:0},icLast=null,icItem=null,icSkip=[],icBusy=false,icLoading=false;
+  try{const o=JSON.parse(localStorage.getItem(IC_KEY)||'null');if(o&&typeof o==='object'){ic.mode=(o.mode==='app'||o.mode==='noir')?o.mode:'staff';ic.counts=(o.counts&&typeof o.counts==='object')?o.counts:{};ic.pend=(o.pend&&typeof o.pend==='object')?o.pend:{};ic.undo=(o.undo&&typeof o.undo==='object')?o.undo:{};ic.at=+o.at||0;}}catch(e){}
   function icStore(){try{localStorage.setItem(IC_KEY,JSON.stringify(ic));}catch(e){}}
   const icNow=()=>{const d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())+' '+pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds());};
   const icDay=n=>{const d=new Date(Date.now()-(n||0)*86400000);return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());};
@@ -959,16 +992,17 @@ function c128Scan(gray, w, h, K) {
   function altHtml(ir){const t=altTxt(ir);return t?'<span class="alt2">'+xmlEsc(t)+'</span>':'';}
   function render(){
     const hv=view==='history',sv=view==='shared'||hv;$('scanView').style.display=sv?'none':'';$('sharedView').style.display=view==='shared'?'':'none';$('historyView').style.display=hv?'':'none';$('tabSH').classList.toggle('on',view==='shared');$('tabHI').classList.toggle('on',hv);
-    $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);$('tabCNT').classList.toggle('on',isCnt(st.mode)&&!sv);{const icm=st.mode==='IC',nrm=icm&&ic.mode==='noir';$('addBtn').style.display=icm?'none':'';$('scan').classList.toggle('solo',icm);document.querySelector('.scanline').style.display=nrm?'none':'';document.querySelector('.camrow').style.display=nrm?'none':'';$('tabIC').classList.toggle('on',icm&&!sv);$('icCard').style.display=icm?'':'none';$('listCard').style.display=icm?'none':'';$('cIC').textContent=icTodayTxt();}$('tabWO').classList.toggle('on',isWo(st.mode)&&!sv);
+    $('tabOUT').classList.toggle('on',st.mode==='OUT'&&!sv);$('tabIN').classList.toggle('on',st.mode==='IN'&&!sv);$('tabCNT').classList.toggle('on',isCnt(st.mode)&&!sv);{const icm=st.mode==='IC',nrm=icm&&ic.mode==='noir';$('addBtn').style.display=icm?'none':'';$('scan').classList.toggle('solo',icm);document.querySelector('.scanline').style.display=nrm?'none':'';document.querySelector('.camrow').style.display=nrm?'none':'';$('tabIC').classList.toggle('on',icm&&!sv);$('icCard').style.display=icm?'':'none';$('listCard').style.display=icm?'none':'';$('listXbar').style.display=icm?'none':'';$('icXbar').style.display=icm&&!nrm?'':'none';$('addItemCard').style.display=icm?'':'none';$('allItems').closest('label').style.display=icm?'none':'';icUndoShow();$('cIC').textContent=icTodayTxt();}$('tabWO').classList.toggle('on',isWo(st.mode)&&!sv);
     {const ls=WOM.map(m=>st.lists[m]),n=ls.reduce((a,l)=>a+l.length,0),u=ls.reduce((a,l)=>a+l.reduce((b,x)=>b+x.qty,0),0);$('cWO').textContent=n+' line'+(n===1?'':'s')+' · '+u+' units';}
     ['OUT','IN'].forEach(m=>{const l=st.lists[m];$('c'+m).textContent=l.length+' line'+(l.length===1?'':'s')+' · '+l.reduce((a,x)=>a+x.qty,0)+' units';});
     {const ls=['CNT1','CNT2','CNT3'].map(m=>st.lists[m]),n=ls.reduce((a,l)=>a+l.length,0),u=ls.reduce((a,l)=>a+l.reduce((b,x)=>b+x.qty,0),0);$('cCNT').textContent=n+' line'+(n===1?'':'s')+' · '+u+' units';}
     $('askExp').checked=st.askExp;$('qtyBox').style.display=(st.mode==='OUT'&&!st.askExp)?'':'none';
-    $('scanLabel').textContent=st.mode==='IC'?(ic.mode==='noir'?'ITEMS WITHOUT AN IR NUMBER: add or count them below (name, 2 photos, quantity)':ic.mode==='app'?'INVENTORY COUNT: count the suggested item below, or scan another item':'INVENTORY COUNT: scan the item you count (or type the last 4 digits / part of the name)'):isWo(st.mode)?('WRITE OFF - '+woName(st.mode)+': scan the item (or type the last 4 digits / part of the name)'):isCnt(st.mode)?('COUNTING in '+roomName(st.mode)+': scan the item (or type the last 4 digits / part of the name), then the quantity and the EXPIRY date'):st.mode==='OUT'?'Scan barcode of the item you TAKE (or type the last 4 digits / part of the name)':'Scan barcode of the item you RECEIVE (or type the last 4 digits / part of the name)';
-    renderRoomBar();renderWoBar();$('xlsx').textContent=isCnt(st.mode)?'⬇ Save count Excel (all rooms)':isWo(st.mode)?'⬇ Save write-off Excel (all reasons)':'⬇ Save Excel (.xlsx)';
+    $('scanLabel').textContent=st.mode==='IC'?(ic.mode==='noir'?'ITEMS WITHOUT AN IR NUMBER: add or count them below':ic.mode==='app'?'INVENTORY COUNT: count the suggested item, or scan another':'INVENTORY COUNT: scan or type item name / last 4 digits'):isWo(st.mode)?('WRITE OFF - '+woName(st.mode)+': scan or type item name / last 4 digits'):isCnt(st.mode)?('COUNT in '+roomName(st.mode)+': scan or type item name / last 4 digits'):st.mode==='OUT'?'STOCK OUT: scan or type item name / last 4 digits':'STOCK IN: scan or type item name / last 4 digits';
+    renderRoomBar();renderWoBar();$('xlsx').textContent=isCnt(st.mode)?'⬇ Save count Excel':isWo(st.mode)?'⬇ Save write-off Excel':'⬇ Save Excel';
     if(st.mode==='IC'){icRenderInfo();return;}
     const l=list();
-    if(!l.length){$('listWrap').innerHTML='<div class="empty">Nothing scanned yet.</div>';$('tot').textContent='';return;}
+    if(!l.length){$('listWrap').innerHTML='<div class="empty">Nothing scanned yet.</div>';$('tot').textContent='';$('listCard').style.display='none';return;}
+    $('listCard').style.display='';
     const IN=st.mode==='IN';
     const showExp=true;                                   // the expiry date is always shown and can be edited
     let h='<table><thead><tr><th>#</th><th>IR number</th><th>Item</th>'+(showExp?'<th>Expiry</th>':'')+'<th>Qty</th><th></th></tr></thead><tbody>';
@@ -979,7 +1013,7 @@ function c128Scan(gray, w, h, K) {
         '<td><div class="q"><button data-a="m" data-i="'+i+'">−</button><input type="number" min="1" value="'+x.qty+'" data-a="q" data-i="'+i+'"><button data-a="p" data-i="'+i+'">+</button>'+unitBadge(unitOf(x.ir))+'</div></td>'+
         '<td><button class="x" title="Remove" data-a="d" data-i="'+i+'">✕</button></td></tr>';});
     $('listWrap').innerHTML=h+'</tbody></table>';
-    $('tot').textContent=l.length+' lines · '+l.reduce((a,x)=>a+x.qty,0)+' units'+(isCnt(st.mode)?' · '+roomName(st.mode):'')+(isWo(st.mode)?' · '+woName(st.mode):'');
+    $('tot').textContent=l.length+' lines · '+l.reduce((a,x)=>a+x.qty,0)+' units';
   }
   $('listWrap').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const i=+b.dataset.i,l=list();snapshot();
     if(b.dataset.a==='p')l[i].qty++;else if(b.dataset.a==='m')l[i].qty=Math.max(1,l[i].qty-1);else if(b.dataset.a==='d')l.splice(i,1);
@@ -1030,7 +1064,7 @@ function c128Scan(gray, w, h, K) {
     msg('warn',isCnt(st.mode)?'Type the quantity and the expiry date. This item has several expiry dates? Use “Save + next expiry”.':(out?'Check the quantity and expiry date, then press Save (Enter).':'Enter the quantity and expiry date, then press Save.'));beep(true);$('rQty').focus();$('rQty').select();
   }
   function saveRecv(keep){
-    if(!pendingItem)return;const mode=st.mode;
+    if(!pendingItem)return;const mode=st.mode;useAdd(pendingItem.ir);
     const q=Math.floor(+$('rQty').value);if(!(q>=1)){msg('err','Quantity must be 1 or more.');return;}
     let exp='',note='';const today=new Date().toISOString().slice(0,10);
     if(!$('rNoExp').checked){const raw=$('rExp').value.trim();
@@ -1054,14 +1088,28 @@ function c128Scan(gray, w, h, K) {
     if(qTotal>0){msg('ok','Video scan finished: '+qTotal+' item(s) handled.'+qNote);qTotal=0;qNote='';}
   }
 
-  function showSugg(text){
-    const r=searchItems(items,text,8),s=$('sugg');
-    if(!r.length||/^\d+$/.test(text)){s.style.display='none';return r;}
-    s.innerHTML=r.map(it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir+'</b>'+xmlEsc(it.name)+altHtml(it.ir)+'</div>').join('');s.style.display='block';return r;
+  // how often an item is used on this phone (scans, counts); older use slowly counts less (half every 30 days)
+  const USE_KEY='ccsUse.v1'+PROFILE;let USE={};try{USE=JSON.parse(localStorage.getItem(USE_KEY)||'{}')||{};}catch(e){USE={};}
+  if(!Object.keys(USE).length){try{Object.keys(st.lists).forEach(m=>(st.lists[m]||[]).forEach(l=>{USE[l.ir]={n:((USE[l.ir]&&USE[l.ir].n)||0)+1,t:Date.now()};}));}catch(e){}}
+  function useScore(ir){const u=USE[ir];if(!u)return 0;return u.n*Math.pow(0.5,(Date.now()-u.t)/(30*864e5));}
+  function useAdd(ir){USE[ir]={n:useScore(ir)+1,t:Date.now()};try{localStorage.setItem(USE_KEY,JSON.stringify(USE));}catch(e){}}
+  function rankItems(r,text){
+    const w=(text||'').toLowerCase().split(/\s+/).filter(Boolean),tier=it=>{const n=it.key||it.name.toLowerCase();return w.length&&n.startsWith(w[0])?0:w.every(x=>new RegExp('(^|[^a-z0-9])'+x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).test(n))?1:2;};
+    return r.map((it,i)=>({it,i,u:useScore(it.ir),t:tier(it)})).sort((a,b)=>(b.u>0)-(a.u>0)||b.u-a.u||a.t-b.t||a.i-b.i).map(o=>o.it);
   }
-  function endsWithItems(t){return items.filter(i=>i.ir.endsWith(t));}
-  function showList(r){const s=$('sugg');if(!r.length){s.style.display='none';return;}
-    s.innerHTML=r.slice(0,8).map(it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir.slice(0,-4)+'<span style="font-size:1.25em">'+it.ir.slice(-4)+'</span></b>'+xmlEsc(it.name)+altHtml(it.ir)+'</div>').join('');s.style.display='block';}
+  function suggShow(r,row){   // best match is shown LAST, right above the search field; the box scrolls
+    const s=$('sugg');if(!r.length){s.style.display='none';return;}
+    s.innerHTML='<div class="sghead">'+r.length+' item'+(r.length===1?'':'s')+(r.length>6?' - scroll for more':'')+'</div>'+r.slice().reverse().map(row).join('');s.style.display='block';
+    s.scrollTop=s.scrollHeight;
+    requestAnimationFrame(()=>{const top=s.getBoundingClientRect().top,vv=window.visualViewport,vt=vv?vv.offsetTop:0;if(top<vt+4)window.scrollBy(0,top-vt-4);});
+  }
+  function showSugg(text){
+    const r=rankItems(searchItems(items,text,1e9),text);
+    if(!r.length||/^\d+$/.test(text)){$('sugg').style.display='none';return r;}
+    suggShow(r,it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir+'</b>'+xmlEsc(it.name)+altHtml(it.ir)+'</div>');return r;
+  }
+  function endsWithItems(t){return rankItems(items.filter(i=>i.ir.endsWith(t)),'');}
+  function showList(r){suggShow(r,it=>'<div data-ir="'+it.ir+'">'+thumb(it.ir,34)+'<b>'+it.ir.slice(0,-4)+'<span style="font-size:1.25em">'+it.ir.slice(-4)+'</span></b>'+xmlEsc(it.name)+altHtml(it.ir)+'</div>');}
   function submitScan(){
     const t=$('scan').value.trim();if(!t)return;
     const it=lookupItem(map,t);
@@ -1071,8 +1119,8 @@ function c128Scan(gray, w, h, K) {
       if(r.length===1){pick(r[0]);return;}
       if(r.length>1){showList(r);msg('warn',r.length+' items end with '+t+' - click the right one.');beep(false);return;}
       msg('err','No item ends with '+t+'.');beep(false);$('scan').select();return;}
-    if(/^\d{6,}$/.test(t)){msg('err','Code '+t+' is not in the item list. Use “Add it” at the bottom if it is a new item.');beep(false);$('nIr').value=t;document.querySelector('details').open=true;$('scan').select();return;}
-    const r=searchItems(items,t,8);
+    if(/^\d{6,}$/.test(t)){if(st.mode==='IC'){msg('err','Code '+t+' is not in the item list. Use “Add it” at the bottom if it is a new item.');$('nIr').value=t;$('addItemCard').querySelector('details').open=true;}else msg('err','Code '+t+' is not in the item list.');beep(false);$('scan').select();return;}
+    const r=searchItems(items,t,1e9);
     if(r.length===1){pick(r[0]);return;}
     if(!r.length){msg('err','No item matches “'+t+'”.');beep(false);}else msg('warn','Several items match - click the right one in the list.');
   }
@@ -1170,6 +1218,7 @@ function c128Scan(gray, w, h, K) {
   $('openShared').onclick=()=>{const u=shareUrl();if(u)window.open(u,'_blank','noopener');};
   $('autoOpen').onchange=()=>{st.autoOpen=$('autoOpen').checked;save();};
   renderLink();$('ver').textContent='version '+VERSION+(PWA?' (app)':'');renderCat();renderInstall();if(!items.length)msg('warn','No item list yet. Tap “Import item list…” and choose the Excel list or the setup file from your team.');if(EMBEDDED){$('embedWarn').style.display='block';$('copy').style.display='';}
+  $('gearBtn').onclick=()=>{const g=$('gearPanel'),on=g.style.display!=='block';g.style.display=on?'block':'none';$('gearBtn').classList.toggle('on',on);};
   $('copy').onclick=()=>{
     const cfg=EXPORT[st.mode],rows=buildRows(list(),items,$('allItems').checked);if(!list().length){msg('err','The list is empty.');return;}
     const tsv=[cfg.cols.map(c=>c[0]).join('\t')].concat(rows.map(r=>cfg.cols.map(c=>c[2]==='d'&&r[c[1]]?r[c[1]].split('-').reverse().join('/'):(r[c[1]]==null?'':r[c[1]])).join('\t'))).join('\n');
@@ -1500,7 +1549,7 @@ function c128Scan(gray, w, h, K) {
     }
     shRows=aggregateBatches(batches).map(a=>Object.assign(a,{include:true,orig:a.qty}));shLoaded={mode,live,batches};shEdited=false;shRender();if(!keepMsg)$('shMsg').className='msg';
   }
-  $('tabSH').onclick=()=>{view='shared';render();renderConn();if(!shLoaded||shLoaded.mode!==shMode())shRefresh(true);};
+  $('tabSH').onclick=()=>{const was=view;view='shared';render();renderConn();if(was!=='shared'||!shLoaded||shLoaded.mode!==shMode())shRefresh(was!=='shared'?false:true,false);};
   document.querySelectorAll('input[name=shMode]').forEach(r=>r.addEventListener('change',()=>shRefresh(true)));
   $('shSource').onchange=()=>shRefresh(true);$('shRefresh').onclick=()=>shRefresh(false);
   $('shSave').onclick=async()=>{
@@ -1805,49 +1854,95 @@ function c128Scan(gray, w, h, K) {
   // Every count is saved at once in the unit's Google Sheet (sheet "Counts": the latest count of every item, sheet "CountLog": all counts),
   // so the whole unit shares one count. Kept on the phone too (works offline, sent later).
   function icTodayTxt(){const t=icDay(0);const n=Object.keys(ic.counts).filter(ir=>String(ic.counts[ir].at||'').startsWith(t)).length;return n+' counted today';}
-  function icLotsTxt(c,unit){return (c.lots||[]).map(l=>l.qty+(l.expiry?' × '+dmy(l.expiry):' (no expiry)')).join(', ');}
-  function icLastTxt(ir,unit){const c=ic.counts[ir];if(!c)return 'Never counted in this unit.';return 'Last count: <b>'+xmlEsc(icAt(c.at))+'</b> by <b>'+xmlEsc(c.by||'?')+'</b> · total '+c.total+(unit?' '+xmlEsc(unit):'')+(c.lots&&c.lots.length?' ('+xmlEsc(icLotsTxt(c))+')':'')+(ic.pend[ir]?' · <i>not sent yet</i>':'');}
-  function icMerge(lots){const by={},order=[];lots.forEach(l=>{if(!(l.expiry in by)){by[l.expiry]=0;order.push(l.expiry);}by[l.expiry]+=l.qty;});return order.map(e=>({qty:by[e],expiry:e}));}
+  function icLotTxt(ls){return ls.map(l=>l.qty+(l.expiry?' × '+dmy(l.expiry):' (no expiry)')).join(', ');}
+  function icLotsTxt(c,unit){const ls=c.lots||[],s2=ls.filter(l=>l.store===2);if(!s2.length)return icLotTxt(ls);const s1=ls.filter(l=>l.store!==2);return 'Store 1: '+(s1.length?icLotTxt(s1):'0')+' · Store 2: '+icLotTxt(s2);}
+  function icLastTxt(ir,unit){const c=ic.counts[ir];if(!c)return 'Never counted in this unit.';return 'Last count: <b>'+xmlEsc(icAt(c.at))+'</b> by <b>'+xmlEsc(c.by||'?')+'</b> · total '+c.total+(unit?' '+xmlEsc(unit):'')+(c.lots&&c.lots.length?' ('+xmlEsc(icLotsTxt(c))+')':'')+(c.note?' · note: <i>'+xmlEsc(c.note)+'</i>':'')+(ic.pend[ir]?' · <i>not sent yet</i>':'');}
+  function icMerge(lots){const by={},order=[];lots.forEach(l=>{const k=(l.store===2?'2':'1')+'|'+l.expiry;if(!(k in by)){by[k]=0;order.push(k);}by[k]+=l.qty;});return order.map(k=>{const o={qty:by[k],expiry:k.slice(2)};if(k[0]==='2')o.store=2;return o;});}
+  function icByExp(lots){const by={},order=[];(lots||[]).forEach(l=>{if(!(l.expiry in by)){by[l.expiry]={qty:0,s1:0,s2:0};order.push(l.expiry);}const b=by[l.expiry];b.qty+=l.qty;if(l.store===2)b.s2+=l.qty;else b.s1+=l.qty;});return order.map(e=>Object.assign({expiry:e},by[e]));}
   function icRowHtml(q,e,def,first){return '<div class="icrow"><input class="icq" type="number" min="0" inputmode="numeric" placeholder="Qty" value="'+xmlEsc(q)+'"><input class="ice" type="text" autocomplete="off" placeholder="DD/MM/YYYY" value="'+xmlEsc(e)+'"><label class="icdef" title="Set as default expiry date"><input type="checkbox"'+(def?' checked':'')+'>default</label>'+(first?'<span style="width:34px"></span>':'<button class="x" type="button" title="Remove this row">✕</button>')+'</div>';}
   function icOpen(it){
     if(!it)return;icItem=it;const c=ic.counts[it.ir],de=defOf(it),today=icDay(0),exps=[];
     if(de)exps.push(de);
-    if(c&&c.lots)c.lots.forEach(l=>{if(l.expiry&&l.expiry>=today&&exps.indexOf(l.expiry)<0)exps.push(l.expiry);});
+    const exps2=[];
+    if(c&&c.lots)c.lots.forEach(l=>{const a=l.store===2?exps2:exps;if(l.expiry&&l.expiry>=today&&a.indexOf(l.expiry)<0)a.push(l.expiry);});
     if(!exps.length)exps.push('');
     icRenderPhoto(it);$('icAlt').value=(SN[it.ir]&&SN[it.ir].n)||'';$('icName').innerHTML=icNameHtml(it);
     $('icLast').innerHTML=icLastTxt(it.ir,it.unit);
-    $('icRows').innerHTML=exps.map((e,i)=>icRowHtml('',e?dmy(e):'',!!de&&e===de,i===0)).join('');
+    $('icRows').innerHTML=exps.map((e,i)=>icRowHtml('',e?dmy(e):'',i===0,i===0)).join('');
+    icS2Set(exps2.length?exps2.map(e=>[ '',dmy(e),false]):null);$('icNote').value='';icTotal();
     $('icSkip').style.display=ic.mode==='app'?'':'none';$('icCancel').style.display=ic.mode==='app'?'none':'';
     $('icPanel').style.display='';icRenderNext();
     const q=$('icRows').querySelector('.icq');if(q&&!uiRestoring){q.focus();try{$('icPanel').scrollIntoView({block:'start',behavior:'smooth'});}catch(e){}}
   }
   function icNameHtml(it){return xmlEsc(it.name)+altHtml(it.ir)+'<div class="note" style="margin:2px 0 0;font-weight:400">'+xmlEsc(it.ir)+(it.unit?' · unit '+xmlEsc(it.unit):'')+(it.loc?' · '+xmlEsc(shortLoc(it.loc)):'')+'</div>';}
   function icClose(){icItem=null;$('icPanel').style.display='none';icRenderNext();}
-  $('icRows').addEventListener('change',e=>{const t=e.target;if(t.type==='checkbox'&&t.checked)$('icRows').querySelectorAll('.icdef input').forEach(x=>{if(x!==t)x.checked=false;});});
-  $('icRows').addEventListener('click',e=>{const b=e.target.closest('button.x');if(b){b.closest('.icrow').remove();}});
-  $('icRows').addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();const r=e.target.closest('.icrow');if(e.target.classList.contains('icq')){r.querySelector('.ice').focus();}else icDoSave();});
+  const icAllRows=()=>[...$('icRows').querySelectorAll('.icrow')].concat(icS2On()?[...$('icRows2').querySelectorAll('.icrow')]:[]);
+  function icS2On(){return $('icS2').style.display!=='none';}
+  function icS2Set(rows){   // rows = [[qty,expiry,default],...] to show Store 2, or null to hide it
+    if(rows&&rows.length){$('icRows2').innerHTML=rows.map((r,i)=>icRowHtml(r[0]||'',r[1]||'',!!r[2],i===0)).join('');$('icS2').style.display='';$('icS2Btn').style.display='none';}
+    else{$('icRows2').innerHTML='';$('icS2').style.display='none';$('icS2Btn').style.display='';}
+  }
+  function icExpState(raw){raw=(raw||'').trim();if(!raw)return '';const e=parseExpiry(raw);if(!e)return '';const t=icDay(0);return e<t?'bad':e<=addDaysIso(90)?'near':'';}
+  function icPaint(){document.querySelectorAll('#icRows .ice, #icRows2 .ice').forEach(x=>{const k=icExpState(x.value);x.classList.toggle('xbad',k==='bad');x.classList.toggle('xnear',k==='near');x.title=k==='bad'?'EXPIRED':k==='near'?'Expires in less than 3 months':'';});}
+  function icTotal(){icPaint();
+    const sum=box=>[...box.querySelectorAll('.icq')].reduce((a,x)=>{const v=Math.floor(+x.value.trim());return a+(x.value.trim()!==''&&v>=0?v:0);},0);
+    const a=sum($('icRows')),b=icS2On()?sum($('icRows2')):0,u=icItem&&icItem.unit?' '+icItem.unit:'';
+    const xs=document.querySelectorAll('#icRows .ice.xbad, #icRows2 .ice.xbad').length,ns=document.querySelectorAll('#icRows .ice.xnear, #icRows2 .ice.xnear').length;
+    $('icTot').innerHTML=(icS2On()?'Total: <b>'+(a+b)+'</b>'+xmlEsc(u)+' (Store 1: '+a+' + Store 2: '+b+')':'')+(xs?'<div class="xw">⚠ Expired date - you will be asked to write it off</div>':'')+(ns?'<div style="color:#9a4b00">Expires in less than 3 months</div>':'');
+  }
+  ['icRows','icRows2'].forEach(id=>{
+    $(id).addEventListener('change',e=>{const t=e.target;if(t.type==='checkbox'&&t.checked)document.querySelectorAll('#icRows .icdef input, #icRows2 .icdef input').forEach(x=>{if(x!==t)x.checked=false;});});
+    $(id).addEventListener('input',icTotal);$(id).addEventListener('change',icTotal);
+    $(id).addEventListener('click',e=>{const b=e.target.closest('button.x');if(b){const r=b.closest('.icrow');r.remove();icTotal();}});
+    $(id).addEventListener('keydown',e=>{if(e.key!=='Enter')return;e.preventDefault();const r=e.target.closest('.icrow');if(e.target.classList.contains('icq')){r.querySelector('.ice').focus();}else icDoSave();});
+  });
   $('icAdd').onclick=()=>{$('icRows').insertAdjacentHTML('beforeend',icRowHtml('','',false,false));const r=$('icRows').lastElementChild;r.querySelector('.icq').focus();};
+  $('icAdd2').onclick=()=>{$('icRows2').insertAdjacentHTML('beforeend',icRowHtml('','',false,false));const r=$('icRows2').lastElementChild;r.querySelector('.icq').focus();};
+  $('icS2Btn').onclick=()=>{if(!icItem)return;const de=defOf(icItem);icS2Set([['',de?dmy(de):'',false]]);icTotal();$('icRows2').querySelector('.icq').focus();};
+  $('icS2Del').onclick=()=>{icS2Set(null);icTotal();};
   $('icCancel').onclick=()=>{icClose();msg('','');focusScan();};
   $('icSkip').onclick=()=>{if(icItem)icSkip.push(icItem.ir);icOpenNext();};
   async function icDoSave(){
     const it=icItem;if(!it)return;
     const who=(st.who||'').trim();if(!who){msg('err','Type your name in “Prepared by” at the top first - the count is saved with your name.');beep(false);$('who').focus();return;}
     const lots=[];let bad='',defE='';
-    $('icRows').querySelectorAll('.icrow').forEach(r=>{if(bad)return;const qs=r.querySelector('.icq').value.trim(),es=r.querySelector('.ice').value.trim(),d=r.querySelector('.icdef input').checked;
+    icAllRows().forEach(r=>{if(bad)return;const st2=!!r.closest('#icRows2'),qs=r.querySelector('.icq').value.trim(),es=r.querySelector('.ice').value.trim(),d=r.querySelector('.icdef input').checked;
       let e='';if(es){e=parseExpiry(es);if(!e){bad='Expiry date not understood: “'+es+'” (use 31/12/2030 or 12/2030).';return;}}
-      if(d&&e)defE=e;if(qs==='')return;const q=Math.floor(+qs);if(!(q>=0)||q>1000000){bad='The quantity must be 0 or more.';return;}lots.push({qty:q,expiry:e});});
+      if(d&&e)defE=e;if(qs==='')return;const q=Math.floor(+qs);if(!(q>=0)||q>1000000){bad='The quantity must be 0 or more.';return;}const lo={qty:q,expiry:e};if(st2)lo.store=2;lots.push(lo);});
     if(bad){msg('err',bad);beep(false);return;}
     if(!lots.length){if(!confirm('No quantity typed.\n\nSave '+it.name+' as 0 (none in the store)?'))return;lots.push({qty:0,expiry:''});}
-    const m=icMerge(lots),total=m.reduce((a,l)=>a+l.qty,0);
-    ic.counts[it.ir]={lots:m,total,by:who,at:icNow()};ic.pend[it.ir]={ir:it.ir,name:it.name,lots:m};icStore();
+    const m=icMerge(lots),total=m.reduce((a,l)=>a+l.qty,0),prev=ic.counts[it.ir],note=$('icNote').value.replace(/\s+/g,' ').trim().slice(0,120);
+    if(prev&&!(icLast&&icLast.ir===it.ir&&Date.now()-icLast.t<600000)){const d=Math.abs(total-(+prev.total||0));
+      if(d>=3&&d>0.2*Math.max(+prev.total||0,1)&&!confirm('Big change for '+it.name+':\n\nLast count: '+prev.total+' ('+icAt(prev.at)+(prev.by?' by '+prev.by:'')+')\nNow: '+total+'\n\nOK = save '+total+'.\nCancel = check again.'))return;}
+    const today=icDay(0),expd=m.filter(l=>l.expiry&&l.expiry<today&&l.qty>0);
+    let woMsg='';
+    if(expd.length){const eq=expd.reduce((a,l)=>a+l.qty,0);
+      if(confirm(eq+' '+(it.unit||'unit(s)')+' of '+it.name+' already EXPIRED ('+expd.map(l=>l.qty+' × '+dmy(l.expiry)).join(', ')+').\n\nOK = also add them to WRITE OFF → '+woName('WO1')+'.\nCancel = only save the count.')){
+        expd.forEach(l=>addLine(st.lists.WO1,'WO1',it,l.qty,l.expiry));touched(['WO1']);woMsg='  · '+eq+' added to WRITE OFF ('+woName('WO1')+')';}}
+    icLast={ir:it.ir,name:it.name,total,prev:prev?JSON.parse(JSON.stringify(prev)):null,prevPend:ic.pend[it.ir]?JSON.parse(JSON.stringify(ic.pend[it.ir])):null,t:Date.now()};
+    const rec={lots:m,total,by:who,at:icNow()};if(note)rec.note=note;
+    ic.counts[it.ir]=rec;ic.pend[it.ir]={ir:it.ir,name:it.name,lots:m,note};delete ic.undo[it.ir];icStore();useAdd(it.ir);
     if(defE&&defE!==defOf(it))setDef(it.ir,defE);
-    msg('ok','Count saved: '+it.name+' = '+total+(it.unit?' '+it.unit:'')+(m.length>1?' ('+m.length+' expiry dates)':'')+(shReady()?'':'  (kept on this phone - no Google Sheet link)'));beep(true);
+    const t2=m.filter(l=>l.store===2).reduce((a,l)=>a+l.qty,0),has2=m.some(l=>l.store===2);
+    msg('ok','Count saved: '+it.name+' = '+total+(it.unit?' '+it.unit:'')+(has2?' (Store 1: '+(total-t2)+' + Store 2: '+t2+')':'')+(m.length>1&&!has2?' ('+m.length+' expiry dates)':'')+woMsg+(shReady()?'':'  (kept on this phone - no Google Sheet link)'));beep(true);
     icFlush();
     if(ic.mode==='app')icOpenNext();else{icClose();focusScan();}
     render();
   }
   $('icSave').onclick=icDoSave;
-  function icOrder(){return items.map((it,i)=>({it,i,at:String((ic.counts[it.ir]&&ic.counts[it.ir].at)||'')})).sort((a,b)=>a.at.localeCompare(b.at)||a.i-b.i).map(o=>o.it);}
+  function icUndoShow(){const ok=st.mode==='IC'&&ic.mode!=='noir'&&icLast&&Date.now()-icLast.t<600000;$('icUndo').style.display=ok?'':'none';if(ok)$('icUndo').title='Undo the count of '+icLast.name+' (= '+icLast.total+')';}
+  setInterval(icUndoShow,15000);
+  $('icUndo').onclick=()=>{
+    const u=icLast;if(!u||Date.now()-u.t>=600000){icUndoShow();return;}
+    if(!confirm('Undo the count of '+u.name+' (= '+u.total+')?\n\n'+(u.prev?'The count before it comes back: '+u.prev.total+' ('+icAt(u.prev.at)+').':'The item goes back to “never counted”.')))return;
+    const ir=u.ir;if(u.prev)ic.counts[ir]=u.prev;else delete ic.counts[ir];
+    if(u.prevPend){ic.pend[ir]=u.prevPend;delete ic.undo[ir];}
+    else if(ic.pend[ir]&&!icBusy){delete ic.pend[ir];}                 // not sent yet: just drop it
+    else{delete ic.pend[ir];ic.undo[ir]=u.prev||null;}                 // already in the shared list: undo it there too
+    icLast=null;icStore();icUndoShow();msg('ok','Count undone: '+u.name+(u.prev?' (back to '+u.prev.total+')':' (never counted)'));beep(true);
+    icFlush();if(icItem&&icItem.ir===ir)icOpen(icItem);render();
+  };
+  function icOrder(){const since=icDay(30);return items.map((it,i)=>{const at=String((ic.counts[it.ir]&&ic.counts[it.ir].at)||''),loc=shortLoc(it.loc);return {it,i,at,due:!at||at<since,loc};}).sort((a,b)=>(b.due-a.due)||(a.due?((!a.loc)-(!b.loc))||a.loc.localeCompare(b.loc,undefined,{numeric:true,sensitivity:'base'}):0)||a.at.localeCompare(b.at)||a.i-b.i).map(o=>o.it);}
   function icOpenNext(){
     if(!items.length){msg('warn','The item list is not loaded yet.');return;}
     let q=icOrder().filter(it=>icSkip.indexOf(it.ir)<0&&(!icItem||it.ir!==icItem.ir));
@@ -1857,7 +1952,7 @@ function c128Scan(gray, w, h, K) {
   function icRenderNext(){
     if(ic.mode!=='app'||!items.length){$('icNext').innerHTML='';return;}
     const q=icOrder().filter(it=>icSkip.indexOf(it.ir)<0&&(!icItem||it.ir!==icItem.ir)).slice(0,5);
-    $('icNext').innerHTML='<div class="note" style="margin:10px 0 2px"><b>Next suggested</b> (never counted / oldest count first) - tap to count now:</div>'+q.map(it=>{const c=ic.counts[it.ir];
+    $('icNext').innerHTML='<div class="note" style="margin:10px 0 2px"><b>Next suggested</b> (shelf by shelf, oldest count first):</div>'+q.map(it=>{const c=ic.counts[it.ir];
       return '<button type="button" class="btn alt nx" data-ir="'+xmlEsc(it.ir)+'">'+xmlEsc(it.name)+altHtml(it.ir)+'<small>'+(c?'last count '+xmlEsc(icAt(c.at))+' by '+xmlEsc(c.by||'?'):'never counted')+(it.loc?' · '+xmlEsc(shortLoc(it.loc)):'')+'</small></button>';}).join('');
   }
   $('icNext').addEventListener('click',e=>{const b=e.target.closest('button[data-ir]');if(b){const it=map.get(b.dataset.ir);if(it)icOpen(it);}});
@@ -1875,7 +1970,15 @@ function c128Scan(gray, w, h, K) {
   $('icModeNoir').onclick=()=>{ic.mode='noir';icStore();icClose();render();nrLoad();};
   $('icModeApp').onclick=()=>{ic.mode='app';icStore();nrClose();render();icOpenNext();};
   async function icFlush(){
-    if(icBusy||!shReady()||navigator.onLine===false||needLogin())return;const k=Object.keys(ic.pend);if(!k.length)return;
+    if(icBusy||!shReady()||navigator.onLine===false||needLogin())return;
+    const uk=Object.keys(ic.undo||{});
+    if(uk.length){icBusy=true;const us=uk.map(ir=>({ir,prev:ic.undo[ir]}));
+      try{await shPost('countUndo',{code:sh.scanCode||sh.chargeCode,by:(st.who||'').trim(),device:sh.device,items:us},30000);uk.forEach(ir=>{delete ic.undo[ir];});icStore();}
+      catch(e){if(/unknown action/i.test(e.message||'')){uk.forEach(ir=>{const pv=ic.undo[ir];delete ic.undo[ir];if(pv&&!ic.pend[ir])ic.pend[ir]={ir,name:(map.get(ir)||{}).name||'',lots:pv.lots||[],note:pv.note||''};});icStore();
+          if(st.mode==='IC')msg('warn','Undo was done on this phone. To undo it in the shared list too, update the Google Sheet script (SharedList_Code 4.4).');}
+        else gateOnError(e);}
+      finally{icBusy=false;}}
+    const k=Object.keys(ic.pend);if(!k.length)return;
     const who=(st.who||'').trim();if(!who)return;
     icBusy=true;const snap=Object.assign({},ic.pend);
     try{const j=await shPost('countSet',{code:sh.scanCode||sh.chargeCode,by:who,device:sh.device,items:k.map(ir=>snap[ir])},30000);
@@ -1886,7 +1989,8 @@ function c128Scan(gray, w, h, K) {
   async function icLoad(){
     if(icLoading||!shReady()||navigator.onLine===false||needLogin())return;icLoading=true;
     try{const j=await shPost('counts',{code:sh.scanCode||sh.chargeCode},20000),srv=j.counts||{},out={};
-      Object.keys(srv).forEach(ir=>{const c=srv[ir];if(c&&Array.isArray(c.lots))out[ir]={lots:c.lots,total:+c.total||0,by:c.by||'',at:c.at||''};});
+      Object.keys(srv).forEach(ir=>{const c=srv[ir];if(c&&Array.isArray(c.lots)){out[ir]={lots:c.lots,total:+c.total||0,by:c.by||'',at:c.at||''};if(c.note)out[ir].note=String(c.note);}});
+      Object.keys(ic.undo||{}).forEach(ir=>{if(ic.undo[ir])out[ir]=ic.undo[ir];else delete out[ir];});
       Object.keys(ic.pend).forEach(ir=>{if(ic.counts[ir])out[ir]=ic.counts[ir];});
       ic.counts=out;ic.at=Date.now();icStore();if(st.mode==='IC'){icRenderInfo();$('cIC').textContent=icTodayTxt();}}
     catch(e){gateOnError(e);}
@@ -1897,23 +2001,38 @@ function c128Scan(gray, w, h, K) {
   setInterval(()=>{if(st.mode==='IC'&&view==='scan'&&!document.hidden)icFlush().then(icLoad);},60000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&st.mode==='IC')icFlush().then(icLoad);});
   window.addEventListener('online',()=>icFlush());
-  const IC_COLS=TEMPLATE_COLS.concat([['Last counted','lastc','s',18],['Counted by','countedby','s',16]]);
+  const IC_COLS=TEMPLATE_COLS.concat([['Last counted','lastc','s',18],['Counted by','countedby','s',16],['Store 1','s1','n',10],['Store 2','s2','n',10],['Note','note','s',30]]);
   $('icXlsx').onclick=async()=>{
-    const r0=$('icRange').value,since=r0==='all'?'':icDay(r0==='1'?0:+r0),rows=[];let nIt=0;
+    const r0=$('icRange').value;if(r0==='not30')return icNotCounted();
+    const since=r0==='all'?'':icDay(r0==='1'?0:+r0),rows=[];let nIt=0;
     items.forEach(it=>{const c=ic.counts[it.ir];if(!c||(since&&String(c.at)<since))return;nIt++;
-      const ls=(c.lots&&c.lots.length?c.lots:[{qty:0,expiry:''}]).slice().sort((a,b)=>(a.expiry||'9999').localeCompare(b.expiry||'9999'));
-      buildRows(ls.map(l=>({ir:it.ir,name:it.name,expiry:l.expiry||'',qty:l.qty})),items,false).forEach(r=>{r.lastc=icAt(c.at);r.countedby=c.by||'';rows.push(r);});});
+      const ls=icByExp(c.lots&&c.lots.length?c.lots:[{qty:0,expiry:''}]).sort((a,b)=>(a.expiry||'9999').localeCompare(b.expiry||'9999'));
+      buildRows(ls.map(l=>({ir:it.ir,name:it.name,expiry:l.expiry||'',qty:l.qty})),items,false).forEach((r,k)=>{r.lastc=icAt(c.at);r.countedby=c.by||'';r.s1=ls[k].s1;r.s2=ls[k].s2||'';r.note=c.note||'';rows.push(r);});});
     if(!rows.length){msg('err','Nothing was counted in this period.');beep(false);return;}
     const who0=(st.who||'').trim(),nowD=new Date(),label=$('icRange').selectedOptions[0].textContent.replace(/^Excel: /,'');
     const meta={who:who0,created:nowD,title:'INVENTORY COUNT',infoName:'Info',info:st.infoSheet?[
       ['Prepared by',who0||'(not entered)'],['Saved on',nowD.getFullYear()+'-'+pad2(nowD.getMonth()+1)+'-'+pad2(nowD.getDate())+' '+pad2(nowD.getHours())+':'+pad2(nowD.getMinutes())],
       ['Type','INVENTORY COUNT'],...(UNIT_NAME?[['Unit',UNIT_NAME]]:[]),['Period',label],['Items',nIt],['Lines',rows.length],['Total units',rows.reduce((a,x)=>a+(+x.qty||0),0)],['Tool','CCS Scan Helper'],
-      ['Note','The data is on the first sheet (inventory list). One row per item and expiry date. The last two columns are the date of the last count and who counted.']]:null};
+      ['Note','The data is on the first sheet (inventory list). One row per item and expiry date (Store 1 and Store 2 added together in the quantity). Then the date of the last count, who counted, and the quantity in each store.']]:null};
     const wn=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),r=await saveExport('CCS_Count_'+stamp()+(wn?'_'+wn:'')+'.xlsx',buildXlsx('inventory list',IC_COLS,rows,meta));
     if(r.cancelled){msg('warn','Save cancelled - nothing was saved.');return;}
     if(r.blocked){msg('err','The file was probably NOT saved (downloads are blocked in this preview).');beep(false);return;}
     msg('ok','Saved '+r.name+' in '+r.where+' ('+nIt+' items, '+rows.length+' lines).');beep(true);
   };
+
+  async function icNotCounted(){
+    const since=icDay(30),rows=[];
+    items.forEach(it=>{const c=ic.counts[it.ir];if(c&&String(c.at)>=since)return;rows.push({loc:shortLoc(it.loc),ir:it.ir,name:it.name,unit:it.unit||'',lastc:c?icAt(c.at):'never',countedby:c?(c.by||''):'',last:c?c.total:'',nt:c&&c.note||''});});
+    if(!rows.length){msg('ok','Every item was counted in the last 30 days.');beep(true);return;}
+    rows.sort((a,b)=>(!a.loc)-(!b.loc)||a.loc.localeCompare(b.loc,undefined,{numeric:true,sensitivity:'base'})||a.name.localeCompare(b.name));
+    const cols=[['Location','loc','s',30],['ir_number','ir','s',14],['item name','name','s',60],['Qty_type','unit','s',10],['Last counted','lastc','s',18],['Counted by','countedby','s',16],['Last total','last','n',10],['Note','nt','s',30]];
+    const who0=(st.who||'').trim(),nowD=new Date();
+    const meta={who:who0,created:nowD,title:'NOT COUNTED',infoName:'Info',info:st.infoSheet?[['Prepared by',who0||'(not entered)'],['Saved on',icNow().slice(0,16)],['Type','ITEMS NOT COUNTED IN THE LAST 30 DAYS'],...(UNIT_NAME?[['Unit',UNIT_NAME]]:[]),['Items',rows.length],['Tool','CCS Scan Helper']]:null};
+    const wn=who0.replace(/\s+/g,'_').replace(/[^A-Za-z0-9_-]+/g,''),r=await saveExport('CCS_NotCounted_'+stamp()+(wn?'_'+wn:'')+'.xlsx',buildXlsx('not counted',cols,rows,meta));
+    if(r.cancelled){msg('warn','Save cancelled - nothing was saved.');return;}
+    if(r.blocked){msg('err','The file was probably NOT saved (downloads are blocked in this preview).');beep(false);return;}
+    msg('ok','Saved '+r.name+' in '+r.where+' ('+rows.length+' items not counted in 30 days).');beep(true);
+  }
 
   // ================================================================ SECOND NAMES (shared by all units through the photo sheet)
   function snStore(){try{localStorage.setItem(SN_KEY,JSON.stringify({names:SN,pend:snPend}));}catch(e){}}
@@ -2153,7 +2272,7 @@ function c128Scan(gray, w, h, K) {
   try{history.scrollRestoration='manual';}catch(e){}
   function uiSave(){
     try{const o={t:Date.now(),view,mode:st.mode,y:window.scrollY||0,scan:$('scan').value||'',shMode:shMode(),hi:{m:hiMode,v:hiV,f:$('hiFrom').value,t:$('hiTo').value,shown:!!$('hiOut').innerHTML}};
-      if(st.mode==='IC'&&icItem)o.ic={ir:icItem.ir,rows:[...$('icRows').querySelectorAll('.icrow')].map(r=>[r.querySelector('.icq').value,r.querySelector('.ice').value,r.querySelector('.icdef input').checked])};
+      if(st.mode==='IC'&&icItem){const rr=b=>[...b.querySelectorAll('.icrow')].map(r=>[r.querySelector('.icq').value,r.querySelector('.ice').value,r.querySelector('.icdef input').checked]);o.ic={ir:icItem.ir,rows:rr($('icRows')),rows2:icS2On()?rr($('icRows2')):null,note:$('icNote').value};}
       if(pendingItem)o.recv={ir:pendingItem.ir,qty:$('rQty').value,exp:$('rExp').value,noexp:$('rNoExp').checked,def:$('rSetDef').checked};
       localStorage.setItem(UI_KEY,JSON.stringify(o));}catch(e){}
   }
@@ -2169,7 +2288,7 @@ function c128Scan(gray, w, h, K) {
         if(o.scan)$('scan').value=o.scan;
         if(st.mode==='IC'){
           const it=o.ic&&map.get(o.ic.ir);
-          if(it){icOpen(it);if(Array.isArray(o.ic.rows)&&o.ic.rows.length)$('icRows').innerHTML=o.ic.rows.map((r,i)=>icRowHtml(r[0]||'',r[1]||'',!!r[2],i===0)).join('');}
+          if(it){icOpen(it);if(Array.isArray(o.ic.rows)&&o.ic.rows.length)$('icRows').innerHTML=o.ic.rows.map((r,i)=>icRowHtml(r[0]||'',r[1]||'',!!r[2],i===0)).join('');icS2Set(Array.isArray(o.ic.rows2)?o.ic.rows2:null);$('icNote').value=o.ic.note||'';icTotal();}
           else if(ic.mode==='app'&&items.length)icOpenNext();
           else if(ic.mode==='noir')nrLoad();
         }else if(o.recv&&o.mode===st.mode&&map.get(o.recv.ir)){
