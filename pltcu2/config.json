@@ -1,0 +1,8 @@
+{
+  "unit": "PLTCU-2",
+  "syncUrl": "https://script.google.com/macros/s/AKfycbyVLfZijQ-5Dvg4uWky0BwOk9hu_-tDLj0ffloaTtX6YZPYdO94XV-fhzvvhYUW2OqW/exec",
+  "scanCode": "",
+  "master": "../master_list.xlsx",
+  "photos": "../photos/",
+  "locations": false
+}
